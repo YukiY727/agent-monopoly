@@ -7,9 +7,19 @@ set -e
 
 echo "🔍 Running pre-commit checks..."
 
-# Gradleコマンドを検出
-if [ -f "./gradlew" ]; then
+# Nix開発環境が利用可能な場合はそれを使用
+if [ -f "flake.nix" ]; then
+    # Nix環境でGradleコマンドを実行
+    if command -v nix &> /dev/null; then
+        GRADLE_CMD="nix develop -c gradle"
+    else
+        echo "❌ Nix not found! Please install Nix or run 'direnv allow'"
+        exit 1
+    fi
+# Gradleラッパーを優先
+elif [ -f "./gradlew" ]; then
     GRADLE_CMD="./gradlew"
+# システムのGradleを使用
 elif command -v gradle &> /dev/null; then
     GRADLE_CMD="gradle"
 else
