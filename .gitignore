@@ -67,6 +67,21 @@ Thumbs.db
 # Logs
 *.log
 
+# Test results
+**/test-results/
+**/test-reports/
+
+# Coverage reports
+**/jacoco/
+*.exec
+
+# detekt
+**/detekt-report/
+config/detekt/baseline.xml
+
+# ktlint
+.ktlint
+
 # Database
 *.db
 *.sqlite

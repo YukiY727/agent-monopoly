@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# モノポリープロジェクト pre-commit hook
+# ローカルCIとして、コミット前にコード品質チェックを実行
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Gradleコマンドを検出
+if [ -f "./gradlew" ]; then
+    GRADLE_CMD="./gradlew"
+elif command -v gradle &> /dev/null; then
+    GRADLE_CMD="gradle"
+else
+    echo "❌ Gradle not found!"
+    exit 1
+fi
+
+# 1. ktlint (フォーマットチェック)
+echo "📝 Checking code format (ktlint)..."
+$GRADLE_CMD ktlintCheck
+
+# 2. detekt (静的解析)
+echo "🔎 Running static analysis (detekt)..."
+$GRADLE_CMD detekt
+
+# 3. テスト実行
+echo "🧪 Running tests..."
+$GRADLE_CMD test
+
+# 4. カバレッジチェック (Phase 1完了後に有効化)
+# echo "📊 Checking test coverage..."
+# $GRADLE_CMD jacocoTestCoverageVerification
+
+echo "✅ All pre-commit checks passed!"
