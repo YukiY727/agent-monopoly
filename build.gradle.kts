@@ -90,20 +90,118 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 }
 
 // JaCoCo設定
+jacoco {
+    toolVersion = "0.8.12"
+}
+
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
     reports {
         xml.required.set(true)
-        csv.required.set(false)
+        csv.required.set(true)
         html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/test/html"))
     }
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude(
+                        // Exclude generated code if any
+                        "**/BuildConfig.*",
+                    )
+                }
+            },
+        ),
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
     violationRules {
         rule {
+            element = "BUNDLE"
             limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
                 minimum = "0.80".toBigDecimal()
+            }
+        }
+        rule {
+            element = "CLASS"
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+        }
+    }
+}
+
+// Coverage summary task
+tasks.register("coverageSummary") {
+    group = "verification"
+    description = "Print test coverage summary"
+    dependsOn(tasks.jacocoTestReport)
+
+    doLast {
+        val reportFile = file("${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.csv")
+        if (reportFile.exists()) {
+            val lines = reportFile.readLines()
+            if (lines.size > 1) {
+                // Aggregate all data lines (skip header)
+                var instructionMissed = 0
+                var instructionCovered = 0
+                var branchMissed = 0
+                var branchCovered = 0
+                var lineMissed = 0
+                var lineCovered = 0
+
+                lines.drop(1).forEach { line ->
+                    val cols = line.split(",")
+                    if (cols.size >= 9) {
+                        instructionMissed += cols[3].toIntOrNull() ?: 0
+                        instructionCovered += cols[4].toIntOrNull() ?: 0
+                        branchMissed += cols[5].toIntOrNull() ?: 0
+                        branchCovered += cols[6].toIntOrNull() ?: 0
+                        lineMissed += cols[7].toIntOrNull() ?: 0
+                        lineCovered += cols[8].toIntOrNull() ?: 0
+                    }
+                }
+
+                val instructionTotal = instructionMissed + instructionCovered
+                val instructionCoverage =
+                    if (instructionTotal > 0) {
+                        (instructionCovered * 100.0 / instructionTotal)
+                    } else {
+                        0.0
+                    }
+
+                val branchTotal = branchMissed + branchCovered
+                val branchCoverage =
+                    if (branchTotal > 0) {
+                        (branchCovered * 100.0 / branchTotal)
+                    } else {
+                        0.0
+                    }
+
+                val lineTotal = lineMissed + lineCovered
+                val lineCoverage =
+                    if (lineTotal > 0) {
+                        (lineCovered * 100.0 / lineTotal)
+                    } else {
+                        0.0
+                    }
+
+                println("\n" + "=".repeat(60))
+                println("📊 Test Coverage Summary")
+                println("=".repeat(60))
+                println("Instruction Coverage: %.2f%% (%d/%d)".format(instructionCoverage, instructionCovered, instructionTotal))
+                println("Branch Coverage:      %.2f%% (%d/%d)".format(branchCoverage, branchCovered, branchTotal))
+                println("Line Coverage:        %.2f%% (%d/%d)".format(lineCoverage, lineCovered, lineTotal))
+                println("=".repeat(60))
+                println("📄 HTML Report: file://${layout.buildDirectory.get()}/reports/jacoco/test/html/index.html")
+                println("=".repeat(60) + "\n")
             }
         }
     }
