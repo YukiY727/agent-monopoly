@@ -62,4 +62,37 @@ class PropertyTest : StringSpec({
 
         ownedProperty.isOwned() shouldBe true
     }
+
+    // TC-014: 所有者解除
+    "should remove owner correctly" {
+        val property = Property("Park Place", 37, 350, 35, ColorGroup.DARK_BLUE)
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val ownedProperty = property.withOwner(player)
+
+        val unownedProperty = ownedProperty.withoutOwner()
+
+        unownedProperty.ownership shouldBe PropertyOwnership.Unowned
+        unownedProperty.isOwned() shouldBe false
+    }
+
+    // TC-015: positionValueアクセサー
+    "should expose position as BoardPosition value object" {
+        val property = Property("Mediterranean Avenue", 1, 60, 2, ColorGroup.BROWN)
+
+        property.positionValue shouldBe BoardPosition(1)
+    }
+
+    // TC-016: priceValueアクセサー
+    "should expose price as Money value object" {
+        val property = Property("Mediterranean Avenue", 1, 60, 2, ColorGroup.BROWN)
+
+        property.priceValue shouldBe Money(60)
+    }
+
+    // TC-017: rentValueアクセサー
+    "should expose rent as Money value object" {
+        val property = Property("Mediterranean Avenue", 1, 60, 2, ColorGroup.BROWN)
+
+        property.rentValue shouldBe Money(2)
+    }
 })

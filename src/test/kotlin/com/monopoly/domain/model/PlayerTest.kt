@@ -100,4 +100,126 @@ class PlayerTest : StringSpec({
 
         player.isBankrupt shouldBe true
     }
+
+    // TC-008: Value objectアクセサー - moneyValue
+    "should expose money as Money value object" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.moneyValue shouldBe Money.INITIAL_AMOUNT
+    }
+
+    // TC-009: Value objectアクセサー - positionValue
+    "should expose position as BoardPosition value object" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.positionValue shouldBe BoardPosition.GO
+    }
+
+    // TC-010: receiveMoney
+    "should receive money using Money value object" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.receiveMoney(Money(300))
+
+        player.money shouldBe 1800
+    }
+
+    // TC-011: pay
+    "should pay money using Money value object" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.pay(Money(500))
+
+        player.money shouldBe 1000
+    }
+
+    // TC-012: moveTo
+    "should move to specific position using BoardPosition" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.moveTo(BoardPosition(10))
+
+        player.position shouldBe 10
+    }
+
+    // TC-013: advance
+    "should advance position and receive GO bonus when passing GO" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        player.setPosition(35)
+
+        val passedGo = player.advance(10)
+
+        passedGo shouldBe true
+        player.position shouldBe 5
+        player.money shouldBe 1700 // 1500 + 200
+    }
+
+    // TC-014: advance without passing GO
+    "should advance position without GO bonus when not passing GO" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        val passedGo = player.advance(5)
+
+        passedGo shouldBe false
+        player.position shouldBe 5
+        player.money shouldBe 1500
+    }
+
+    // TC-015: acquireProperty
+    "should acquire property using value object method" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = 2,
+                colorGroup = ColorGroup.BROWN,
+            )
+
+        player.acquireProperty(property)
+
+        player.ownedProperties.size shouldBe 1
+        player.ownedProperties[0] shouldBe property
+    }
+
+    // TC-016: goBankrupt
+    "should go bankrupt and clear properties" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = 2,
+                colorGroup = ColorGroup.BROWN,
+            )
+        player.addProperty(property)
+
+        player.goBankrupt()
+
+        player.isBankrupt shouldBe true
+        player.ownedProperties.size shouldBe 0
+    }
+
+    // TC-017: pay causing bankruptcy
+    "should automatically go bankrupt when payment causes negative balance" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.pay(Money(2000))
+
+        player.isBankrupt shouldBe true
+        player.money shouldBe -500
+    }
+
+    // TC-018: calculateTotalAssets
+    "should calculate total assets using Money value object" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property = Property("Prop1", 1, 200, 10, ColorGroup.BROWN)
+        player.addProperty(property)
+
+        val totalAssets = player.calculateTotalAssets()
+
+        totalAssets shouldBe Money(1700)
+    }
 })

@@ -89,4 +89,76 @@ class GameStateTest : StringSpec({
 
         gameState.getActivePlayerCount() shouldBe 2
     }
+
+    // TC-035: ゲームオーバーフラグの設定
+    "should set game over flag" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        gameState.setGameOver(true)
+
+        gameState.isGameOver() shouldBe true
+    }
+
+    // TC-036: ターン番号の取得
+    "should get turn number" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        gameState.getTurnNumber() shouldBe 0
+    }
+
+    // TC-037: ターン番号の増加
+    "should increment turn number" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        gameState.incrementTurnNumber()
+        gameState.incrementTurnNumber()
+
+        gameState.getTurnNumber() shouldBe 2
+    }
+
+    // TC-038: プレイヤーが1周する
+    "should cycle through all players" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        gameState.nextPlayer()
+        gameState.nextPlayer()
+
+        gameState.getCurrentPlayerIndex() shouldBe 0
+        gameState.getCurrentPlayer() shouldBe player1
+    }
+
+    // TC-039: 最後の1人が残った場合
+    "should handle when only one player is active" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        player2.markAsBankrupt()
+
+        gameState.getActivePlayerCount() shouldBe 1
+    }
+
+    // TC-040: 全プレイヤーが破産していない状態でのアクティブプレイヤー数
+    "should count all players as active when no one is bankrupt" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(listOf(player1, player2, player3), board)
+
+        gameState.getActivePlayerCount() shouldBe 3
+    }
 })
