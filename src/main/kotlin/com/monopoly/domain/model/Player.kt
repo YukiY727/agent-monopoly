@@ -11,6 +11,10 @@ class Player(
     private var _isBankrupt: Boolean = false
     private val _ownedProperties: MutableList<Property> = mutableListOf()
 
+    companion object {
+        private const val MAX_POSITION = 39
+    }
+
     val money: Int
         get() = _money
 
@@ -44,5 +48,10 @@ class Player(
 
     fun markAsBankrupt() {
         _isBankrupt = true
+    }
+
+    fun setPosition(newPosition: Int) {
+        require(newPosition in 0..MAX_POSITION) { "Position must be between 0 and $MAX_POSITION" }
+        _position = newPosition
     }
 }
