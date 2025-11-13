@@ -8,8 +8,8 @@ class PropertyTest : StringSpec({
     // TC-010: Property初期化
     // Given: なし
     // When: 新しいPropertyを作成（名前、位置、価格、レント指定）
-    // Then: フィールドが正しく設定され、ownerがnull
-    "property should be initialized with correct fields and null owner" {
+    // Then: フィールドが正しく設定され、ownershipがUnowned
+    "property should be initialized with correct fields and unowned status" {
         val property =
             Property(
                 name = "Mediterranean Avenue",
@@ -24,24 +24,24 @@ class PropertyTest : StringSpec({
         property.price shouldBe 60
         property.rent shouldBe 2
         property.colorGroup shouldBe ColorGroup.BROWN
-        property.getOwner() shouldBe null
+        property.ownership shouldBe PropertyOwnership.Unowned
     }
 
     // TC-011: 所有者設定
     // Given: 未所有のProperty
     // When: 所有者をPlayerに設定
-    // Then: getOwner()がそのPlayerを返す
+    // Then: ownershipがOwnedByPlayerになる
     "should set owner correctly" {
         val property = Property("Park Place", 37, 350, 35, ColorGroup.DARK_BLUE)
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
 
-        property.setOwner(player)
+        val ownedProperty = property.withOwner(player)
 
-        property.getOwner() shouldBe player
+        ownedProperty.ownership shouldBe PropertyOwnership.OwnedByPlayer(player)
     }
 
     // TC-012: 所有判定（未所有）
-    // Given: owner=nullのProperty
+    // Given: ownershipがUnownedのProperty
     // When: isOwned()
     // Then: false
     "should return false when property is not owned" {
@@ -51,15 +51,15 @@ class PropertyTest : StringSpec({
     }
 
     // TC-013: 所有判定（所有済み）
-    // Given: ownerがPlayerのProperty
+    // Given: ownershipがOwnedByPlayerのProperty
     // When: isOwned()
     // Then: true
     "should return true when property is owned" {
         val property = Property("Boardwalk", 39, 400, 50, ColorGroup.DARK_BLUE)
         val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
 
-        property.setOwner(player)
+        val ownedProperty = property.withOwner(player)
 
-        property.isOwned() shouldBe true
+        ownedProperty.isOwned() shouldBe true
     }
 })

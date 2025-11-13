@@ -1,19 +1,16 @@
 package com.monopoly.domain.model
 
-class Property(
+data class Property(
     val name: String,
     val position: Int,
     val price: Int,
     val rent: Int,
     val colorGroup: ColorGroup,
+    val ownership: PropertyOwnership = PropertyOwnership.Unowned,
 ) {
-    private var owner: Player? = null
+    fun withOwner(newOwner: Player): Property = copy(ownership = PropertyOwnership.OwnedByPlayer(newOwner))
 
-    fun getOwner(): Player? = owner
+    fun withoutOwner(): Property = copy(ownership = PropertyOwnership.Unowned)
 
-    fun setOwner(player: Player?) {
-        owner = player
-    }
-
-    fun isOwned(): Boolean = owner != null
+    fun isOwned(): Boolean = ownership is PropertyOwnership.OwnedByPlayer
 }
