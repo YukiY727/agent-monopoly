@@ -54,7 +54,16 @@
 具象ではなく抽象に依存。テスト可能な設計。
 
 ### 防御的プログラミング
-nullチェック、不変性、コピー。実行時エラーを防ぐ。
+不変性、コピー、型による制約。実行時エラーを防ぐ。
+
+### Null安全性の徹底
+**nullableを極力排除し、型で状態を表現する**
+
+- ❌ `val owner: Player? = null`
+- ✅ `val ownership: PropertyOwnership = PropertyOwnership.Unowned`
+
+sealed classやデフォルト値で状態を明示的に表現。
+nullチェック忘れをコンパイルエラーに。
 
 ---
 

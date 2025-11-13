@@ -25,10 +25,47 @@ com.monopoly
 - **定数**: UPPER_SNAKE_CASE（`MAX_PLAYERS`）
 - **パッケージ**: 小文字のみ（`com.monopoly.domain.model`）
 
-### Null安全性
-- **nullable型は明示的に**: `var owner: Player? = null`
-- **安全な呼び出し演算子**: `player?.getName()`
-- **非null保証は慎重に**: `player!!.getName()`（確実な場合のみ）
+### Null安全性の原則
+
+**基本方針: nullableを極力排除し、型で状態を表現する**
+
+❌ **避けるべき設計**
+```kotlin
+// nullで状態を表現
+class Property(val owner: Player? = null)
+
+// 使用側でnullチェックが必要
+if (property.owner != null) {
+    println(property.owner.name)  // nullチェック必須
+}
+```
+
+✅ **推奨される設計**
+```kotlin
+// sealed classで状態を明示的に表現
+sealed class PropertyOwnership {
+    object Unowned : PropertyOwnership()
+    data class OwnedByPlayer(val player: Player) : PropertyOwnership()
+}
+
+data class Property(
+    val ownership: PropertyOwnership = PropertyOwnership.Unowned
+)
+
+// 使用側は型安全にパターンマッチング
+when (property.ownership) {
+    is PropertyOwnership.OwnedByPlayer ->
+        println(property.ownership.player.name)  // nullチェック不要
+    is PropertyOwnership.Unowned ->
+        println("No owner")
+}
+```
+
+**nullableが許容されるケース**
+- 外部API/DBからの入力で型変換前の一時的な状態
+- Javaライブラリとの相互運用で避けられない場合
+
+これらの場合も、可能な限り早期に非nullな型に変換する。
 
 ### 不変性
 - **値オブジェクト**: `data class`でimmutable
@@ -50,6 +87,79 @@ data class Player(
     var position: Int,
     val ownedProperties: MutableSet<Property> = mutableSetOf()
 )
+```
+
+---
+
+## Null回避のデザインパターン
+
+### パターン1: Sealed Class（状態の明示的表現）
+
+**使用場面**: オブジェクトが複数の排他的な状態を持つ場合
+
+```kotlin
+// 例1: プロパティの所有状態
+sealed class PropertyOwnership {
+    object Unowned : PropertyOwnership()
+    data class OwnedByPlayer(val player: Player) : PropertyOwnership()
+    object OwnedByBank : PropertyOwnership()  // 将来の拡張
+}
+
+// 例2: ゲーム結果
+sealed class GameResult {
+    data class Victory(val winner: Player) : GameResult()
+    object Draw : GameResult()
+    object Cancelled : GameResult()
+}
+```
+
+### パターン2: デフォルト値の活用
+
+**使用場面**: 「空」や「初期状態」が自然に存在する場合
+
+```kotlin
+// ❌ 避けるべき
+data class PlayerStats(
+    val gamesPlayed: Int?,
+    val gamesWon: Int?
+)
+
+// ✅ 推奨
+data class PlayerStats(
+    val gamesPlayed: Int = 0,
+    val gamesWon: Int = 0
+)
+```
+
+### パターン3: Option/Result型（Phase 2以降で検討）
+
+Phase 1では例外方式で十分だが、Phase 2以降で検討:
+
+```kotlin
+// 将来の拡張例
+sealed class Result<out T> {
+    data class Success<T>(val value: T) : Result<T>()
+    data class Failure(val error: String) : Result<Nothing>()
+}
+
+fun findPlayer(name: String): Result<Player>
+```
+
+### パターン4: Empty Object Pattern
+
+**使用場面**: 「何もない」状態を表現したい場合
+
+```kotlin
+// ❌ 避けるべき
+val properties: List<Property>? = null
+
+// ✅ 推奨
+val properties: List<Property> = emptyList()
+
+// カスタムEmpty Object
+object NoStrategy : BuyStrategy {
+    override fun shouldBuy(property: Property, currentMoney: Int) = false
+}
 ```
 
 ---
