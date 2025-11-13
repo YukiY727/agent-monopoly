@@ -164,6 +164,254 @@ object NoStrategy : BuyStrategy {
 
 ---
 
+## オブジェクト指向エクササイズ 9つのルール
+
+### ルール1: 1メソッド1インデント
+
+**制約**: メソッド内のインデントは1段階まで
+
+```kotlin
+// ❌ 避けるべき（インデント2段階）
+fun processPlayers(players: List<Player>) {
+    for (player in players) {
+        if (!player.isBankrupt) {
+            player.takeTurn()
+        }
+    }
+}
+
+// ✅ 推奨（インデント1段階、メソッド抽出）
+fun processPlayers(players: List<Player>) {
+    players.forEach { processPlayer(it) }
+}
+
+private fun processPlayer(player: Player) {
+    if (player.isBankrupt) return
+    player.takeTurn()
+}
+```
+
+### ルール2: else禁止
+
+**制約**: else句を使わず、early returnやポリモーフィズムで代替
+
+```kotlin
+// ❌ 避けるべき
+fun calculateRent(property: Property): Int {
+    if (property.isOwned()) {
+        return property.rent
+    } else {
+        return 0
+    }
+}
+
+// ✅ 推奨（early return）
+fun calculateRent(property: Property): Int {
+    if (!property.isOwned()) return 0
+    return property.rent
+}
+
+// ✅ 推奨（ポリモーフィズム）
+sealed class PropertyState {
+    abstract fun calculateRent(): Int
+
+    object Unowned : PropertyState() {
+        override fun calculateRent() = 0
+    }
+
+    data class Owned(val rent: Int) : PropertyState() {
+        override fun calculateRent() = rent
+    }
+}
+```
+
+### ルール3: プリミティブ型のラップ
+
+**制約**: Int, String等を意味のある型でラップ
+
+```kotlin
+// ❌ 避けるべき
+data class Player(
+    val money: Int,
+    val position: Int
+)
+
+// ✅ 推奨（値オブジェクト）
+@JvmInline
+value class Money(val amount: Int) {
+    operator fun plus(other: Money) = Money(amount + other.amount)
+    operator fun minus(other: Money) = Money(amount - other.amount)
+    fun isEnough(required: Money) = amount >= required.amount
+}
+
+@JvmInline
+value class BoardPosition(val value: Int) {
+    init {
+        require(value in 0..39) { "Position must be 0-39" }
+    }
+
+    fun advance(steps: Int) = BoardPosition((value + steps) % 40)
+}
+
+data class Player(
+    val money: Money,
+    val position: BoardPosition
+)
+```
+
+### ルール4: 1行1ドット
+
+**制約**: メソッドチェーンを避け、中間変数で意図を明確に
+
+```kotlin
+// ❌ 避けるべき
+val totalAssets = player.getOwnedProperties().sumOf { it.getPrice() }
+
+// ✅ 推奨
+val ownedProperties = player.ownedProperties
+val totalAssets = ownedProperties.sumOf { it.price }
+
+// またはメソッドに抽出
+fun Player.calculateTotalAssets(): Money {
+    val propertyValue = ownedProperties.sumOf { it.price }
+    return money.plus(propertyValue)
+}
+```
+
+### ルール5: 省略禁止
+
+**制約**: 変数名・メソッド名を省略しない
+
+```kotlin
+// ❌ 避けるべき
+val p = Player("Alice", strat)
+fun calc(p: Property): Int
+
+// ✅ 推奨
+val player = Player("Alice", strategy)
+fun calculateRent(property: Property): Money
+```
+
+### ルール6: 小さなエンティティ
+
+**制約**: クラスは50行以内、メソッドは10行以内を目安
+
+```kotlin
+// ✅ 推奨（責務を分割）
+class GameTurnExecutor(
+    private val diceRoller: DiceRoller,
+    private val playerMover: PlayerMover,
+    private val spaceProcessor: SpaceProcessor
+) {
+    fun executeTurn(player: Player, gameState: GameState) {
+        val diceResult = diceRoller.roll()
+        val newPosition = playerMover.move(player, diceResult)
+        spaceProcessor.process(player, newPosition, gameState)
+    }
+}
+```
+
+### ルール7: 2インスタンス変数まで
+
+**制約**: 1クラスのインスタンス変数は最大2つ
+
+```kotlin
+// ❌ 避けるべき（3つ以上のフィールド）
+data class Player(
+    val name: String,
+    val money: Money,
+    val position: BoardPosition,
+    val properties: List<Property>
+)
+
+// ✅ 推奨（グルーピング）
+data class PlayerState(
+    val money: Money,
+    val position: BoardPosition
+)
+
+data class Player(
+    val identity: PlayerId,
+    val state: PlayerState
+)
+
+// または振る舞いを中心に
+class Player(
+    val identity: PlayerId,
+    private val assets: PlayerAssets  // money + properties
+)
+```
+
+### ルール8: ファーストクラスコレクション
+
+**制約**: コレクションは専用クラスでラップ
+
+```kotlin
+// ❌ 避けるべき
+class Player(
+    val ownedProperties: MutableList<Property> = mutableListOf()
+)
+
+// ✅ 推奨
+class PropertyCollection(
+    private val properties: List<Property> = emptyList()
+) {
+    fun add(property: Property): PropertyCollection =
+        PropertyCollection(properties + property)
+
+    fun calculateTotalValue(): Money =
+        Money(properties.sumOf { it.price })
+
+    fun contains(property: Property): Boolean =
+        properties.contains(property)
+
+    val size: Int get() = properties.size
+}
+
+class Player(
+    val ownedProperties: PropertyCollection = PropertyCollection()
+)
+```
+
+### ルール9: getter/setter/プロパティ禁止
+
+**制約**: データ取得ではなく、振る舞いを中心に設計
+
+```kotlin
+// ❌ 避けるべき（データ中心）
+class Player {
+    fun getMoney(): Money
+    fun setMoney(money: Money)
+}
+// 使用側でビジネスロジック
+player.setMoney(player.getMoney().minus(price))
+
+// ✅ 推奨（振る舞い中心）
+class Player {
+    fun pay(amount: Money) {
+        require(canAfford(amount)) { "Insufficient funds" }
+        money = money.minus(amount)
+    }
+
+    fun canAfford(amount: Money): Boolean =
+        money.isEnough(amount)
+}
+// 使用側は意図を表現
+player.pay(property.price)
+```
+
+### Phase 1での適用方針
+
+これらのルールは理想形ですが、Phase 1では以下のバランスで適用:
+
+- **厳密に適用**: ルール2(else禁止), ルール5(省略禁止)
+- **可能な範囲で適用**: ルール1, 3, 6, 9
+- **Phase 2以降で検討**: ルール4, 7, 8
+
+TDDのリファクタリングフェーズで段階的に適用していきます。
+
+---
+
 ## テストコード規約
 
 ### テストスタイル
