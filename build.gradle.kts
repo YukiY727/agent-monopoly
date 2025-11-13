@@ -124,15 +124,23 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "INSTRUCTION"
                 value = "COVEREDRATIO"
-                minimum = "0.80".toBigDecimal()
+                minimum = "0.95".toBigDecimal() // Domain layer: 95%以上を目標
             }
         }
         rule {
-            element = "CLASS"
+            element = "BUNDLE"
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.70".toBigDecimal()
+                minimum = "0.90".toBigDecimal() // Branch: 90%以上を目標
+            }
+        }
+        rule {
+            element = "BUNDLE"
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.95".toBigDecimal() // Line: 95%以上を目標
             }
         }
     }
