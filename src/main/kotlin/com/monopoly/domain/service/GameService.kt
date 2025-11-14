@@ -49,30 +49,48 @@ class GameService {
         val space: Space = gameState.board.getSpace(player.position)
 
         when (space) {
-            is Space.PropertySpace -> {
-                val property: Property = gameState.board.getPropertyAt(space.position) ?: return
+            is Space.PropertySpace -> processPropertySpace(player, gameState, space)
+            is Space.Go -> {
+                // GO: Phase 1では何もしない（GOボーナスはadvanceで処理済み）
+            }
+            is Space.Other -> {
+                // その他のマス: Phase 1では何もしない
+            }
+        }
+    }
 
-                when (val ownership: PropertyOwnership = property.ownership) {
-                    is PropertyOwnership.Unowned -> {
-                        // 未所有プロパティ: 購入判定
-                        if (player.strategy.shouldBuy(property, player.money)) {
-                            val ownedProperty: Property = buyProperty(player, property)
-                            gameState.board.updateProperty(ownedProperty)
-                        }
-                    }
-                    is PropertyOwnership.OwnedByPlayer -> {
-                        val owner: Player = ownership.player
-                        // 他人のプロパティ: レント支払い
-                        if (owner != player) {
-                            payRent(player, owner, property.rent)
-                        }
-                        // 自分のプロパティ: 何もしない
-                    }
-                }
-            }
-            else -> {
-                // GO、その他のマス: Phase 1では何もしない
-            }
+    private fun processPropertySpace(
+        player: Player,
+        gameState: GameState,
+        space: Space.PropertySpace,
+    ) {
+        val property: Property = gameState.board.getPropertyAt(space.position) ?: return
+
+        when (val ownership: PropertyOwnership = property.ownership) {
+            is PropertyOwnership.Unowned -> processUnownedProperty(player, gameState, property)
+            is PropertyOwnership.OwnedByPlayer -> processOwnedProperty(player, ownership, property)
+        }
+    }
+
+    private fun processUnownedProperty(
+        player: Player,
+        gameState: GameState,
+        property: Property,
+    ) {
+        if (player.strategy.shouldBuy(property, player.money)) {
+            val ownedProperty: Property = buyProperty(player, property)
+            gameState.board.updateProperty(ownedProperty)
+        }
+    }
+
+    private fun processOwnedProperty(
+        player: Player,
+        ownership: PropertyOwnership.OwnedByPlayer,
+        property: Property,
+    ) {
+        val owner: Player = ownership.player
+        if (owner != player) {
+            payRent(player, owner, property.rent)
         }
     }
 }
