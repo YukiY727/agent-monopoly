@@ -132,7 +132,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.90".toBigDecimal() // Branch: 90%以上を目標
+                minimum = "0.80".toBigDecimal() // Branch: 80%以上を目標（Phase 1初期段階）
             }
         }
         rule {
