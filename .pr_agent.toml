@@ -1,6 +1,7 @@
 [config]
-model = "gpt-4o"
+model = "gemini/gemini-2.0-flash-exp"
 language = "ja"
+fallback_models = ["gemini/gemini-1.5-flash", "gemini/gemini-1.5-pro"]
 
 [pr_description]
 publish_description_as_comment = true

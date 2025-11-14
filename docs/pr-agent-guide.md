@@ -70,7 +70,8 @@ PRの説明を自動生成します。変更内容を分析し、以下を含む
 このプロジェクトでは `.pr_agent.toml` で以下の設定を行っています：
 
 - **言語**: 日本語（`language = "ja"`)
-- **モデル**: GPT-4o
+- **モデル**: Google Gemini 2.0 Flash（無料、高性能）
+- **フォールバックモデル**: Gemini 1.5 Flash, Gemini 1.5 Pro
 - **特別な指示**:
   - オブジェクト指向エクササイズの9つのルールのチェック
   - TDD原則への準拠確認
@@ -101,17 +102,37 @@ PRページのコメント欄で：
 
 PR-Agentを使用するには、リポジトリのSecretsに以下を設定する必要があります：
 
-1. GitHub Settings → Secrets and variables → Actions
-2. `OPENAI_API_KEY` を追加（OpenAIのAPIキー）
+### 1. Google API Keyの取得
+
+1. [Google AI Studio](https://aistudio.google.com/app/apikey) にアクセス
+2. 「Get API Key」または「APIキーを取得」をクリック
+3. 新しいAPIキーを作成（無料で使用可能）
+4. APIキーをコピー
+
+### 2. GitHub Secretsの設定
+
+1. GitHubリポジトリ → Settings → Secrets and variables → Actions
+2. 「New repository secret」をクリック
+3. Name: `GOOGLE_API_KEY`
+4. Secret: 取得したGoogle API Keyを貼り付け
+5. 「Add secret」をクリック
 
 注: `GITHUB_TOKEN` は自動的に提供されるため、設定不要です。
+
+### 料金について
+
+Google Gemini 2.0 Flash は無料で使用できます：
+- 1日あたり1,500リクエストまで無料
+- レート制限: 1分あたり15リクエスト
+- 一般的なPRレビューには十分な容量
 
 ## トラブルシューティング
 
 ### PR-Agentが動作しない
 - PRがドラフト状態でないか確認してください
-- リポジトリのSecretsに `OPENAI_API_KEY` が設定されているか確認してください
+- リポジトリのSecretsに `GOOGLE_API_KEY` が設定されているか確認してください
 - GitHub Actionsのログを確認してください
+- Google API Keyが有効か確認してください（[Google AI Studio](https://aistudio.google.com/app/apikey)で確認可能）
 
 ### レビューコメントが多すぎる
 `.pr_agent.toml` の `num_code_suggestions` を調整してください：
