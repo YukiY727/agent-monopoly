@@ -20,7 +20,7 @@ class GameService {
         property: Property,
     ): Property {
         player.pay(property.priceValue)
-        val ownedProperty = property.withOwner(player)
+        val ownedProperty: Property = property.withOwner(player)
         player.acquireProperty(ownedProperty)
         return ownedProperty
     }
@@ -30,14 +30,14 @@ class GameService {
         receiver: Player,
         rentAmount: Int,
     ) {
-        val amount = Money(rentAmount)
+        val amount: Money = Money(rentAmount)
         payer.pay(amount)
         receiver.receiveMoney(amount)
     }
 
     fun bankruptPlayer(player: Player): List<Property> {
-        val properties = player.ownedProperties.toList()
-        val releasedProperties = properties.map { it.withoutOwner() }
+        val properties: List<Property> = player.ownedProperties.toList()
+        val releasedProperties: List<Property> = properties.map { it.withoutOwner() }
         player.goBankrupt()
         return releasedProperties
     }
@@ -46,22 +46,22 @@ class GameService {
         player: Player,
         gameState: GameState,
     ) {
-        val space = gameState.board.getSpace(player.position)
+        val space: Space = gameState.board.getSpace(player.position)
 
         when (space) {
             is Space.PropertySpace -> {
-                val property = gameState.board.getPropertyAt(space.position) ?: return
+                val property: Property = gameState.board.getPropertyAt(space.position) ?: return
 
-                when (val ownership = property.ownership) {
+                when (val ownership: PropertyOwnership = property.ownership) {
                     is PropertyOwnership.Unowned -> {
                         // 未所有プロパティ: 購入判定
                         if (player.strategy.shouldBuy(property, player.money)) {
-                            val ownedProperty = buyProperty(player, property)
+                            val ownedProperty: Property = buyProperty(player, property)
                             gameState.board.updateProperty(ownedProperty)
                         }
                     }
                     is PropertyOwnership.OwnedByPlayer -> {
-                        val owner = ownership.player
+                        val owner: Player = ownership.player
                         // 他人のプロパティ: レント支払い
                         if (owner != player) {
                             payRent(player, owner, property.rent)
