@@ -36,8 +36,7 @@ class GameState(
         return nextIndex
     }
 
-    private fun shouldSkipPlayer(index: Int): Boolean =
-        players[index].isBankrupt && getActivePlayerCount() > 1
+    private fun shouldSkipPlayer(index: Int): Boolean = players[index].isBankrupt && getActivePlayerCount() > 1
 
     fun getActivePlayerCount(): Int = players.count { !it.isBankrupt }
 }
