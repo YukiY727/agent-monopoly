@@ -16,9 +16,9 @@ class GameStateTest : StringSpec({
 
         val gameState = GameState(listOf(player1, player2), board)
 
-        gameState.getPlayers().size shouldBe 2
-        gameState.getCurrentPlayerIndex() shouldBe 0
-        gameState.isGameOver() shouldBe false
+        gameState.players.size shouldBe 2
+        gameState.currentPlayer shouldBe player1
+        gameState.isGameOver shouldBe false
     }
 
     // TC-031: 現在のプレイヤー取得
@@ -34,13 +34,13 @@ class GameStateTest : StringSpec({
         // 最初のプレイヤーをスキップして次へ
         gameState.nextPlayer()
 
-        gameState.getCurrentPlayer() shouldBe player2
+        gameState.currentPlayer shouldBe player2
     }
 
     // TC-032: 次のプレイヤーに交代
     // Given: GameStateでcurrentPlayerIndex=0、プレイヤー3人
     // When: nextPlayer()
-    // Then: currentPlayerIndexが1
+    // Then: currentPlayerがplayer2
     "should move to next player" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
@@ -50,13 +50,13 @@ class GameStateTest : StringSpec({
 
         gameState.nextPlayer()
 
-        gameState.getCurrentPlayerIndex() shouldBe 1
+        gameState.currentPlayer shouldBe player2
     }
 
     // TC-033: 破産プレイヤーをスキップ
     // Given: GameStateでプレイヤー2が破産、currentPlayerIndex=0
     // When: nextPlayer()
-    // Then: currentPlayerIndexが2（プレイヤー3）
+    // Then: currentPlayerがplayer3
     "should skip bankrupt player" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
@@ -69,8 +69,7 @@ class GameStateTest : StringSpec({
 
         gameState.nextPlayer()
 
-        gameState.getCurrentPlayerIndex() shouldBe 2
-        gameState.getCurrentPlayer() shouldBe player3
+        gameState.currentPlayer shouldBe player3
     }
 
     // TC-034: アクティブプレイヤー数
@@ -97,9 +96,9 @@ class GameStateTest : StringSpec({
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
-        gameState.setGameOver(true)
+        gameState.endGame()
 
-        gameState.isGameOver() shouldBe true
+        gameState.isGameOver shouldBe true
     }
 
     // TC-036: ターン番号の取得
@@ -109,7 +108,7 @@ class GameStateTest : StringSpec({
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
-        gameState.getTurnNumber() shouldBe 0
+        gameState.turnNumber shouldBe 0
     }
 
     // TC-037: ターン番号の増加
@@ -122,7 +121,7 @@ class GameStateTest : StringSpec({
         gameState.incrementTurnNumber()
         gameState.incrementTurnNumber()
 
-        gameState.getTurnNumber() shouldBe 2
+        gameState.turnNumber shouldBe 2
     }
 
     // TC-038: プレイヤーが1周する
@@ -135,8 +134,7 @@ class GameStateTest : StringSpec({
         gameState.nextPlayer()
         gameState.nextPlayer()
 
-        gameState.getCurrentPlayerIndex() shouldBe 0
-        gameState.getCurrentPlayer() shouldBe player1
+        gameState.currentPlayer shouldBe player1
     }
 
     // TC-039: 最後の1人が残った場合

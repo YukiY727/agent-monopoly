@@ -1,41 +1,43 @@
 package com.monopoly.domain.model
 
 class GameState(
-    private val players: List<Player>,
+    val players: List<Player>,
     val board: Board,
 ) {
     private var currentPlayerIndex: Int = 0
     private var gameOver: Boolean = false
-    private var turnNumber: Int = 0
+    var turnNumber: Int = 0
+        private set
 
-    fun getPlayers(): List<Player> = players
+    val currentPlayer: Player
+        get() = players[currentPlayerIndex]
 
-    fun getCurrentPlayerIndex(): Int = currentPlayerIndex
+    val isGameOver: Boolean
+        get() = gameOver
 
-    fun getCurrentPlayer(): Player = players[currentPlayerIndex]
-
-    fun isGameOver(): Boolean = gameOver
-
-    fun setGameOver(value: Boolean) {
-        gameOver = value
+    fun endGame() {
+        gameOver = true
     }
-
-    fun getTurnNumber(): Int = turnNumber
 
     fun incrementTurnNumber() {
         turnNumber++
     }
 
     fun nextPlayer() {
-        var nextIndex = (currentPlayerIndex + 1) % players.size
-
-        // 破産したプレイヤーをスキップ
-        while (players[nextIndex].isBankrupt && getActivePlayerCount() > 1) {
-            nextIndex = (nextIndex + 1) % players.size
-        }
-
+        val nextIndex: Int = findNextActivePlayerIndex()
         currentPlayerIndex = nextIndex
     }
+
+    private fun findNextActivePlayerIndex(): Int {
+        var nextIndex: Int = (currentPlayerIndex + 1) % players.size
+        while (shouldSkipPlayer(nextIndex)) {
+            nextIndex = (nextIndex + 1) % players.size
+        }
+        return nextIndex
+    }
+
+    private fun shouldSkipPlayer(index: Int): Boolean =
+        players[index].isBankrupt && getActivePlayerCount() > 1
 
     fun getActivePlayerCount(): Int = players.count { !it.isBankrupt }
 }

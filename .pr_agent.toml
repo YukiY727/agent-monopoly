@@ -1,0 +1,49 @@
+[config]
+model = "gemini/gemini-2.0-flash-exp"
+language = "ja"
+fallback_models = ["gemini/gemini-1.5-flash", "gemini/gemini-1.5-pro"]
+
+[pr_description]
+publish_description_as_comment = true
+enable_semantic_files_types = true
+final_update_message = true
+enable_pr_type = true
+
+[pr_reviewer]
+require_test_review = true
+require_score_review = true
+require_estimate_effort_to_review = true
+inline_code_comments = true
+persistent_comment = true
+num_code_suggestions = 4
+
+[pr_code_suggestions]
+num_code_suggestions = 4
+auto_review = true
+auto_improve = false
+
+[github]
+publish_inline_comments = true
+publish_review = true
+
+# Kotlinプロジェクト向けの設定
+[pr_reviewer.extra_instructions]
+instructions = """
+このプロジェクトは以下のルールに従っています：
+1. オブジェクト指向エクササイズ9つのルール（1メソッド1インデント、else禁止、プリミティブラップ、1行1ドット、省略禁止、小さなエンティティ、2インスタンス変数まで、ファーストクラスコレクション、getter/setter禁止）
+2. TDD（Red-Green-Refactor）
+3. Null安全性の徹底（nullableを極力排除）
+4. 型アノテーションの明示
+5. 保守性 > パフォーマンス > 開発速度
+
+これらの規約に従っているかチェックしてください。
+"""
+
+[pr_code_suggestions.extra_instructions]
+instructions = """
+改善提案は以下の観点で行ってください：
+- オブジェクト指向エクササイズの9つのルールへの準拠
+- Null安全性の改善
+- 型アノテーションの追加
+- テストコードの改善
+"""
