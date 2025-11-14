@@ -17,9 +17,6 @@
             # Java 21
             jdk21
 
-            # Build tool
-            gradle
-
             # Git
             git
 
@@ -35,8 +32,8 @@
             echo "Java version:"
             java -version
             echo ""
-            echo "Gradle version:"
-            gradle -version
+            echo "Gradle Wrapper version:"
+            ./gradlew --version | head -5
             echo ""
             echo "Ready to start Phase 1 development!"
           '';
