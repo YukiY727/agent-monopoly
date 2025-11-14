@@ -12,7 +12,7 @@ class GameStateTest : StringSpec({
     "game state should be initialized correctly" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
 
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -28,7 +28,7 @@ class GameStateTest : StringSpec({
     "should return current player" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
         // 最初のプレイヤーをスキップして次へ
@@ -45,7 +45,7 @@ class GameStateTest : StringSpec({
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
         gameState.nextPlayer()
@@ -61,7 +61,7 @@ class GameStateTest : StringSpec({
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
         // プレイヤー2を破産させる
@@ -81,7 +81,7 @@ class GameStateTest : StringSpec({
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
         // プレイヤー2を破産させる
@@ -94,7 +94,7 @@ class GameStateTest : StringSpec({
     "should set game over flag" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
         gameState.setGameOver(true)
@@ -106,7 +106,7 @@ class GameStateTest : StringSpec({
     "should get turn number" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
         gameState.getTurnNumber() shouldBe 0
@@ -116,7 +116,7 @@ class GameStateTest : StringSpec({
     "should increment turn number" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
         gameState.incrementTurnNumber()
@@ -129,7 +129,7 @@ class GameStateTest : StringSpec({
     "should cycle through all players" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
         gameState.nextPlayer()
@@ -143,7 +143,7 @@ class GameStateTest : StringSpec({
     "should handle when only one player is active" {
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
         player2.markAsBankrupt()
@@ -156,7 +156,7 @@ class GameStateTest : StringSpec({
         val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
         gameState.getActivePlayerCount() shouldBe 3

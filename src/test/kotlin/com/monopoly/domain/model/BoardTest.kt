@@ -10,7 +10,7 @@ class BoardTest : StringSpec({
     // When: 新しいBoardを作成
     // Then: getSpaceCount()が40
     "board should have 40 spaces" {
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
 
         board.getSpaceCount() shouldBe 40
     }
@@ -20,7 +20,7 @@ class BoardTest : StringSpec({
     // When: getSpace(5)
     // Then: 位置5のSpaceを返す
     "should return space at valid position" {
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
 
         val space = board.getSpace(5)
 
@@ -32,7 +32,7 @@ class BoardTest : StringSpec({
     // When: getSpace(0)
     // Then: SpaceTypeがGO
     "position 0 should be GO space" {
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
 
         val space = board.getSpace(0)
 
@@ -44,7 +44,7 @@ class BoardTest : StringSpec({
     // When: getSpace(-1) または getSpace(40)
     // Then: IllegalArgumentException
     "should throw exception for invalid position" {
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
 
         shouldThrow<IllegalArgumentException> {
             board.getSpace(-1)
