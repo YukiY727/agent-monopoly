@@ -31,4 +31,11 @@ class GameService {
         payer.pay(amount)
         receiver.receiveMoney(amount)
     }
+
+    fun bankruptPlayer(player: Player): List<Property> {
+        val properties = player.ownedProperties.toList()
+        val releasedProperties = properties.map { it.withoutOwner() }
+        player.goBankrupt()
+        return releasedProperties
+    }
 }
