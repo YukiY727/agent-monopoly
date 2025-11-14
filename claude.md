@@ -65,6 +65,14 @@
 sealed classやデフォルト値で状態を明示的に表現。
 nullチェック忘れをコンパイルエラーに。
 
+### 型アノテーションの明示
+**可読性向上のため、val変数には常に型を明示する**
+
+- ❌ `val property = gameState.board.getPropertyAt(position)`
+- ✅ `val property: Property = gameState.board.getPropertyAt(position)`
+
+型推論に頼らず、意図を明確にする。コードを読む人の認知負荷を減らす。
+
 ### オブジェクト指向エクササイズ 9つのルール
 
 コードの質を高めるための制約：
