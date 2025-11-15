@@ -222,4 +222,114 @@ class PlayerTest : StringSpec({
 
         totalAssets shouldBe Money(1700)
     }
+
+    // TC-019: Multiple payments leading to bankruptcy
+    // Given: 所持金$1500のPlayer
+    // When: 複数回の支払いで資金が徐々に減り、最終的に破産
+    // Then: 破産フラグがtrueになる
+    "should go bankrupt after multiple payments exceeding available money" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.pay(Money(800)) // 1500 - 800 = 700
+        player.isBankrupt shouldBe false
+        player.money shouldBe 700
+
+        player.pay(Money(500)) // 700 - 500 = 200
+        player.isBankrupt shouldBe false
+        player.money shouldBe 200
+
+        player.pay(Money(300)) // 200 - 300 = -100
+        player.isBankrupt shouldBe true
+        player.money shouldBe -100
+    }
+
+    // TC-020: Calculate total assets with many properties
+    // Given: 複数のプロパティを所有するPlayer
+    // When: calculateTotalAssets()
+    // Then: 所持金とすべてのプロパティ価値の合計が返される
+    "should calculate total assets correctly with multiple properties" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        player.pay(Money(300)) // 1500 - 300 = 1200
+
+        val property1 = Property("Prop1", 1, 100, 10, ColorGroup.BROWN)
+        val property2 = Property("Prop2", 3, 150, 15, ColorGroup.BROWN)
+        val property3 = Property("Prop3", 5, 200, 20, ColorGroup.LIGHT_BLUE)
+        val property4 = Property("Prop4", 7, 250, 25, ColorGroup.PINK)
+
+        player.acquireProperty(property1)
+        player.acquireProperty(property2)
+        player.acquireProperty(property3)
+        player.acquireProperty(property4)
+
+        // 1200 + 100 + 150 + 200 + 250 = 1900
+        player.calculateTotalAssets() shouldBe Money(1900)
+    }
+
+    // TC-021: Receive money multiple times
+    // Given: 所持金$1500のPlayer
+    // When: 複数回お金を受け取る
+    // Then: 所持金が累積される
+    "should accumulate money when receiving multiple times" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        player.receiveMoney(Money(100))
+        player.money shouldBe 1600
+
+        player.receiveMoney(Money(50))
+        player.money shouldBe 1650
+
+        player.receiveMoney(Money(200))
+        player.money shouldBe 1850
+    }
+
+    // TC-022: Position wrapping on advance
+    // Given: 位置39のPlayer
+    // When: 1マス前進
+    // Then: 位置0（GO）に戻り、GOボーナスを受け取る
+    "should wrap position to 0 and receive GO bonus when advancing from position 39" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        player.setPosition(39)
+
+        val passedGo = player.advance(1)
+
+        passedGo shouldBe true
+        player.position shouldBe 0
+        player.money shouldBe 1700 // 1500 + 200
+    }
+
+    // TC-023: Advance multiple laps
+    // Given: 位置0のPlayer
+    // When: 80マス前進（2周）
+    // Then: 位置0に戻り、GOボーナスを受け取る
+    "should receive GO bonus when advancing multiple laps" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+
+        val passedGo = player.advance(80) // 2 full laps
+
+        passedGo shouldBe true
+        player.position shouldBe 0
+        player.money shouldBe 1700 // 1500 + 200
+    }
+
+    // TC-024: Property ownership after bankruptcy
+    // Given: プロパティを持つPlayer
+    // When: 破産する
+    // Then: すべてのプロパティが失われる
+    "should lose all properties when going bankrupt" {
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property1 = Property("Prop1", 1, 100, 10, ColorGroup.BROWN)
+        val property2 = Property("Prop2", 3, 150, 15, ColorGroup.BROWN)
+        val property3 = Property("Prop3", 5, 200, 20, ColorGroup.LIGHT_BLUE)
+
+        player.acquireProperty(property1)
+        player.acquireProperty(property2)
+        player.acquireProperty(property3)
+
+        player.ownedProperties.size shouldBe 3
+
+        player.goBankrupt()
+
+        player.ownedProperties.size shouldBe 0
+        player.isBankrupt shouldBe true
+    }
 })
