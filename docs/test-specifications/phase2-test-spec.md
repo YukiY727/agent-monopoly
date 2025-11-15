@@ -260,25 +260,9 @@
 
 ---
 
-## 4. Dice（拡張）のテスト
+## 4. ConsoleLoggerのテスト
 
-### 4.1 getLastRoll
-
-#### TC-240: getLastRollが最後のサイコロの目を返す
-- [ ] Given: Dice
-- [ ] When: roll()を実行
-- [ ] Then: getLastRoll()が最後のdie1, die2を返す
-
-#### TC-241: getLastRollが複数回roll後も正しい値を返す
-- [ ] Given: Dice
-- [ ] When: roll()を2回実行
-- [ ] Then: getLastRoll()が2回目のdie1, die2を返す
-
----
-
-## 5. ConsoleLoggerのテスト
-
-### 5.1 イベントのフォーマット
+### 4.1 イベントのフォーマット
 
 #### TC-250: DiceRolledイベントが正しくフォーマットされる
 - [ ] Given: ConsoleLogger、DiceRolledイベント
@@ -432,20 +416,17 @@ Phase 2実装後も、**Phase 1のすべてのテスト（全46テストケー�
 - イベント記録が各メソッドで正しく行われること
 - Phase 1のテストを更新
 
-### ステップ4: Diceのテスト（TC-240 ~ TC-241）
-- getLastRollが正しく機能すること
-
-### ステップ5: ConsoleLoggerのテスト（TC-250 ~ TC-251）
+### ステップ4: ConsoleLoggerのテスト（TC-250 ~ TC-251）
 - イベントが正しくフォーマットされること
 
-### ステップ6: EventLoggerのテスト（TC-260 ~ TC-262）
+### ステップ5: EventLoggerのテスト（TC-260 ~ TC-262）
 - JSON保存/読み込みが正しく機能すること
 
-### ステップ7: HtmlReportGeneratorのテスト（TC-270 ~ TC-273）
+### ステップ6: HtmlReportGeneratorのテスト（TC-270 ~ TC-273）
 - HTML生成が正しく機能すること
 - 手動テストでブラウザ表示を確認
 
-### ステップ8: 統合テスト（TC-300 ~ TC-302）
+### ステップ7: 統合テスト（TC-300 ~ TC-302）
 - ゲーム全体が正しく動作し、ファイル出力されること
 - 手動テストでHTML表示を確認
 
