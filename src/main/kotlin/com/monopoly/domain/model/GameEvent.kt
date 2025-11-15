@@ -15,7 +15,7 @@ sealed class GameEvent {
     data class GameStarted(
         override val turnNumber: Int,
         override val timestamp: Long,
-        val playerNames: List<String>
+        val playerNames: List<String>,
     ) : GameEvent()
 
     /**
@@ -27,7 +27,7 @@ sealed class GameEvent {
         override val turnNumber: Int,
         override val timestamp: Long,
         val winner: String?,
-        val totalTurns: Int
+        val totalTurns: Int,
     ) : GameEvent()
 
     /**
@@ -37,7 +37,7 @@ sealed class GameEvent {
     data class TurnStarted(
         override val turnNumber: Int,
         override val timestamp: Long,
-        val playerName: String
+        val playerName: String,
     ) : GameEvent()
 
     /**
@@ -47,7 +47,7 @@ sealed class GameEvent {
     data class TurnEnded(
         override val turnNumber: Int,
         override val timestamp: Long,
-        val playerName: String
+        val playerName: String,
     ) : GameEvent()
 
     /**
@@ -63,7 +63,7 @@ sealed class GameEvent {
         val playerName: String,
         val die1: Int,
         val die2: Int,
-        val total: Int
+        val total: Int,
     ) : GameEvent()
 
     /**
@@ -79,7 +79,7 @@ sealed class GameEvent {
         val playerName: String,
         val fromPosition: Int,
         val toPosition: Int,
-        val passedGo: Boolean
+        val passedGo: Boolean,
     ) : GameEvent()
 
     /**
@@ -93,7 +93,7 @@ sealed class GameEvent {
         override val timestamp: Long,
         val playerName: String,
         val propertyName: String,
-        val price: Int
+        val price: Int,
     ) : GameEvent()
 
     /**
@@ -109,7 +109,7 @@ sealed class GameEvent {
         val payerName: String,
         val receiverName: String,
         val propertyName: String,
-        val amount: Int
+        val amount: Int,
     ) : GameEvent()
 
     /**
@@ -121,6 +121,6 @@ sealed class GameEvent {
         override val turnNumber: Int,
         override val timestamp: Long,
         val playerName: String,
-        val finalMoney: Int
+        val finalMoney: Int,
     ) : GameEvent()
 }

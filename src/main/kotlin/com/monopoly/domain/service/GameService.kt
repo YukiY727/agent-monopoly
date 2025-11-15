@@ -1,5 +1,6 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Money
@@ -48,7 +49,7 @@ class GameService {
         val fromPosition: Int = player.position
         player.advance(steps)
         val toPosition: Int = player.position
-        val passedGo: Boolean = fromPosition + steps >= 40
+        val passedGo: Boolean = fromPosition + steps >= Board.BOARD_SIZE
 
         gameState.events.add(
             GameEvent.PlayerMoved(
@@ -57,8 +58,8 @@ class GameService {
                 playerName = player.name,
                 fromPosition = fromPosition,
                 toPosition = toPosition,
-                passedGo = passedGo
-            )
+                passedGo = passedGo,
+            ),
         )
     }
 
@@ -85,8 +86,8 @@ class GameService {
                 timestamp = System.currentTimeMillis(),
                 playerName = player.name,
                 propertyName = property.name,
-                price = property.price
-            )
+                price = property.price,
+            ),
         )
 
         return ownedProperty

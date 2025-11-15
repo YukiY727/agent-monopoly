@@ -1,6 +1,5 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
@@ -9,8 +8,8 @@ import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 
+@Suppress("NoUnusedImports") // GameEvent, GameState are used in Phase 2 tests
 class GameServiceMoveTest : StringSpec({
     // TC-101: 通常の移動
     // Given: 位置0のPlayer、GameState

@@ -187,11 +187,12 @@ class GameStateTest : StringSpec({
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
-        val event = GameEvent.GameStarted(
-            turnNumber = 0,
-            timestamp = System.currentTimeMillis(),
-            playerNames = listOf("Alice", "Bob")
-        )
+        val event =
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                timestamp = System.currentTimeMillis(),
+                playerNames = listOf("Alice", "Bob"),
+            )
         gameState.events.add(event)
 
         gameState.events.size shouldBe 1
@@ -208,24 +209,27 @@ class GameStateTest : StringSpec({
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
-        val gameStarted = GameEvent.GameStarted(
-            turnNumber = 0,
-            timestamp = System.currentTimeMillis(),
-            playerNames = listOf("Alice", "Bob")
-        )
-        val turnStarted = GameEvent.TurnStarted(
-            turnNumber = 1,
-            timestamp = System.currentTimeMillis(),
-            playerName = "Alice"
-        )
-        val diceRolled = GameEvent.DiceRolled(
-            turnNumber = 1,
-            timestamp = System.currentTimeMillis(),
-            playerName = "Alice",
-            die1 = 3,
-            die2 = 4,
-            total = 7
-        )
+        val gameStarted =
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                timestamp = System.currentTimeMillis(),
+                playerNames = listOf("Alice", "Bob"),
+            )
+        val turnStarted =
+            GameEvent.TurnStarted(
+                turnNumber = 1,
+                timestamp = System.currentTimeMillis(),
+                playerName = "Alice",
+            )
+        val diceRolled =
+            GameEvent.DiceRolled(
+                turnNumber = 1,
+                timestamp = System.currentTimeMillis(),
+                playerName = "Alice",
+                die1 = 3,
+                die2 = 4,
+                total = 7,
+            )
 
         gameState.events.add(gameStarted)
         gameState.events.add(turnStarted)
