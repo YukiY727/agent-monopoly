@@ -1,17 +1,13 @@
 package com.monopoly.architecture
 
-import com.tngtech.archunit.core.importer.ClassFileImporter
-import com.tngtech.archunit.core.importer.ImportOption
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices
 import io.kotest.core.spec.style.StringSpec
 
 class ArchitectureTest : StringSpec({
-    val classes =
-        ClassFileImporter()
-            .withImportOption(ImportOption.DoNotIncludeTests())
-            .importPackages("com.monopoly")
+    // 共通化されたクラスインポートを使用（初期化コスト削減）
+    val classes = ArchUnitTestBase.classes
 
     // レイヤー依存関係ルール: Clean Architectureの依存方向
     "domain layer should not depend on cli layer" {
