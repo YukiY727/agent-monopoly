@@ -7,7 +7,38 @@ import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.Space
 
+@Suppress("TooManyFunctions") // Phase 1の範囲内では許容
 class GameService {
+    fun checkGameEnd(gameState: GameState): Boolean {
+        val activePlayerCount: Int = gameState.getActivePlayerCount()
+        return activePlayerCount <= 1
+    }
+
+    fun executeTurn(
+        gameState: GameState,
+        dice: com.monopoly.domain.model.Dice,
+    ) {
+        val player: Player = gameState.currentPlayer
+        val roll: Int = dice.roll()
+
+        movePlayer(player, roll)
+        processSpace(player, gameState)
+
+        gameState.incrementTurnNumber()
+        gameState.nextPlayer()
+    }
+
+    fun runGame(
+        gameState: GameState,
+        dice: com.monopoly.domain.model.Dice,
+    ): Player {
+        while (!checkGameEnd(gameState)) {
+            executeTurn(gameState, dice)
+        }
+        gameState.endGame()
+        return gameState.players.first { !it.isBankrupt }
+    }
+
     fun movePlayer(
         player: Player,
         steps: Int,
