@@ -93,6 +93,24 @@ nullチェック忘れをコンパイルエラーに。
 
 型推論に頼らず、意図を明確にする。コードを読む人の認知負荷を減らす。
 
+### デメテルの法則（Law of Demeter）
+**オブジェクトは直接の関係を持つオブジェクトとのみ通信する**
+
+最小知識の原則（Principle of Least Knowledge）とも呼ばれる。
+メソッドが呼び出して良いのは：
+
+- 自分自身のメソッド
+- 引数として渡されたオブジェクトのメソッド
+- 自分が生成したオブジェクトのメソッド
+- 自分のフィールド（インスタンス変数）のメソッド
+
+メソッドチェーンを避け、カプセル化を守る：
+
+- ❌ `player.getPosition().getSpace().applyEffect(player)`
+- ✅ `player.getCurrentSpace().applyEffect(player)` または `gameState.applyCurrentSpaceEffect(player)`
+
+間接的な依存を減らし、結合度を下げることで保守性を向上させる。
+
 ### アーキテクチャのトレードオフ原則
 
 **全てのアーキテクチャはトレードオフである**
