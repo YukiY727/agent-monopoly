@@ -27,20 +27,25 @@ else
     exit 1
 fi
 
-# 1. ktlint (フォーマットチェック)
+# 1. コンパイルチェック（高速）
+echo "🔨 Checking compilation..."
+$GRADLE_CMD compileKotlin compileTestKotlin
+
+# 2. ktlint (フォーマットチェック)
 echo "📝 Checking code format (ktlint)..."
 $GRADLE_CMD ktlintCheck
 
-# 2. detekt (静的解析)
+# 3. detekt (静的解析)
 echo "🔎 Running static analysis (detekt)..."
 $GRADLE_CMD detekt
 
-# 3. テスト実行
-echo "🧪 Running tests..."
-$GRADLE_CMD test
+# 4. テスト実行はCI側で実施（時間短縮のため）
+# echo "🧪 Running tests..."
+# $GRADLE_CMD test
 
-# 4. カバレッジチェック (Phase 1完了後に有効化)
+# 5. カバレッジチェック (Phase 1完了後に有効化)
 # echo "📊 Checking test coverage..."
 # $GRADLE_CMD jacocoTestCoverageVerification
 
 echo "✅ All pre-commit checks passed!"
+echo "ℹ️  Full test suite will run in CI"
