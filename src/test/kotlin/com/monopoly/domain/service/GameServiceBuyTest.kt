@@ -1,12 +1,16 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.ColorGroup
+import com.monopoly.domain.model.GameEvent
+import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 class GameServiceBuyTest : StringSpec({
     // TC-110: 購入成功
@@ -82,5 +86,38 @@ class GameServiceBuyTest : StringSpec({
         // Then
         player.ownedProperties.size shouldBe 1
         player.ownedProperties[0].name shouldBe "Boardwalk"
+    }
+
+    // Phase 2: イベント記録のテスト
+
+    // TC-232: buyProperty実行後、PropertyPurchasedイベントが記録される
+    // Given: 所持金$1500のPlayer、価格$200のProperty、GameState
+    // When: buyProperty(player, property, gameState)
+    // Then: gameState.eventsにPropertyPurchasedイベントが追加されている、priceが200
+    "should record PropertyPurchased event when buying property" {
+        // Given
+        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 200,
+                rent = 10,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val board = BoardFixtures.createStandardBoard()
+        val gameState = GameState(listOf(player), board)
+        val gameService = GameService()
+
+        // When
+        gameService.buyProperty(player, property, gameState)
+
+        // Then
+        player.money shouldBe 1300
+        val purchaseEvent = gameState.events.filterIsInstance<GameEvent.PropertyPurchased>().firstOrNull()
+        purchaseEvent shouldNotBe null
+        purchaseEvent?.playerName shouldBe "Alice"
+        purchaseEvent?.propertyName shouldBe "Mediterranean Avenue"
+        purchaseEvent?.price shouldBe 200
     }
 })

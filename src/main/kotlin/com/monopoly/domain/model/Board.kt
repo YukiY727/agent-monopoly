@@ -1,6 +1,5 @@
 package com.monopoly.domain.model
 
-@Suppress("MagicNumber") // ボードは常に40マス
 class Board(
     spaces: List<Space>,
 ) {
@@ -8,7 +7,7 @@ class Board(
     private val propertyMap: MutableMap<Int, Property> = mutableMapOf()
 
     init {
-        require(spaces.size == 40) { "Board must have exactly 40 spaces" }
+        require(spaces.size == BOARD_SIZE) { "Board must have exactly $BOARD_SIZE spaces" }
 
         // プロパティマップを初期化
         spaces.forEach { space ->
@@ -21,7 +20,7 @@ class Board(
     fun getSpaceCount(): Int = spaces.size
 
     fun getSpace(position: Int): Space {
-        require(position in 0..39) { "Position must be between 0 and 39" }
+        require(position in 0 until BOARD_SIZE) { "Position must be between 0 and ${BOARD_SIZE - 1}" }
         return spaces[position]
     }
 
@@ -29,5 +28,9 @@ class Board(
 
     fun updateProperty(property: Property) {
         propertyMap[property.position] = property
+    }
+
+    companion object {
+        const val BOARD_SIZE: Int = 40
     }
 }
