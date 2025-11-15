@@ -7,6 +7,7 @@ import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.Space
 
+@Suppress("TooManyFunctions") // Phase 1の範囲内では許容
 class GameService {
     fun checkGameEnd(gameState: GameState): Boolean {
         val activePlayerCount: Int = gameState.getActivePlayerCount()

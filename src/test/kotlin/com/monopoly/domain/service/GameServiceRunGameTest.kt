@@ -1,13 +1,12 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
@@ -22,10 +21,11 @@ class GameServiceRunGameTest : StringSpec({
     "should run game until completion and return winner" {
         val player1 = Player("Alice", AlwaysBuyStrategy())
         val player2 = Player("Bob", AlwaysBuyStrategy())
-        val gameState = GameState(
-            players = listOf(player1, player2),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val dice = Dice(Random(42))
         val winner = gameService.runGame(gameState, dice)
@@ -43,10 +43,11 @@ class GameServiceRunGameTest : StringSpec({
     "should return winner who is not bankrupt" {
         val player1 = Player("Alice", AlwaysBuyStrategy())
         val player2 = Player("Bob", AlwaysBuyStrategy())
-        val gameState = GameState(
-            players = listOf(player1, player2),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val dice = Dice(Random(123))
         val winner = gameService.runGame(gameState, dice)
@@ -65,10 +66,11 @@ class GameServiceRunGameTest : StringSpec({
         for (seed in listOf(100L, 200L, 300L, 400L, 500L)) {
             val player1 = Player("Alice", AlwaysBuyStrategy())
             val player2 = Player("Bob", AlwaysBuyStrategy())
-            val gameState = GameState(
-                players = listOf(player1, player2),
-                board = Board(),
-            )
+            val gameState =
+                GameState(
+                    players = listOf(player1, player2),
+                    board = BoardFixtures.createStandardBoard(),
+                )
 
             val dice = Dice(Random(seed))
             val winner = gameService.runGame(gameState, dice)

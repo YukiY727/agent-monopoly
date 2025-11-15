@@ -1,6 +1,6 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
@@ -20,10 +20,11 @@ class GameServiceTurnTest : StringSpec({
     "should execute one turn with dice roll, movement, space processing, and turn increment" {
         val player1 = Player("Alice", AlwaysBuyStrategy())
         val player2 = Player("Bob", AlwaysBuyStrategy())
-        val gameState = GameState(
-            players = listOf(player1, player2),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val initialTurnNumber = gameState.turnNumber
         val initialPosition = player1.position
@@ -44,10 +45,11 @@ class GameServiceTurnTest : StringSpec({
     "should switch to next player after turn execution" {
         val player1 = Player("Alice", AlwaysBuyStrategy())
         val player2 = Player("Bob", AlwaysBuyStrategy())
-        val gameState = GameState(
-            players = listOf(player1, player2),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val initialPlayer = gameState.currentPlayer
         initialPlayer shouldBe player1

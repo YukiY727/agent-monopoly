@@ -1,6 +1,6 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
@@ -22,10 +22,11 @@ class GameServiceGameEndTest : StringSpec({
         player2.markAsBankrupt()
         player3.markAsBankrupt()
 
-        val gameState = GameState(
-            players = listOf(player1, player2, player3),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2, player3),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val result = gameService.checkGameEnd(gameState)
 
@@ -43,10 +44,11 @@ class GameServiceGameEndTest : StringSpec({
 
         player2.markAsBankrupt()
 
-        val gameState = GameState(
-            players = listOf(player1, player2, player3),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2, player3),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val result = gameService.checkGameEnd(gameState)
 

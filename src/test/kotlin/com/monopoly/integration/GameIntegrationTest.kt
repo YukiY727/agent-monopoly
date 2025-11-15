@@ -1,6 +1,6 @@
 package com.monopoly.integration
 
-import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
@@ -22,11 +22,12 @@ class GameIntegrationTest : StringSpec({
     "should run complete game with 2 players and determine winner" {
         val player1 = Player("Alice", AlwaysBuyStrategy())
         val player2 = Player("Bob", AlwaysBuyStrategy())
-        val board = Board()
-        val gameState = GameState(
-            players = listOf(player1, player2),
-            board = board,
-        )
+        val board = BoardFixtures.createStandardBoard()
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = board,
+            )
 
         val dice = Dice(Random(42))
         val winner = gameService.runGame(gameState, dice)
@@ -46,10 +47,11 @@ class GameIntegrationTest : StringSpec({
     "should return valid winner who is not bankrupt and is an active player" {
         val player1 = Player("Alice", AlwaysBuyStrategy())
         val player2 = Player("Bob", AlwaysBuyStrategy())
-        val gameState = GameState(
-            players = listOf(player1, player2),
-            board = Board(),
-        )
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
 
         val dice = Dice(Random(123))
         val winner = gameService.runGame(gameState, dice)
@@ -73,10 +75,11 @@ class GameIntegrationTest : StringSpec({
         for (seed in listOf(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L)) {
             val player1 = Player("Alice", AlwaysBuyStrategy())
             val player2 = Player("Bob", AlwaysBuyStrategy())
-            val gameState = GameState(
-                players = listOf(player1, player2),
-                board = Board(),
-            )
+            val gameState =
+                GameState(
+                    players = listOf(player1, player2),
+                    board = BoardFixtures.createStandardBoard(),
+                )
 
             val dice = Dice(Random(seed))
             val winner = gameService.runGame(gameState, dice)
