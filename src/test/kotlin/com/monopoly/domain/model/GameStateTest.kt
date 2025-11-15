@@ -159,4 +159,81 @@ class GameStateTest : StringSpec({
 
         gameState.getActivePlayerCount() shouldBe 3
     }
+
+    // Phase 2: イベントログ機能のテスト
+
+    // TC-220: eventsフィールドが初期化される
+    // Given: なし
+    // When: GameStateを作成（デフォルト引数）
+    // Then: events.size()が0、eventsがMutableList
+    "events field should be initialized as empty mutable list" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = BoardFixtures.createStandardBoard()
+
+        val gameState = GameState(listOf(player1, player2), board)
+
+        gameState.events.size shouldBe 0
+        gameState.events::class.simpleName shouldBe "ArrayList"
+    }
+
+    // TC-221: イベントを追加できる
+    // Given: GameState
+    // When: events.add(GameStarted(...))
+    // Then: events.size()が1、eventsにGameStartedが含まれる
+    "should be able to add event" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = BoardFixtures.createStandardBoard()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        val event = GameEvent.GameStarted(
+            turnNumber = 0,
+            timestamp = System.currentTimeMillis(),
+            playerNames = listOf("Alice", "Bob")
+        )
+        gameState.events.add(event)
+
+        gameState.events.size shouldBe 1
+        gameState.events[0] shouldBe event
+    }
+
+    // TC-222: イベントが追加順に記録される
+    // Given: GameState
+    // When: events.add(GameStarted(...))、events.add(TurnStarted(...))、events.add(DiceRolled(...))
+    // Then: events[0]がGameStarted、events[1]がTurnStarted、events[2]がDiceRolled
+    "events should be recorded in order" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = BoardFixtures.createStandardBoard()
+        val gameState = GameState(listOf(player1, player2), board)
+
+        val gameStarted = GameEvent.GameStarted(
+            turnNumber = 0,
+            timestamp = System.currentTimeMillis(),
+            playerNames = listOf("Alice", "Bob")
+        )
+        val turnStarted = GameEvent.TurnStarted(
+            turnNumber = 1,
+            timestamp = System.currentTimeMillis(),
+            playerName = "Alice"
+        )
+        val diceRolled = GameEvent.DiceRolled(
+            turnNumber = 1,
+            timestamp = System.currentTimeMillis(),
+            playerName = "Alice",
+            die1 = 3,
+            die2 = 4,
+            total = 7
+        )
+
+        gameState.events.add(gameStarted)
+        gameState.events.add(turnStarted)
+        gameState.events.add(diceRolled)
+
+        gameState.events.size shouldBe 3
+        gameState.events[0] shouldBe gameStarted
+        gameState.events[1] shouldBe turnStarted
+        gameState.events[2] shouldBe diceRolled
+    }
 })
