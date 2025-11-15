@@ -18,7 +18,9 @@
 
 ---
 
-## Phase 2で追加するパッケージ構造
+## Phase 2で追加するパッケージ構造（暫定版）
+
+**重要**: このパッケージ構造は**暫定版**です。Phase 2実装中に最適な配置を見つけ、柔軟に変更します。
 
 ```
 com.monopoly
@@ -31,15 +33,29 @@ com.monopoly
 │   │   └── (新規) EventRecorder
 │   └── strategy
 │       └── (既存) Strategy, AlwaysBuyStrategy
-├── infrastructure       # 新規パッケージ
-│   ├── logging
+├── infrastructure       # 新規パッケージ（暫定）
+│   ├── logging          # または output/presentation
 │   │   ├── ConsoleLogger
 │   │   └── EventLogger
-│   └── reporting
+│   └── reporting        # 配置は実装中に再検討
 │       └── HtmlReportGenerator
 └── cli
     └── (既存・改修) MonopolyGame
 ```
+
+### パッケージ配置の判断基準（実装しながら決定）
+
+**HtmlReportGeneratorの配置について**:
+- 現時点では`infrastructure.reporting`に配置
+- 実装中に以下の選択肢を検討：
+  1. **infrastructure.output**: レポート生成を出力処理として扱う
+  2. **presentation.html**: CLI/HTMLを表示層として分離
+  3. **application.reporting**: レポート生成をユースケース層として扱う
+
+**判断タイミング**:
+- Phase 2実装中に、HtmlReportGeneratorとConsoleLoggerの関連性を評価
+- 責務の境界が明確になった時点で、最適なパッケージ構造にリファクタリング
+- **実装してみないと最適解は分からない**ため、柔軟に対応
 
 ---
 

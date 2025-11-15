@@ -119,7 +119,9 @@ Phase 2では新たに`infrastructure`パッケージを導入します。
 
 ---
 
-## パッケージ構成（Phase 2拡張版）
+## パッケージ構成（Phase 2拡張版・暫定）
+
+**注意**: このパッケージ構成は**暫定版**です。Phase 2実装中に最適な配置を見つけ、柔軟に変更します。
 
 ```
 com.monopoly
@@ -137,15 +139,32 @@ com.monopoly
 │   └── strategy
 │       ├── Strategy         (Phase 1)
 │       └── AlwaysBuyStrategy (Phase 1)
-├── infrastructure           (Phase 2 新規パッケージ)
-│   ├── logging
+├── infrastructure           (Phase 2 新規パッケージ・暫定)
+│   ├── logging              (実装中に output/presentation などに変更の可能性)
 │   │   ├── ConsoleLogger    (Phase 2 新規)
 │   │   └── EventLogger      (Phase 2 新規)
-│   └── reporting
+│   └── reporting            (配置は実装中に再検討)
 │       └── HtmlReportGenerator (Phase 2 新規)
 └── cli
     └── MonopolyGame         (Phase 1 → 拡張)
 ```
+
+### パッケージ配置の再検討ポイント
+
+Phase 2実装中に以下を検討します：
+
+1. **HtmlReportGeneratorの配置**
+   - 現在: `infrastructure.reporting`（暫定）
+   - 候補: `infrastructure.output`, `presentation.html`, `application.reporting`
+   - 判断: ConsoleLoggerとの関連性、責務の境界を見極めて決定
+
+2. **ConsoleLoggerとの統一**
+   - 両方とも「出力・表示」の責務
+   - 同じパッケージにまとめる可能性あり
+
+3. **実装しながら決定**
+   - **実装してみないと最適解は分からない**
+   - 違和感があれば積極的にリファクタリング
 
 ---
 

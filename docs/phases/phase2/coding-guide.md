@@ -187,6 +187,58 @@ gameState.events.add(event)
 
 ---
 
+### 5. パッケージ構成の柔軟性
+
+**重要**: Phase 2のパッケージ構成は**暫定版**です。実装しながら最適な配置を見つけます。
+
+#### 初期配置（暫定）
+```
+com.monopoly
+├── domain
+├── infrastructure
+│   ├── logging (ConsoleLogger, EventLogger)
+│   └── reporting (HtmlReportGenerator)
+└── cli
+```
+
+#### 実装中の判断ポイント
+
+**HtmlReportGeneratorの配置**:
+- 現時点では`infrastructure.reporting`に配置
+- 実装中に以下を検討：
+  1. `infrastructure.output`に変更（出力処理として統一）
+  2. `presentation.html`に移動（表示層として分離）
+  3. `application.reporting`に移動（ユースケース層として扱う）
+
+**判断タイミング**:
+- HtmlReportGeneratorとConsoleLoggerの実装が進んだ時点
+- 責務の境界が明確になったら、適切にリファクタリング
+- **実装してみないと最適解は分からない**
+
+#### リファクタリングの自由度
+
+Phase 2実装中に以下を積極的に行います：
+
+- ✅ パッケージ名の変更（`reporting` → `output`など）
+- ✅ パッケージ構造の再編成（`presentation`層の導入など）
+- ✅ クラスの移動（ConsoleLoggerとHtmlReportGeneratorを同じ層に配置など）
+- ✅ テストコードのパッケージも併せて更新
+
+**例: リファクタリング後の構成**
+```kotlin
+// 初期: infrastructure.reporting.HtmlReportGenerator
+package com.monopoly.infrastructure.reporting
+
+// リファクタリング後: presentation.html.HtmlReportGenerator
+package com.monopoly.presentation.html
+
+// テストコードも追従
+// test/.../infrastructure/reporting/HtmlReportGeneratorTest.kt
+// → test/.../presentation/html/HtmlReportGeneratorTest.kt
+```
+
+---
+
 ## Phase 2で追加する規約
 
 ### イベント記録の一貫性
