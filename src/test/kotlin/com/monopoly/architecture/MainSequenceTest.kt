@@ -1,8 +1,6 @@
 package com.monopoly.architecture
 
 import com.tngtech.archunit.core.domain.JavaClasses
-import com.tngtech.archunit.core.importer.ClassFileImporter
-import com.tngtech.archunit.core.importer.ImportOption
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeLessThan
 import kotlin.math.abs
@@ -19,10 +17,8 @@ import kotlin.math.abs
  * D値が0に近いほど良い設計。0.3以下が望ましい。
  */
 class MainSequenceTest : StringSpec({
-    val classes: JavaClasses =
-        ClassFileImporter()
-            .withImportOption(ImportOption.DoNotIncludeTests())
-            .importPackages("com.monopoly")
+    // 共通化されたクラスインポートを使用（初期化コスト削減）
+    val classes: JavaClasses = ArchUnitTestBase.classes
 
     "domain.model package should be close to main sequence" {
         val modelPackage = "com.monopoly.domain.model"
