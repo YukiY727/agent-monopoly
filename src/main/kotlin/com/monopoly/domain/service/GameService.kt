@@ -208,7 +208,18 @@ class GameService {
         gameState: GameState,
         property: Property,
     ) {
-        if (player.strategy.shouldBuy(property, player.money)) {
+        // BuyDecisionContextを作成
+        val context = com.monopoly.domain.strategy.BuyDecisionContext(
+            property = property,
+            playerMoney = player.money,
+            ownedProperties = player.properties,
+            board = gameState.board,
+            allPlayers = gameState.players,
+            currentTurn = gameState.turnNumber,
+        )
+
+        // 戦略による購入判断（新しいコンテキスト版メソッドを呼ぶ）
+        if (player.strategy.shouldBuy(context)) {
             val ownedProperty: Property = buyProperty(player, property, gameState)
             gameState.board.updateProperty(ownedProperty)
         }

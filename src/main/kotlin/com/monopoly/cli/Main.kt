@@ -9,10 +9,8 @@ import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.Space
 import com.monopoly.domain.model.SpaceType
 import com.monopoly.domain.service.GameService
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import com.monopoly.domain.strategy.BuyStrategy
-import com.monopoly.domain.strategy.ConservativeStrategy
-import com.monopoly.domain.strategy.RandomStrategy
+import com.monopoly.domain.strategy.StrategyRegistry
 import com.monopoly.export.CsvExporter
 import com.monopoly.export.JsonExporter
 import com.monopoly.simulation.GameRunner
@@ -75,18 +73,23 @@ data class GameConfig(
     val sequential: Boolean = false,
 )
 
-fun createStrategy(strategyName: String): BuyStrategy =
-    when (strategyName.lowercase()) {
-        "always-buy" -> AlwaysBuyStrategy()
-        "random" -> RandomStrategy()
-        "conservative" -> ConservativeStrategy()
-        else -> {
-            println("Error: Unknown strategy '$strategyName'")
-            println("Available strategies: always-buy, random, conservative")
-            println("Use --help for more information")
-            exitProcess(1)
-        }
+fun createStrategy(strategyName: String): BuyStrategy {
+    val strategy = StrategyRegistry.getStrategy(strategyName)
+    if (strategy != null) {
+        return strategy
     }
+
+    println("Error: Unknown strategy '$strategyName'")
+    println()
+    println("Available strategies:")
+    StrategyRegistry.listAll().forEach { metadata ->
+        println("  ${metadata.id.padEnd(15)} - ${metadata.description}")
+    }
+    println()
+    println("Use --list-strategies for detailed information")
+    println("Use --strategy-info <id> for strategy details")
+    exitProcess(1)
+}
 
 fun parseArgs(args: Array<String>): GameConfig {
     if (args.contains("--help")) {
@@ -208,6 +211,48 @@ fun printHelp() {
 
 @Suppress("MagicNumber")
 fun main(args: Array<String>) = runBlocking {
+    // --list-strategies オプション
+    if (args.contains("--list-strategies")) {
+        println("Available Strategies:")
+        println()
+        StrategyRegistry.listAll().forEachIndexed { index, metadata ->
+            println("${(index + 1).toString().padStart(2)}. ${metadata.id.padEnd(15)} - ${metadata.displayName}")
+            println("    ${metadata.description}")
+            println()
+        }
+        println("Use --strategy-info <id> for detailed information about a specific strategy")
+        exitProcess(0)
+    }
+
+    // --strategy-info <id> オプション
+    val strategyInfoIndex = args.indexOf("--strategy-info")
+    if (strategyInfoIndex != -1 && strategyInfoIndex + 1 < args.size) {
+        val strategyId = args[strategyInfoIndex + 1]
+        val metadata = StrategyRegistry.getMetadata(strategyId)
+        if (metadata != null) {
+            println("Strategy: ${metadata.displayName} (${metadata.id})")
+            println("=" .repeat(60))
+            println()
+            println("Description:")
+            println("  ${metadata.description}")
+            println()
+            println("Details:")
+            metadata.details.lines().forEach { line ->
+                println("  $line")
+            }
+        } else {
+            println("Error: Strategy '$strategyId' not found.")
+            println()
+            println("Available strategies:")
+            StrategyRegistry.listAll().forEach {
+                println("  - ${it.id}")
+            }
+            println()
+            println("Use --list-strategies for more information")
+        }
+        exitProcess(0)
+    }
+
     val config: GameConfig = parseArgs(args)
 
     if (config.numberOfGames == 1) {
