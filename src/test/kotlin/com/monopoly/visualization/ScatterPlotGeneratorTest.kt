@@ -14,10 +14,10 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Test Scatter",
-                        xLabel = "X Axis",
-                        yLabel = "Y Axis",
+                        xAxisLabel = "X Axis",
+                        yAxisLabel = "Y Axis",
                         points = listOf(
-                            ScatterPlotData.Point(x = 1.0, y = 2.0, label = "A", color = "#ff0000")
+                            ScatterPlotData.Point(label = "A", x = 1.0, y = 2.0, color = "#ff0000")
                         )
                     )
 
@@ -35,8 +35,8 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Win Rate vs Assets",
-                        xLabel = "Win Rate",
-                        yLabel = "Assets",
+                        xAxisLabel = "Win Rate",
+                        yAxisLabel = "Assets",
                         points = emptyList()
                     )
 
@@ -53,8 +53,8 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Test",
-                        xLabel = "X Label",
-                        yLabel = "Y Label",
+                        xAxisLabel = "X Label",
+                        yAxisLabel = "Y Label",
                         points = emptyList()
                     )
 
@@ -72,11 +72,11 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Test",
-                        xLabel = "X",
-                        yLabel = "Y",
+                        xAxisLabel = "X",
+                        yAxisLabel = "Y",
                         points = listOf(
-                            ScatterPlotData.Point(x = 0.5, y = 0.8, label = "A", color = "#ff0000"),
-                            ScatterPlotData.Point(x = 0.7, y = 0.6, label = "B", color = "#00ff00")
+                            ScatterPlotData.Point(label = "A", x = 0.5, y = 0.8, color = "#ff0000"),
+                            ScatterPlotData.Point(label = "B", x = 0.7, y = 0.6, color = "#00ff00")
                         )
                     )
 
@@ -95,11 +95,11 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Test",
-                        xLabel = "X",
-                        yLabel = "Y",
+                        xAxisLabel = "X",
+                        yAxisLabel = "Y",
                         points = listOf(
-                            ScatterPlotData.Point(x = 0.5, y = 0.8, label = "Strategy A", color = "#ff0000"),
-                            ScatterPlotData.Point(x = 0.7, y = 0.6, label = "Strategy B", color = "#00ff00")
+                            ScatterPlotData.Point(label = "Strategy A", x = 0.5, y = 0.8, color = "#ff0000"),
+                            ScatterPlotData.Point(label = "Strategy B", x = 0.7, y = 0.6, color = "#00ff00")
                         )
                     )
 
@@ -117,8 +117,8 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Test",
-                        xLabel = "X",
-                        yLabel = "Y",
+                        xAxisLabel = "X",
+                        yAxisLabel = "Y",
                         points = emptyList()
                     )
 
@@ -135,8 +135,8 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val data = ScatterPlotData(
                         title = "Empty",
-                        xLabel = "X",
-                        yLabel = "Y",
+                        xAxisLabel = "X",
+                        yAxisLabel = "Y",
                         points = emptyList()
                     )
 
@@ -151,16 +151,16 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Arrange
                     val points = (1..10).map { i ->
                         ScatterPlotData.Point(
+                            label = "Point $i",
                             x = i * 0.1,
                             y = i * 0.1,
-                            label = "Point $i",
                             color = "#000000"
                         )
                     }
                     val data = ScatterPlotData(
                         title = "Many Points",
-                        xLabel = "X",
-                        yLabel = "Y",
+                        xAxisLabel = "X",
+                        yAxisLabel = "Y",
                         points = points
                     )
 

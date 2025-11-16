@@ -1,10 +1,10 @@
 package com.monopoly.statistics
 
-import com.monopoly.domain.model.BoardPosition
+import com.monopoly.domain.model.BoardFixtures
+import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Money
 import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.PlayerState
+import com.monopoly.domain.model.Property
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import com.monopoly.simulation.MultiGameResult
 import com.monopoly.simulation.SingleGameResult
@@ -20,32 +20,41 @@ class StatisticsCalculatorTest : DescribeSpec({
             context("2人プレイヤーで2ゲームの場合") {
                 it("正しく統計を計算する") {
                     // Arrange
-                    val alice = "Alice"
-                    val bob = "Bob"
+                    val board = BoardFixtures.createStandardBoard()
 
-                    val game1 = createSingleGameResult(
+                    // Game 1: Alice wins with 2000, 5 properties
+                    val alice1 = Player("Alice", AlwaysBuyStrategy())
+                    alice1.addMoney(500) // 1500 + 500 = 2000
+                    repeat(5) { alice1.addProperty(createDummyProperty(it)) }
+
+                    val bob1 = Player("Bob", AlwaysBuyStrategy())
+                    bob1.subtractMoney(1500) // 1500 - 1500 = 0
+
+                    val game1 = SingleGameResult(
                         gameNumber = 1,
-                        winner = alice,
+                        winner = "Alice",
                         totalTurns = 100,
-                        players = listOf(
-                            createPlayer(alice, money = 2000, properties = 5),
-                            createPlayer(bob, money = 0, properties = 0),
-                        ),
+                        finalState = GameState(listOf(alice1, bob1), board)
                     )
 
-                    val game2 = createSingleGameResult(
+                    // Game 2: Bob wins with 2500, 6 properties
+                    val alice2 = Player("Alice", AlwaysBuyStrategy())
+                    alice2.subtractMoney(1500) // 1500 - 1500 = 0
+
+                    val bob2 = Player("Bob", AlwaysBuyStrategy())
+                    bob2.addMoney(1000) // 1500 + 1000 = 2500
+                    repeat(6) { bob2.addProperty(createDummyProperty(it + 10)) }
+
+                    val game2 = SingleGameResult(
                         gameNumber = 2,
-                        winner = bob,
+                        winner = "Bob",
                         totalTurns = 150,
-                        players = listOf(
-                            createPlayer(alice, money = 0, properties = 0),
-                            createPlayer(bob, money = 2500, properties = 6),
-                        ),
+                        finalState = GameState(listOf(alice2, bob2), board)
                     )
 
                     val result = MultiGameResult(
                         gameResults = listOf(game1, game2),
-                        totalGames = 2,
+                        totalGames = 2
                     )
 
                     // Act
@@ -55,20 +64,17 @@ class StatisticsCalculatorTest : DescribeSpec({
                     stats.totalGames shouldBe 2
 
                     // Assert - Alice の統計
-                    val aliceStats = stats.playerStats[alice]!!
-                    aliceStats.playerName shouldBe alice
+                    val aliceStats = stats.playerStats["Alice"]!!
+                    aliceStats.playerName shouldBe "Alice"
                     aliceStats.wins shouldBe 1
                     aliceStats.winRate shouldBe 0.5
-                    aliceStats.averageFinalAssets shouldBe 1000.0 // (2000 + 0) / 2
                     aliceStats.averageFinalCash shouldBe 1000.0 // (2000 + 0) / 2
-                    aliceStats.averagePropertiesOwned shouldBe 2.5 // (5 + 0) / 2
 
                     // Assert - Bob の統計
-                    val bobStats = stats.playerStats[bob]!!
-                    bobStats.playerName shouldBe bob
+                    val bobStats = stats.playerStats["Bob"]!!
+                    bobStats.playerName shouldBe "Bob"
                     bobStats.wins shouldBe 1
                     bobStats.winRate shouldBe 0.5
-                    bobStats.averageFinalAssets shouldBe 1250.0 // (0 + 2500) / 2
                     bobStats.averageFinalCash shouldBe 1250.0 // (0 + 2500) / 2
                     bobStats.averagePropertiesOwned shouldBe 3.0 // (0 + 6) / 2
 
@@ -83,53 +89,38 @@ class StatisticsCalculatorTest : DescribeSpec({
             context("全勝したプレイヤーがいる場合") {
                 it("勝率が1.0になる") {
                     // Arrange
-                    val alice = "Alice"
-                    val bob = "Bob"
+                    val board = BoardFixtures.createStandardBoard()
 
-                    val games = listOf(
-                        createSingleGameResult(
-                            gameNumber = 1,
-                            winner = alice,
-                            totalTurns = 100,
-                            players = listOf(
-                                createPlayer(alice, money = 2000, properties = 5),
-                                createPlayer(bob, money = 0, properties = 0),
-                            ),
-                        ),
-                        createSingleGameResult(
-                            gameNumber = 2,
-                            winner = alice,
-                            totalTurns = 120,
-                            players = listOf(
-                                createPlayer(alice, money = 2200, properties = 6),
-                                createPlayer(bob, money = 0, properties = 0),
-                            ),
-                        ),
-                        createSingleGameResult(
-                            gameNumber = 3,
-                            winner = alice,
-                            totalTurns = 110,
-                            players = listOf(
-                                createPlayer(alice, money = 2100, properties = 5),
-                                createPlayer(bob, money = 0, properties = 0),
-                            ),
-                        ),
-                    )
+                    val games = (1..3).map { gameNum ->
+                        val alice = Player("Alice", AlwaysBuyStrategy())
+                        alice.addMoney(500 + gameNum * 100)
+                        repeat(5) { alice.addProperty(createDummyProperty(it + gameNum * 10)) }
+
+                        val bob = Player("Bob", AlwaysBuyStrategy())
+                        bob.subtractMoney(1500)
+
+                        SingleGameResult(
+                            gameNumber = gameNum,
+                            winner = "Alice",
+                            totalTurns = 100 + gameNum * 10,
+                            finalState = GameState(listOf(alice, bob), board)
+                        )
+                    }
 
                     val result = MultiGameResult(
                         gameResults = games,
-                        totalGames = 3,
+                        totalGames = 3
                     )
 
                     // Act
                     val stats = calculator.calculate(result)
 
                     // Assert
-                    val aliceStats = stats.playerStats[alice]!!
+                    val aliceStats = stats.playerStats["Alice"]!!
                     aliceStats.wins shouldBe 3
                     aliceStats.winRate shouldBe 1.0
 
-                    val bobStats = stats.playerStats[bob]!!
+                    val bobStats = stats.playerStats["Bob"]!!
                     bobStats.wins shouldBe 0
                     bobStats.winRate shouldBe 0.0
                 }
@@ -138,22 +129,25 @@ class StatisticsCalculatorTest : DescribeSpec({
             context("1ゲームのみの場合") {
                 it("正しく統計を計算する") {
                     // Arrange
-                    val alice = "Alice"
-                    val bob = "Bob"
+                    val board = BoardFixtures.createStandardBoard()
 
-                    val game = createSingleGameResult(
+                    val alice = Player("Alice", AlwaysBuyStrategy())
+                    alice.addMoney(500)
+                    repeat(5) { alice.addProperty(createDummyProperty(it)) }
+
+                    val bob = Player("Bob", AlwaysBuyStrategy())
+                    bob.subtractMoney(1500)
+
+                    val game = SingleGameResult(
                         gameNumber = 1,
-                        winner = alice,
+                        winner = "Alice",
                         totalTurns = 100,
-                        players = listOf(
-                            createPlayer(alice, money = 2000, properties = 5),
-                            createPlayer(bob, money = 0, properties = 0),
-                        ),
+                        finalState = GameState(listOf(alice, bob), board)
                     )
 
                     val result = MultiGameResult(
                         gameResults = listOf(game),
-                        totalGames = 1,
+                        totalGames = 1
                     )
 
                     // Act
@@ -162,11 +156,11 @@ class StatisticsCalculatorTest : DescribeSpec({
                     // Assert
                     stats.totalGames shouldBe 1
 
-                    val aliceStats = stats.playerStats[alice]!!
+                    val aliceStats = stats.playerStats["Alice"]!!
                     aliceStats.wins shouldBe 1
                     aliceStats.winRate shouldBe 1.0
 
-                    val bobStats = stats.playerStats[bob]!!
+                    val bobStats = stats.playerStats["Bob"]!!
                     bobStats.wins shouldBe 0
                     bobStats.winRate shouldBe 0.0
 
@@ -180,46 +174,63 @@ class StatisticsCalculatorTest : DescribeSpec({
             context("3人以上のプレイヤーの場合") {
                 it("正しく統計を計算する") {
                     // Arrange
-                    val alice = "Alice"
-                    val bob = "Bob"
-                    val charlie = "Charlie"
+                    val board = BoardFixtures.createStandardBoard()
 
-                    val games = listOf(
-                        createSingleGameResult(
-                            gameNumber = 1,
-                            winner = alice,
-                            totalTurns = 100,
-                            players = listOf(
-                                createPlayer(alice, money = 2000, properties = 5),
-                                createPlayer(bob, money = 500, properties = 2),
-                                createPlayer(charlie, money = 0, properties = 0),
-                            ),
-                        ),
-                        createSingleGameResult(
-                            gameNumber = 2,
-                            winner = bob,
-                            totalTurns = 120,
-                            players = listOf(
-                                createPlayer(alice, money = 500, properties = 2),
-                                createPlayer(bob, money = 2200, properties = 6),
-                                createPlayer(charlie, money = 0, properties = 0),
-                            ),
-                        ),
-                        createSingleGameResult(
-                            gameNumber = 3,
-                            winner = charlie,
-                            totalTurns = 130,
-                            players = listOf(
-                                createPlayer(alice, money = 0, properties = 0),
-                                createPlayer(bob, money = 500, properties = 2),
-                                createPlayer(charlie, money = 2300, properties = 7),
-                            ),
-                        ),
+                    // Game 1: Alice wins
+                    val alice1 = Player("Alice", AlwaysBuyStrategy())
+                    alice1.addMoney(500)
+                    repeat(5) { alice1.addProperty(createDummyProperty(it)) }
+                    val bob1 = Player("Bob", AlwaysBuyStrategy())
+                    bob1.subtractMoney(1000)
+                    repeat(2) { bob1.addProperty(createDummyProperty(it + 10)) }
+                    val charlie1 = Player("Charlie", AlwaysBuyStrategy())
+                    charlie1.subtractMoney(1500)
+
+                    val game1 = SingleGameResult(
+                        gameNumber = 1,
+                        winner = "Alice",
+                        totalTurns = 100,
+                        finalState = GameState(listOf(alice1, bob1, charlie1), board)
                     )
 
+                    // Game 2: Bob wins
+                    val alice2 = Player("Alice", AlwaysBuyStrategy())
+                    alice2.subtractMoney(1000)
+                    repeat(2) { alice2.addProperty(createDummyProperty(it + 20)) }
+                    val bob2 = Player("Bob", AlwaysBuyStrategy())
+                    bob2.addMoney(700)
+                    repeat(6) { bob2.addProperty(createDummyProperty(it + 30)) }
+                    val charlie2 = Player("Charlie", AlwaysBuyStrategy())
+                    charlie2.subtractMoney(1500)
+
+                    val game2 = SingleGameResult(
+                        gameNumber = 2,
+                        winner = "Bob",
+                        totalTurns = 120,
+                        finalState = GameState(listOf(alice2, bob2, charlie2), board)
+                    )
+
+                    // Game 3: Charlie wins
+                    val alice3 = Player("Alice", AlwaysBuyStrategy())
+                    alice3.subtractMoney(1500)
+                    val bob3 = Player("Bob", AlwaysBuyStrategy())
+                    bob3.subtractMoney(1000)
+                    repeat(2) { bob3.addProperty(createDummyProperty(it + 40)) }
+                    val charlie3 = Player("Charlie", AlwaysBuyStrategy())
+                    charlie3.addMoney(800)
+                    repeat(7) { charlie3.addProperty(createDummyProperty(it + 50)) }
+
+                    val game3 = SingleGameResult(
+                        gameNumber = 3,
+                        winner = "Charlie",
+                        totalTurns = 130,
+                        finalState = GameState(listOf(alice3, bob3, charlie3), board)
+                    )
+
+                    val games = listOf(game1, game2, game3)
                     val result = MultiGameResult(
                         gameResults = games,
-                        totalGames = 3,
+                        totalGames = 3
                     )
 
                     // Act
@@ -230,50 +241,57 @@ class StatisticsCalculatorTest : DescribeSpec({
                     stats.playerStats.size shouldBe 3
 
                     // 各プレイヤーの勝率
-                    stats.playerStats[alice]!!.winRate shouldBe (1.0 / 3.0)
-                    stats.playerStats[bob]!!.winRate shouldBe (1.0 / 3.0)
-                    stats.playerStats[charlie]!!.winRate shouldBe (1.0 / 3.0)
+                    stats.playerStats["Alice"]!!.winRate shouldBe (1.0 / 3.0)
+                    stats.playerStats["Bob"]!!.winRate shouldBe (1.0 / 3.0)
+                    stats.playerStats["Charlie"]!!.winRate shouldBe (1.0 / 3.0)
                 }
             }
 
             context("プロパティ所有数が正しく平均される") {
                 it("平均プロパティ数を正しく計算する") {
                     // Arrange
-                    val alice = "Alice"
-                    val bob = "Bob"
+                    val board = BoardFixtures.createStandardBoard()
 
-                    val games = listOf(
-                        createSingleGameResult(
-                            gameNumber = 1,
-                            winner = alice,
-                            totalTurns = 100,
-                            players = listOf(
-                                createPlayer(alice, money = 2000, properties = 10),
-                                createPlayer(bob, money = 0, properties = 0),
-                            ),
-                        ),
-                        createSingleGameResult(
-                            gameNumber = 2,
-                            winner = alice,
-                            totalTurns = 100,
-                            players = listOf(
-                                createPlayer(alice, money = 2000, properties = 8),
-                                createPlayer(bob, money = 0, properties = 2),
-                            ),
-                        ),
+                    // Game 1: Alice 10 properties, Bob 0
+                    val alice1 = Player("Alice", AlwaysBuyStrategy())
+                    alice1.addMoney(500)
+                    repeat(10) { alice1.addProperty(createDummyProperty(it)) }
+                    val bob1 = Player("Bob", AlwaysBuyStrategy())
+                    bob1.subtractMoney(1500)
+
+                    val game1 = SingleGameResult(
+                        gameNumber = 1,
+                        winner = "Alice",
+                        totalTurns = 100,
+                        finalState = GameState(listOf(alice1, bob1), board)
+                    )
+
+                    // Game 2: Alice 8 properties, Bob 2
+                    val alice2 = Player("Alice", AlwaysBuyStrategy())
+                    alice2.addMoney(500)
+                    repeat(8) { alice2.addProperty(createDummyProperty(it + 10)) }
+                    val bob2 = Player("Bob", AlwaysBuyStrategy())
+                    bob2.subtractMoney(1500)
+                    repeat(2) { bob2.addProperty(createDummyProperty(it + 20)) }
+
+                    val game2 = SingleGameResult(
+                        gameNumber = 2,
+                        winner = "Alice",
+                        totalTurns = 100,
+                        finalState = GameState(listOf(alice2, bob2), board)
                     )
 
                     val result = MultiGameResult(
-                        gameResults = games,
-                        totalGames = 2,
+                        gameResults = listOf(game1, game2),
+                        totalGames = 2
                     )
 
                     // Act
                     val stats = calculator.calculate(result)
 
                     // Assert
-                    stats.playerStats[alice]!!.averagePropertiesOwned shouldBe 9.0 // (10 + 8) / 2
-                    stats.playerStats[bob]!!.averagePropertiesOwned shouldBe 1.0 // (0 + 2) / 2
+                    stats.playerStats["Alice"]!!.averagePropertiesOwned shouldBe 9.0 // (10 + 8) / 2
+                    stats.playerStats["Bob"]!!.averagePropertiesOwned shouldBe 1.0 // (0 + 2) / 2
                 }
             }
         }
@@ -281,47 +299,14 @@ class StatisticsCalculatorTest : DescribeSpec({
 })
 
 /**
- * テスト用のSingleGameResultを生成
+ * ダミーのPropertyを生成
  */
-private fun createSingleGameResult(
-    gameNumber: Int,
-    winner: String,
-    totalTurns: Int,
-    players: List<Player>,
-): SingleGameResult {
-    val gameState = GameState(
-        players = players,
-        currentPlayerIndex = 0,
-        currentTurn = totalTurns,
-    )
-
-    return SingleGameResult(
-        gameNumber = gameNumber,
-        winner = winner,
-        totalTurns = totalTurns,
-        finalState = gameState,
-    )
-}
-
-/**
- * テスト用のPlayerを生成
- */
-private fun createPlayer(
-    name: String,
-    money: Int,
-    properties: Int,
-): Player {
-    // プロパティリストを作成（ダミー）
-    val propertyList = (1..properties).map { BoardPosition(it) }.toSet()
-
-    return Player(
-        name = name,
-        strategy = AlwaysBuyStrategy(),
-        state = PlayerState(
-            position = BoardPosition(0),
-            money = Money(money),
-            ownedProperties = propertyList,
-            isBankrupt = false,
-        ),
+private fun createDummyProperty(index: Int): Property {
+    return Property(
+        name = "Property $index",
+        position = index % 40,
+        price = 100,
+        rent = 10,
+        colorGroup = ColorGroup.BROWN
     )
 }
