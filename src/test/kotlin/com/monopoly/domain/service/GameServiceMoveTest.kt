@@ -1,6 +1,7 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
@@ -15,7 +16,7 @@ class GameServiceMoveTest : StringSpec({
     "should move player to new position normally" {
         // Given
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
@@ -34,7 +35,7 @@ class GameServiceMoveTest : StringSpec({
         // Given
         val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         player.setPosition(38)
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
         val initialMoney = player.money
@@ -55,7 +56,7 @@ class GameServiceMoveTest : StringSpec({
         // Given
         val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
         player.setPosition(39)
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 

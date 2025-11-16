@@ -1,6 +1,7 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
@@ -20,7 +21,7 @@ class GameServicePayRentTest : StringSpec({
         val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
         val property = Property("Test Property", 1, 200, 100, ColorGroup.BROWN)
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(payer, receiver), board = board)
         val gameService = GameService()
 
@@ -42,7 +43,7 @@ class GameServicePayRentTest : StringSpec({
         payer.subtractMoney(1450) // Set payer's money to $50
         val receiver = Player(name = "Dave", strategy = AlwaysBuyStrategy())
         val property = Property("Test Property", 1, 200, 100, ColorGroup.BROWN)
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(payer, receiver), board = board)
         val gameService = GameService()
 
@@ -64,7 +65,7 @@ class GameServicePayRentTest : StringSpec({
         val receiver = Player(name = "Frank", strategy = AlwaysBuyStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
         val property = Property("Test Property", 1, 200, 50, ColorGroup.BROWN)
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(payer, receiver), board = board)
         val gameService = GameService()
 

@@ -1,6 +1,7 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
@@ -26,7 +27,7 @@ class GameServiceBuyTest : StringSpec({
                 rent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
@@ -54,7 +55,7 @@ class GameServiceBuyTest : StringSpec({
                 rent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
@@ -80,7 +81,7 @@ class GameServiceBuyTest : StringSpec({
                 rent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val board = Board()
+        val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 

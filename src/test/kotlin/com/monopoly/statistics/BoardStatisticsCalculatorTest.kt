@@ -1,15 +1,9 @@
 package com.monopoly.statistics
 
-import com.monopoly.domain.model.Board
-import com.monopoly.domain.model.BoardPosition
-import com.monopoly.domain.model.ColorGroup
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Money
 import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.PlayerState
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.Space
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import com.monopoly.simulation.MultiGameResult
 import com.monopoly.simulation.SingleGameResult
@@ -24,40 +18,44 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
             context("基本的なイベント処理") {
                 it("移動イベントから着地回数を集計する") {
                     // Arrange
-                    val board = createSimpleBoard()
-                    val alice = createPlayer("Alice", 1500)
+                    val board = BoardFixtures.createStandardBoard()
+                    val alice = Player("Alice", AlwaysBuyStrategy())
 
-                    val game = createGameWithEvents(
+                    val events = mutableListOf<GameEvent>()
+                    events.add(
+                        GameEvent.PlayerMoved(
+                            turnNumber = 1,
+                            playerName = "Alice",
+                            fromPosition = 0,
+                            toPosition = 5,
+                            passedGo = false
+                        )
+                    )
+                    events.add(
+                        GameEvent.PlayerMoved(
+                            turnNumber = 2,
+                            playerName = "Alice",
+                            fromPosition = 5,
+                            toPosition = 10,
+                            passedGo = false
+                        )
+                    )
+                    events.add(
+                        GameEvent.PlayerMoved(
+                            turnNumber = 3,
+                            playerName = "Alice",
+                            fromPosition = 10,
+                            toPosition = 5,  // 同じ位置に再度着地
+                            passedGo = false
+                        )
+                    )
+
+                    val gameState = GameState(listOf(alice), board, events)
+                    val game = SingleGameResult(
                         gameNumber = 1,
                         winner = "Alice",
-                        board = board,
-                        players = listOf(alice),
-                        events = listOf(
-                            GameEvent.PlayerMoved(
-                                turn = 1,
-                                player = alice,
-                                fromPosition = 0,
-                                toPosition = 5,
-                                diceRoll1 = 2,
-                                diceRoll2 = 3
-                            ),
-                            GameEvent.PlayerMoved(
-                                turn = 2,
-                                player = alice,
-                                fromPosition = 5,
-                                toPosition = 10,
-                                diceRoll1 = 3,
-                                diceRoll2 = 2
-                            ),
-                            GameEvent.PlayerMoved(
-                                turn = 3,
-                                player = alice,
-                                fromPosition = 10,
-                                toPosition = 5,  // 同じ位置に再度着地
-                                diceRoll1 = 1,
-                                diceRoll2 = 4
-                            )
-                        )
+                        totalTurns = 100,
+                        finalState = gameState
                     )
 
                     val result = MultiGameResult(
@@ -78,38 +76,46 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
             context("レント支払いイベント") {
                 it("レント収入を集計する") {
                     // Arrange
-                    val board = createSimpleBoard()
-                    val property = (board.spaces[1] as Space.PropertySpace).property
+                    val board = BoardFixtures.createStandardBoard()
+                    val property = board.getPropertyAt(1)!!
 
-                    val alice = createPlayer("Alice", 2000)
-                    val bob = createPlayer("Bob", 500)
+                    val alice = Player("Alice", AlwaysBuyStrategy())
+                    val bob = Player("Bob", AlwaysBuyStrategy())
 
-                    val game = createGameWithEvents(
+                    val events = mutableListOf<GameEvent>()
+                    events.add(
+                        GameEvent.PropertyPurchased(
+                            turnNumber = 1,
+                            playerName = "Alice",
+                            propertyName = property.name,
+                            price = property.price
+                        )
+                    )
+                    events.add(
+                        GameEvent.RentPaid(
+                            turnNumber = 2,
+                            payerName = "Bob",
+                            receiverName = "Alice",
+                            propertyName = property.name,
+                            amount = 50
+                        )
+                    )
+                    events.add(
+                        GameEvent.RentPaid(
+                            turnNumber = 3,
+                            payerName = "Bob",
+                            receiverName = "Alice",
+                            propertyName = property.name,
+                            amount = 50
+                        )
+                    )
+
+                    val gameState = GameState(listOf(alice, bob), board, events)
+                    val game = SingleGameResult(
                         gameNumber = 1,
                         winner = "Alice",
-                        board = board,
-                        players = listOf(alice, bob),
-                        events = listOf(
-                            GameEvent.PropertyPurchased(
-                                turn = 1,
-                                player = alice,
-                                property = property
-                            ),
-                            GameEvent.RentPaid(
-                                turn = 2,
-                                player = bob,
-                                property = property,
-                                amount = 50,
-                                owner = alice
-                            ),
-                            GameEvent.RentPaid(
-                                turn = 3,
-                                player = bob,
-                                property = property,
-                                amount = 50,
-                                owner = alice
-                            )
-                        )
+                        totalTurns = 100,
+                        finalState = gameState
                     )
 
                     val result = MultiGameResult(
@@ -128,10 +134,10 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
             context("プロパティ購入イベント") {
                 it("所有者分布を記録する") {
                     // Arrange
-                    val board = createSimpleBoard()
-                    val property = (board.spaces[1] as Space.PropertySpace).property
+                    val board = BoardFixtures.createStandardBoard()
+                    val property = board.getPropertyAt(1)!!
 
-                    val alice = createPlayer("Alice", 2000)
+                    val alice = Player("Alice", AlwaysBuyStrategy())
 
                     val games = listOf(
                         createGameWithEvents(
@@ -141,9 +147,10 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
                             players = listOf(alice),
                             events = listOf(
                                 GameEvent.PropertyPurchased(
-                                    turn = 1,
-                                    player = alice,
-                                    property = property
+                                    turnNumber = 1,
+                                    playerName = "Alice",
+                                    propertyName = property.name,
+                                    price = property.price
                                 )
                             )
                         ),
@@ -154,9 +161,10 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
                             players = listOf(alice),
                             events = listOf(
                                 GameEvent.PropertyPurchased(
-                                    turn = 1,
-                                    player = alice,
-                                    property = property
+                                    turnNumber = 1,
+                                    playerName = "Alice",
+                                    propertyName = property.name,
+                                    price = property.price
                                 )
                             )
                         )
@@ -178,8 +186,8 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
             context("複数ゲームの統計") {
                 it("ゲーム数を正しく記録する") {
                     // Arrange
-                    val board = createSimpleBoard()
-                    val alice = createPlayer("Alice", 2000)
+                    val board = BoardFixtures.createStandardBoard()
+                    val alice = Player("Alice", AlwaysBuyStrategy())
 
                     val games = (1..3).map { gameNum ->
                         createGameWithEvents(
@@ -242,52 +250,19 @@ class BoardStatisticsCalculatorTest : DescribeSpec({
 })
 
 /**
- * テスト用の簡単なボードを作成
- */
-private fun createSimpleBoard(): Board {
-    val spaces = listOf(
-        Space.StartSpace(BoardPosition(0)),
-        Space.PropertySpace(
-            BoardPosition(1),
-            Property(
-                name = "Mediterranean Avenue",
-                position = BoardPosition(1),
-                price = 60,
-                colorGroup = ColorGroup.BROWN,
-                rent = 2
-            )
-        ),
-        Space.ChanceSpace(BoardPosition(2)),
-        Space.PropertySpace(
-            BoardPosition(3),
-            Property(
-                name = "Baltic Avenue",
-                position = BoardPosition(3),
-                price = 60,
-                colorGroup = ColorGroup.BROWN,
-                rent = 4
-            )
-        )
-    )
-    return Board(spaces)
-}
-
-/**
  * テスト用のゲーム結果を作成
  */
 private fun createGameWithEvents(
     gameNumber: Int,
     winner: String,
-    board: Board,
+    board: com.monopoly.domain.model.Board,
     players: List<Player>,
     events: List<GameEvent>
 ): SingleGameResult {
     val gameState = GameState(
         players = players,
-        currentPlayerIndex = 0,
-        currentTurn = 100,
         board = board,
-        events = events
+        events = events.toMutableList()
     )
 
     return SingleGameResult(
@@ -295,21 +270,5 @@ private fun createGameWithEvents(
         winner = winner,
         totalTurns = 100,
         finalState = gameState
-    )
-}
-
-/**
- * テスト用のPlayerを生成
- */
-private fun createPlayer(name: String, money: Int): Player {
-    return Player(
-        name = name,
-        strategy = AlwaysBuyStrategy(),
-        state = PlayerState(
-            position = BoardPosition(0),
-            money = Money(money),
-            ownedProperties = emptySet(),
-            isBankrupt = false
-        )
     )
 }
