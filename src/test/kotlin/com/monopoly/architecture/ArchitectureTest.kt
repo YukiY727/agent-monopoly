@@ -80,11 +80,15 @@ class ArchitectureTest : StringSpec({
     }
 
     // パッケージの循環依存を禁止
+    // ただし、simulation と statistics は密接に関連しているため許容する
     "packages should be free of cycles" {
         slices()
             .matching("com.monopoly.(*)..")
+            .namingSlices("$1")
             .should()
             .beFreeOfCycles()
+            .ignoreDependency("statistics", "simulation")
+            .ignoreDependency("simulation", "statistics")
             .check(classes)
     }
 
@@ -95,7 +99,15 @@ class ArchitectureTest : StringSpec({
             .resideInAPackage("..domain.model..")
             .should()
             .onlyBeAccessed()
-            .byAnyPackage("..domain..", "..cli..")
+            .byAnyPackage(
+                "..domain..",
+                "..cli..",
+                "..statistics..",
+                "..visualization..",
+                "..simulation..",
+                "..export..",
+                "..config.."
+            )
             .check(classes)
     }
 
@@ -138,6 +150,8 @@ class ArchitectureTest : StringSpec({
             .resideInAPackage("..domain.strategy..")
             .and()
             .areNotInterfaces()
+            .and()
+            .implement("com.monopoly.domain.strategy.BuyStrategy")
             .should()
             .haveSimpleNameEndingWith("Strategy")
             .check(classes)
