@@ -82,9 +82,306 @@ dependencies {
 - Recharts（チャート）
 - TanStack Query（データフェッチング）
 - Zustand（状態管理、軽量）
+- Storybook（コンポーネント開発）
 ```
 
-### 3. リアルタイム通信
+### 3. 状態管理戦略
+
+#### Reactの状態管理の課題
+
+**よくある問題**:
+- Prop Drilling（props の多段階受け渡し）
+- グローバル状態の肥大化
+- 再レンダリングのパフォーマンス問題
+- 非同期処理の複雑化
+- ボイラープレートコードの増加
+
+#### 状態管理ライブラリの比較
+
+| ライブラリ | メリット | デメリット | 推奨度 |
+|-----------|---------|----------|--------|
+| **Zustand** | 軽量、シンプル、ボイラープレート少ない、TypeScript親和性高 | Redux比較で機能少ない | ⭐⭐⭐⭐⭐ |
+| **Redux Toolkit** | 成熟、DevTools、ミドルウェア豊富 | 学習コスト高、ボイラープレート多い | ⭐⭐⭐⭐ |
+| **Jotai** | Atomic、柔軟 | 新しい、コミュニティ小 | ⭐⭐⭐ |
+| **Context API + useReducer** | 追加依存なし | 大規模化困難、パフォーマンス問題 | ⭐⭐ |
+
+#### 推奨: **Zustand + TanStack Query**
+
+**選定理由**:
+- **Zustand**: UIの状態管理（設定、UI状態）
+- **TanStack Query**: サーバー状態管理（API、WebSocket）
+
+この組み合わせで**関心の分離**を実現し、複雑化を防ぎます。
+
+#### 状態設計方針
+
+**1. 状態の分類**
+
+```typescript
+// ❌ 悪い例: すべてを1つのストアに詰め込む
+interface AppState {
+  strategies: Strategy[];
+  simulationConfig: SimulationConfig;
+  simulationResults: SimulationResult[];
+  currentSimulation: CurrentSimulation | null;
+  websocketConnected: boolean;
+  // ... 100行続く
+}
+
+// ✅ 良い例: 関心ごとに分離
+// 1. UI状態 (Zustand)
+interface UIStore {
+  sidebarOpen: boolean;
+  selectedTab: 'setup' | 'dashboard' | 'history';
+  theme: 'light' | 'dark';
+}
+
+// 2. シミュレーション設定 (Zustand)
+interface SimulationStore {
+  config: SimulationConfig;
+  updateConfig: (config: Partial<SimulationConfig>) => void;
+  resetConfig: () => void;
+}
+
+// 3. サーバーデータ (TanStack Query)
+// - strategies: useQuery(['strategies'])
+// - simulationResult: useQuery(['simulation', id])
+// - リアルタイム進捗: カスタムフック useSimulationProgress()
+```
+
+**2. ストアの粒度**
+
+```typescript
+// stores/useUIStore.ts
+import { create } from 'zustand';
+
+interface UIStore {
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+}
+
+export const useUIStore = create<UIStore>((set) => ({
+  sidebarOpen: true,
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+}));
+
+// stores/useSimulationStore.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface SimulationStore {
+  config: SimulationConfig;
+  updatePlayers: (players: Player[]) => void;
+  updateGameCount: (count: number) => void;
+}
+
+export const useSimulationStore = create<SimulationStore>()(
+  persist(
+    (set) => ({
+      config: defaultConfig,
+      updatePlayers: (players) =>
+        set((state) => ({ config: { ...state.config, players } })),
+      updateGameCount: (numberOfGames) =>
+        set((state) => ({ config: { ...state.config, numberOfGames } })),
+    }),
+    { name: 'simulation-config' } // LocalStorage永続化
+  )
+);
+```
+
+**3. サーバー状態管理（TanStack Query）**
+
+```typescript
+// hooks/useStrategies.ts
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../api/client';
+
+export function useStrategies() {
+  return useQuery({
+    queryKey: ['strategies'],
+    queryFn: () => apiClient.getStrategies(),
+    staleTime: 5 * 60 * 1000, // 5分間キャッシュ
+  });
+}
+
+// hooks/useSimulation.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+export function useStartSimulation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (config: SimulationConfig) =>
+      apiClient.startSimulation(config),
+    onSuccess: (data) => {
+      // キャッシュ無効化
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+    },
+  });
+}
+```
+
+**4. WebSocket状態管理**
+
+```typescript
+// hooks/useSimulationProgress.ts
+import { useEffect, useState } from 'react';
+import { useWebSocket } from './useWebSocket';
+
+interface ProgressEvent {
+  type: 'progress';
+  completed: number;
+  total: number;
+  percentage: number;
+}
+
+export function useSimulationProgress(simulationId: string) {
+  const [progress, setProgress] = useState<ProgressEvent | null>(null);
+  const { lastMessage, readyState } = useWebSocket(
+    `ws://localhost:8080/ws/simulation/${simulationId}`
+  );
+
+  useEffect(() => {
+    if (lastMessage !== null) {
+      const event = JSON.parse(lastMessage.data);
+      if (event.type === 'progress') {
+        setProgress(event);
+      }
+    }
+  }, [lastMessage]);
+
+  return { progress, connected: readyState === WebSocket.OPEN };
+}
+```
+
+**5. 複雑化を防ぐルール**
+
+- ✅ **1ストア1責務**: UI、設定、データをストアで分離
+- ✅ **サーバー状態はTanStack Query**: APIデータはZustandに入れない
+- ✅ **派生状態を避ける**: 計算可能なものはストアに入れず、useMemoで算出
+- ✅ **永続化は慎重に**: 設定のみLocalStorageに保存、一時データは保存しない
+- ❌ **ストアのネスト禁止**: フラットな構造を保つ
+
+### 4. Storybook導入
+
+#### Storybookを使う理由
+
+**メリット**:
+1. **独立した開発環境**: バックエンド不要でコンポーネント開発
+2. **ビジュアルテスト**: UIの状態を一覧で確認
+3. **ドキュメント自動生成**: Propsの仕様が自動文書化
+4. **デザインシステム構築**: 再利用可能なコンポーネントカタログ
+5. **デバッグ効率化**: さまざまな状態を簡単に再現
+
+**Phase 13での活用**:
+```
+frontend/
+├── src/
+│   └── components/
+│       ├── ProgressBar/
+│       │   ├── ProgressBar.tsx
+│       │   └── ProgressBar.stories.tsx  # Storybookストーリー
+│       ├── StrategySelector/
+│       │   ├── StrategySelector.tsx
+│       │   └── StrategySelector.stories.tsx
+│       └── SimulationDashboard/
+│           ├── SimulationDashboard.tsx
+│           └── SimulationDashboard.stories.tsx
+└── .storybook/
+    ├── main.ts
+    └── preview.ts
+```
+
+#### Storybookストーリーの例
+
+```typescript
+// src/components/ProgressBar/ProgressBar.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { ProgressBar } from './ProgressBar';
+
+const meta: Meta<typeof ProgressBar> = {
+  title: 'Simulation/ProgressBar',
+  component: ProgressBar,
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof ProgressBar>;
+
+// 基本状態
+export const Default: Story = {
+  args: {
+    completed: 0,
+    total: 1000,
+    percentage: 0,
+  },
+};
+
+// 進行中
+export const InProgress: Story = {
+  args: {
+    completed: 450,
+    total: 1000,
+    percentage: 45,
+  },
+};
+
+// 完了
+export const Completed: Story = {
+  args: {
+    completed: 1000,
+    total: 1000,
+    percentage: 100,
+  },
+};
+
+// 大量ゲーム
+export const LargeScale: Story = {
+  args: {
+    completed: 5420,
+    total: 10000,
+    percentage: 54.2,
+  },
+};
+```
+
+#### Storybookアドオン推奨
+
+```json
+// package.json
+{
+  "devDependencies": {
+    "@storybook/react": "^7.5.0",
+    "@storybook/addon-essentials": "^7.5.0",  // 基本アドオンセット
+    "@storybook/addon-interactions": "^7.5.0", // インタラクションテスト
+    "@storybook/addon-a11y": "^7.5.0",         // アクセシビリティチェック
+    "@storybook/addon-links": "^7.5.0",        // ストーリー間リンク
+    "@chromatic-com/storybook": "^1.0.0"      // ビジュアルリグレッションテスト
+  }
+}
+```
+
+#### Storybookワークフロー
+
+```bash
+# 開発中: Storybookで各コンポーネントを作成
+npm run storybook  # http://localhost:6006
+
+# ビルド: 静的サイト生成（デプロイ可能）
+npm run build-storybook
+
+# テスト: インタラクションテストを実行
+npm run test-storybook
+```
+
+**開発フロー**:
+1. コンポーネント設計
+2. Storybookでストーリー作成
+3. 各状態（loading, error, empty, success）を作成
+4. インタラクションテスト追加
+5. 実際のアプリに統合
+
+### 5. リアルタイム通信
 
 #### 選択肢
 
@@ -162,20 +459,36 @@ agent-monopoly/
 ├── frontend/                   # 🆕 React フロントエンド
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── SimulationSetup.tsx
-│   │   │   ├── Dashboard.tsx
-│   │   │   ├── ProgressMonitor.tsx
-│   │   │   └── ChartViewer.tsx
+│   │   │   ├── SimulationSetup/
+│   │   │   │   ├── SimulationSetup.tsx
+│   │   │   │   └── SimulationSetup.stories.tsx
+│   │   │   ├── Dashboard/
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   └── Dashboard.stories.tsx
+│   │   │   ├── ProgressMonitor/
+│   │   │   │   ├── ProgressMonitor.tsx
+│   │   │   │   └── ProgressMonitor.stories.tsx
+│   │   │   └── ChartViewer/
+│   │   │       ├── ChartViewer.tsx
+│   │   │       └── ChartViewer.stories.tsx
 │   │   ├── hooks/
 │   │   │   ├── useSimulation.ts
-│   │   │   └── useWebSocket.ts
+│   │   │   ├── useWebSocket.ts
+│   │   │   └── useSimulationProgress.ts
+│   │   ├── stores/
+│   │   │   ├── useUIStore.ts
+│   │   │   └── useSimulationStore.ts
 │   │   ├── api/
 │   │   │   └── client.ts
 │   │   ├── types/
 │   │   │   └── simulation.ts
 │   │   └── App.tsx
+│   ├── .storybook/
+│   │   ├── main.ts
+│   │   └── preview.ts
 │   ├── package.json
-│   └── vite.config.ts
+│   ├── vite.config.ts
+│   └── tsconfig.json
 │
 └── docs/
     └── planning/
@@ -389,21 +702,62 @@ ws://localhost:8080/ws/simulation/{simulationId}
 **目標**: シンプルな設定画面とダッシュボード
 
 **実装内容**:
-1. React + Viteプロジェクトセットアップ
-2. シミュレーション設定画面
-   - 戦略選択ドロップダウン
-   - ゲーム数入力
-   - 実行ボタン
-3. 基本的なダッシュボード
-   - 進捗バー
-   - リアルタイムグラフ（勝率のみ）
-4. WebSocket接続管理
+1. プロジェクトセットアップ
+   - React + Vite + TypeScript
+   - Zustand（状態管理）
+   - TanStack Query（データフェッチ）
+   - Storybook
+2. 基本コンポーネントをStorybookで開発
+   - `StrategySelector`: 戦略選択ドロップダウン
+   - `GameCountInput`: ゲーム数入力
+   - `ProgressBar`: 進捗バー
+   - `StartButton`: 実行ボタン
+3. シミュレーション設定画面の組み立て
+   - 上記コンポーネントを組み合わせ
+   - useSimulationStoreで状態管理
+4. 基本的なダッシュボード
+   - ProgressMonitorコンポーネント
+   - SimpleChartコンポーネント（勝率のみ）
+   - useSimulationProgress（WebSocket）
+5. API統合
+   - useStrategiesフック
+   - useStartSimulationフック
+
+**開発フロー**:
+```
+1. Storybookで各コンポーネントを作成・確認
+2. コンポーネントを統合してページ作成
+3. API/WebSocketと接続
+4. ブラウザで動作確認
+```
 
 **成果物**:
 - ブラウザでシミュレーション実行可能
 - リアルタイム進捗表示
+- Storybookコンポーネントカタログ（http://localhost:6006）
 
 **期間**: 4-5日
+
+**技術スタック確定**:
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.0",
+    "@tanstack/react-query": "^5.0.0",
+    "recharts": "^2.10.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.2.0",
+    "vite": "^5.0.0",
+    "@storybook/react": "^7.5.0",
+    "@storybook/addon-essentials": "^7.5.0"
+  }
+}
+```
 
 ### Phase 13-4: インタラクティブダッシュボード
 
@@ -480,10 +834,14 @@ ws://localhost:8080/ws/simulation/{simulationId}
 
 | リスク | 影響 | 対策 |
 |-------|-----|-----|
-| フロントエンド技術の学習コスト | 開発遅延 | シンプルなMVPから開始、段階的に機能追加 |
-| WebSocket接続の安定性 | UX低下 | 再接続ロジック実装、フォールバックとしてpolling |
-| 大量シミュレーションでのメモリ不足 | サーバークラッシュ | ストリーミング処理、結果の段階的破棄 |
-| CORSの設定ミス | 開発困難 | 開発時はCORS全許可、本番で制限 |
+| **フロントエンド技術の学習コスト** | 開発遅延 | シンプルなMVPから開始、Storybookでコンポーネント単位で学習 |
+| **状態管理の複雑化** | バグ増加、保守困難 | Zustand + TanStack Queryで関心分離、1ストア1責務ルール徹底 |
+| **過度な再レンダリング** | パフォーマンス低下 | React.memo、useMemo活用、小さなストア粒度 |
+| **WebSocket接続の安定性** | UX低下 | 再接続ロジック実装、接続状態の可視化、フォールバックpolling |
+| **大量シミュレーションでのメモリ不足** | サーバークラッシュ | ストリーミング処理、結果の段階的破棄、進捗間引き |
+| **CORSの設定ミス** | 開発困難 | 開発時はCORS全許可、本番で適切に制限 |
+| **Storybookの保守コスト** | ストーリーが古くなる | CI/CDでストーリーの動作確認、addon-interactionsで自動テスト |
+| **TypeScript型定義の不整合** | ランタイムエラー | API型定義をバックエンドから自動生成（OpenAPI等）|
 
 ## 代替案：軽量アプローチ
 
@@ -522,6 +880,30 @@ ws://localhost:8080/ws/simulation/{simulationId}
 
 ## 承認
 
-- [ ] 技術選定の承認
-- [ ] アーキテクチャ設計の承認
-- [ ] 実装計画の承認
+### 技術選定
+- [ ] バックエンド: Ktor
+- [ ] フロントエンド: React + TypeScript
+- [ ] 状態管理: Zustand + TanStack Query
+- [ ] コンポーネント開発: Storybook
+- [ ] ビルドツール: Vite
+
+### 状態管理戦略
+- [ ] UI状態とサーバー状態の分離方針
+- [ ] ストア粒度の設計（1ストア1責務）
+- [ ] WebSocket状態管理のアプローチ
+
+### 開発フロー
+- [ ] Storybook導入の承認
+- [ ] コンポーネントファーストの開発フロー
+
+### アーキテクチャ
+- [ ] REST API + WebSocketのハイブリッド設計
+- [ ] ディレクトリ構成
+- [ ] API設計
+
+### 実装計画
+- [ ] Phase 13-1: バックエンドAPI（2-3日）
+- [ ] Phase 13-2: WebSocket対応（2-3日）
+- [ ] Phase 13-3: フロントエンドMVP（4-5日）
+- [ ] Phase 13-4: インタラクティブダッシュボード（5-7日）
+- [ ] Phase 13-5: 1ゲーム詳細再生（オプション、5-7日）
