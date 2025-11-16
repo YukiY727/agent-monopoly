@@ -187,4 +187,78 @@ object StrategyRegistry {
     fun listAll(): List<StrategyMetadata> {
         return strategies.values.toList()
     }
+
+    /**
+     * パラメータを指定して戦略インスタンスを生成
+     *
+     * @param id 戦略ID
+     * @param params パラメータMap（キー: パラメータ名、値: パラメータ値）
+     * @return 戦略インスタンス
+     */
+    fun getStrategyWithParams(id: String, params: Map<String, Any>): BuyStrategy? {
+        return when (id) {
+            "monopoly" -> {
+                val blockOpponentMonopoly = params["blockOpponentMonopoly"] as? Boolean ?: true
+                val minCashReserve = (params["minCashReserve"] as? Number)?.toInt() ?: 300
+                MonopolyFirstStrategy(blockOpponentMonopoly, minCashReserve)
+            }
+            "roi" -> {
+                val minROI = (params["minROI"] as? Number)?.toDouble() ?: 0.15
+                val minCashReserve = (params["minCashReserve"] as? Number)?.toInt() ?: 300
+                ROIStrategy(minROI, minCashReserve)
+            }
+            "lowprice" -> {
+                val maxPrice = (params["maxPrice"] as? Number)?.toInt() ?: 200
+                val minCashReserve = (params["minCashReserve"] as? Number)?.toInt() ?: 200
+                LowPriceStrategy(maxPrice, minCashReserve)
+            }
+            "highvalue" -> {
+                val minRent = (params["minRent"] as? Number)?.toInt() ?: 20
+                val minCashReserve = (params["minCashReserve"] as? Number)?.toInt() ?: 100
+                HighValueStrategy(minRent, minCashReserve)
+            }
+            "balanced" -> {
+                val threshold = (params["threshold"] as? Number)?.toInt() ?: 80
+                val minCashReserve = (params["minCashReserve"] as? Number)?.toInt() ?: 400
+                BalancedStrategy(threshold, minCashReserve)
+            }
+            "aggressive" -> {
+                val minCashReserve = (params["minCashReserve"] as? Number)?.toInt() ?: 300
+                AggressiveStrategy(minCashReserve)
+            }
+            else -> getStrategy(id)  // パラメータなしの戦略
+        }
+    }
+
+    /**
+     * 戦略のデフォルトパラメータを取得
+     */
+    fun getDefaultParameters(id: String): Map<String, Any> {
+        return when (id) {
+            "monopoly" -> mapOf(
+                "blockOpponentMonopoly" to true,
+                "minCashReserve" to 300
+            )
+            "roi" -> mapOf(
+                "minROI" to 0.15,
+                "minCashReserve" to 300
+            )
+            "lowprice" -> mapOf(
+                "maxPrice" to 200,
+                "minCashReserve" to 200
+            )
+            "highvalue" -> mapOf(
+                "minRent" to 20,
+                "minCashReserve" to 100
+            )
+            "balanced" -> mapOf(
+                "threshold" to 80,
+                "minCashReserve" to 400
+            )
+            "aggressive" -> mapOf(
+                "minCashReserve" to 300
+            )
+            else -> emptyMap()
+        }
+    }
 }

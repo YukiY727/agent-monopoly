@@ -1,5 +1,8 @@
 package com.monopoly.cli
 
+import com.monopoly.config.GridSearchConfig
+import com.monopoly.config.StrategyConfig
+import com.monopoly.config.StrategyParameterLoader
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.Dice
@@ -14,11 +17,13 @@ import com.monopoly.domain.strategy.StrategyRegistry
 import com.monopoly.export.CsvExporter
 import com.monopoly.export.JsonExporter
 import com.monopoly.simulation.GameRunner
+import com.monopoly.simulation.GridSearchRunner
 import com.monopoly.simulation.MultiGameResult
 import com.monopoly.simulation.ParallelGameRunner
 import com.monopoly.statistics.StatisticsCalculator
 import com.monopoly.visualization.StatisticsReportGenerator
 import kotlinx.coroutines.runBlocking
+import java.io.File
 import kotlin.system.exitProcess
 
 @Suppress("MagicNumber")
@@ -73,8 +78,17 @@ data class GameConfig(
     val sequential: Boolean = false,
 )
 
-fun createStrategy(strategyName: String): BuyStrategy {
-    val strategy = StrategyRegistry.getStrategy(strategyName)
+fun createStrategy(strategyName: String, config: StrategyConfig? = null): BuyStrategy {
+    // 設定ファイルからパラメータを取得
+    val params = config?.getParameters(strategyName) ?: emptyMap()
+
+    // パラメータ付きで戦略を生成
+    val strategy = if (params.isNotEmpty()) {
+        StrategyRegistry.getStrategyWithParams(strategyName, params)
+    } else {
+        StrategyRegistry.getStrategy(strategyName)
+    }
+
     if (strategy != null) {
         return strategy
     }
@@ -91,13 +105,13 @@ fun createStrategy(strategyName: String): BuyStrategy {
     exitProcess(1)
 }
 
-fun parseArgs(args: Array<String>): GameConfig {
+fun parseArgs(args: Array<String>, strategyConfig: StrategyConfig? = null): GameConfig {
     if (args.contains("--help")) {
         printHelp()
         exitProcess(0)
     }
 
-    var strategyName = "always-buy"
+    var strategyName = "always"
     var numberOfGames = 1
     var generateReport = true
     var exportJson = true
@@ -166,7 +180,7 @@ fun parseArgs(args: Array<String>): GameConfig {
         i++
     }
 
-    val strategy = createStrategy(strategyName)
+    val strategy = createStrategy(strategyName, strategyConfig)
     return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv, generateVisualization, parallel, sequential)
 }
 
@@ -231,7 +245,7 @@ fun main(args: Array<String>) = runBlocking {
         val metadata = StrategyRegistry.getMetadata(strategyId)
         if (metadata != null) {
             println("Strategy: ${metadata.displayName} (${metadata.id})")
-            println("=" .repeat(60))
+            println("=".repeat(60))
             println()
             println("Description:")
             println("  ${metadata.description}")
@@ -253,7 +267,62 @@ fun main(args: Array<String>) = runBlocking {
         exitProcess(0)
     }
 
-    val config: GameConfig = parseArgs(args)
+    // --show-params <strategy> オプション
+    val showParamsIndex = args.indexOf("--show-params")
+    if (showParamsIndex != -1 && showParamsIndex + 1 < args.size) {
+        val strategyId = args[showParamsIndex + 1]
+        val defaultParams = StrategyRegistry.getDefaultParameters(strategyId)
+        if (defaultParams.isEmpty()) {
+            println("Strategy '$strategyId' has no parameters")
+        } else {
+            println("Default parameters for '$strategyId':")
+            defaultParams.forEach { (key, value) ->
+                println("  $key: $value")
+            }
+        }
+        exitProcess(0)
+    }
+
+    // --config <file> オプション
+    var strategyConfig: StrategyConfig? = null
+    val configIndex = args.indexOf("--config")
+    if (configIndex != -1 && configIndex + 1 < args.size) {
+        val configFile = args[configIndex + 1]
+        try {
+            strategyConfig = StrategyParameterLoader.loadFromFile(configFile)
+            println("Loaded configuration from: $configFile")
+        } catch (e: Exception) {
+            println("Error loading config file: ${e.message}")
+            exitProcess(1)
+        }
+    }
+
+    // --grid-search <file> オプション
+    val gridSearchIndex = args.indexOf("--grid-search")
+    if (gridSearchIndex != -1 && gridSearchIndex + 1 < args.size) {
+        val gridSearchFile = args[gridSearchIndex + 1]
+        try {
+            val gridConfig = GridSearchConfig.fromJson(File(gridSearchFile).readText())
+            val board = createStandardBoard()
+            val gameService = GameService()
+            val dice = Dice()
+            val parallelGameRunner = ParallelGameRunner(gameService, dice)
+            val runner = GridSearchRunner(parallelGameRunner, board)
+
+            val result = runner.run(gridConfig)
+
+            // 結果を保存
+            result.saveToFile("grid-search-results.csv")
+            println("\nResults saved to grid-search-results.csv")
+        } catch (e: Exception) {
+            println("Error running grid search: ${e.message}")
+            e.printStackTrace()
+            exitProcess(1)
+        }
+        exitProcess(0)
+    }
+
+    val config: GameConfig = parseArgs(args, strategyConfig)
 
     if (config.numberOfGames == 1) {
         runSingleGame(config)
