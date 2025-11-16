@@ -1,7 +1,6 @@
 package com.monopoly.integration
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 
-import com.monopoly.domain.model.AlwaysBuyStrategy
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.GameState
