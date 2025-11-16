@@ -1,5 +1,6 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Money
 import com.monopoly.domain.model.Player
@@ -19,10 +20,37 @@ class GameService {
         dice: com.monopoly.domain.model.Dice,
     ) {
         val player: Player = gameState.currentPlayer
+
+        // TurnStartedイベントを記録
+        gameState.events.add(
+            GameEvent.TurnStarted(
+                turnNumber = gameState.turnNumber,
+                playerName = player.name
+            )
+        )
+
         val roll: Int = dice.roll()
 
-        movePlayer(player, roll)
+        // DiceRolledイベントを記録
+        gameState.events.add(
+            GameEvent.DiceRolled(
+                turnNumber = gameState.turnNumber,
+                playerName = player.name,
+                die1 = dice.lastDie1,
+                die2 = dice.lastDie2
+            )
+        )
+
+        movePlayer(player, roll, gameState)
         processSpace(player, gameState)
+
+        // TurnEndedイベントを記録
+        gameState.events.add(
+            GameEvent.TurnEnded(
+                turnNumber = gameState.turnNumber,
+                playerName = player.name
+            )
+        )
 
         gameState.incrementTurnNumber()
         gameState.nextPlayer()
@@ -32,27 +60,73 @@ class GameService {
         gameState: GameState,
         dice: com.monopoly.domain.model.Dice,
     ): Player {
+        // GameStartedイベントを記録
+        gameState.events.add(
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                playerNames = gameState.players.map { it.name }
+            )
+        )
+
         while (!checkGameEnd(gameState)) {
             executeTurn(gameState, dice)
         }
         gameState.endGame()
-        return gameState.players.first { !it.isBankrupt }
+
+        val winner: Player = gameState.players.first { !it.isBankrupt }
+
+        // GameEndedイベントを記録
+        gameState.events.add(
+            GameEvent.GameEnded(
+                turnNumber = gameState.turnNumber,
+                winner = winner.name,
+                totalTurns = gameState.turnNumber
+            )
+        )
+
+        return winner
     }
 
     fun movePlayer(
         player: Player,
         steps: Int,
+        gameState: GameState,
     ) {
-        player.advance(steps)
+        val fromPosition: Int = player.position
+        val passedGo: Boolean = player.advance(steps)
+        val toPosition: Int = player.position
+
+        // PlayerMovedイベントを記録
+        gameState.events.add(
+            GameEvent.PlayerMoved(
+                turnNumber = gameState.turnNumber,
+                playerName = player.name,
+                fromPosition = fromPosition,
+                toPosition = toPosition,
+                passedGo = passedGo
+            )
+        )
     }
 
     fun buyProperty(
         player: Player,
         property: Property,
+        gameState: GameState,
     ): Property {
         player.pay(property.priceValue)
         val ownedProperty: Property = property.withOwner(player)
         player.acquireProperty(ownedProperty)
+
+        // PropertyPurchasedイベントを記録
+        gameState.events.add(
+            GameEvent.PropertyPurchased(
+                turnNumber = gameState.turnNumber,
+                playerName = player.name,
+                propertyName = property.name,
+                price = property.price
+            )
+        )
+
         return ownedProperty
     }
 
@@ -60,16 +134,42 @@ class GameService {
         payer: Player,
         receiver: Player,
         rentAmount: Int,
+        property: Property,
+        gameState: GameState,
     ) {
         val amount: Money = Money(rentAmount)
         payer.pay(amount)
         receiver.receiveMoney(amount)
+
+        // RentPaidイベントを記録
+        gameState.events.add(
+            GameEvent.RentPaid(
+                turnNumber = gameState.turnNumber,
+                payerName = payer.name,
+                receiverName = receiver.name,
+                propertyName = property.name,
+                amount = rentAmount
+            )
+        )
     }
 
-    fun bankruptPlayer(player: Player): List<Property> {
+    fun bankruptPlayer(
+        player: Player,
+        gameState: GameState,
+    ): List<Property> {
         val properties: List<Property> = player.ownedProperties.toList()
         val releasedProperties: List<Property> = properties.map { it.withoutOwner() }
         player.goBankrupt()
+
+        // PlayerBankruptedイベントを記録
+        gameState.events.add(
+            GameEvent.PlayerBankrupted(
+                turnNumber = gameState.turnNumber,
+                playerName = player.name,
+                finalMoney = player.money
+            )
+        )
+
         return releasedProperties
     }
 
@@ -99,7 +199,7 @@ class GameService {
 
         when (val ownership: PropertyOwnership = property.ownership) {
             is PropertyOwnership.Unowned -> processUnownedProperty(player, gameState, property)
-            is PropertyOwnership.OwnedByPlayer -> processOwnedProperty(player, ownership, property)
+            is PropertyOwnership.OwnedByPlayer -> processOwnedProperty(player, ownership, property, gameState)
         }
     }
 
@@ -109,7 +209,7 @@ class GameService {
         property: Property,
     ) {
         if (player.strategy.shouldBuy(property, player.money)) {
-            val ownedProperty: Property = buyProperty(player, property)
+            val ownedProperty: Property = buyProperty(player, property, gameState)
             gameState.board.updateProperty(ownedProperty)
         }
     }
@@ -118,10 +218,11 @@ class GameService {
         player: Player,
         ownership: PropertyOwnership.OwnedByPlayer,
         property: Property,
+        gameState: GameState,
     ) {
         val owner: Player = ownership.player
         if (owner != player) {
-            payRent(player, owner, property.rent)
+            payRent(player, owner, property.rent, property, gameState)
         }
     }
 }

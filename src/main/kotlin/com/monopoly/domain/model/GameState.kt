@@ -3,6 +3,7 @@ package com.monopoly.domain.model
 class GameState(
     val players: List<Player>,
     val board: Board,
+    val events: MutableList<GameEvent> = mutableListOf()
 ) {
     private var currentPlayerIndex: Int = 0
     private var gameOver: Boolean = false
