@@ -1,5 +1,6 @@
 package com.monopoly.visualization
 
+import com.monopoly.statistics.DetailedStatistics
 import com.monopoly.statistics.GameStatistics
 import java.io.File
 import java.time.Instant
@@ -13,6 +14,7 @@ import kotlin.math.max
 class StatisticsReportGenerator(
     private val barChartGenerator: BarChartGenerator = BarChartGenerator(),
     private val histogramGenerator: HistogramGenerator = HistogramGenerator(),
+    private val lineChartGenerator: LineChartGenerator = LineChartGenerator(),
 ) {
     /**
      * 統計レポートのHTMLを生成
@@ -66,6 +68,70 @@ class StatisticsReportGenerator(
     fun saveToFile(statistics: GameStatistics, filename: String = generateFilename()): File {
         val file = File(filename)
         file.writeText(generate(statistics))
+        return file
+    }
+
+    /**
+     * 詳細統計レポートのHTMLを生成（Phase 9）
+     *
+     * @param detailedStats 詳細統計データ
+     * @return HTML文字列
+     */
+    fun generate(detailedStats: DetailedStatistics): String {
+        return buildString {
+            appendLine("<!DOCTYPE html>")
+            appendLine("<html lang=\"ja\">")
+            appendLine("<head>")
+            appendLine("  <meta charset=\"UTF-8\">")
+            appendLine("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
+            appendLine("  <title>Monopoly Detailed Statistics</title>")
+            appendLine("  <style>")
+            appendLine(generateStyles())
+            appendLine("  </style>")
+            appendLine("</head>")
+            appendLine("<body>")
+            appendLine("  <div class=\"container\">")
+
+            // ヘッダー
+            appendLine(generateHeader(detailedStats.basicStats))
+
+            // サマリーセクション
+            appendLine(generateSummarySection(detailedStats.basicStats))
+
+            // 勝率グラフセクション
+            appendLine(generateWinRateChartSection(detailedStats.basicStats))
+
+            // ターン数分布セクション
+            appendLine(generateTurnDistributionSection(detailedStats.basicStats))
+
+            // 詳細統計セクション
+            appendLine(generateDetailedStatsSection(detailedStats.basicStats))
+
+            // プロパティROIランキングセクション（Phase 9）
+            appendLine(generatePropertyRoiSection(detailedStats))
+
+            // 資産推移セクション（Phase 9）
+            appendLine(generateAssetHistorySection(detailedStats))
+
+            // 破産分析セクション（Phase 9）
+            appendLine(generateBankruptcySection(detailedStats))
+
+            appendLine("  </div>")
+            appendLine("</body>")
+            appendLine("</html>")
+        }
+    }
+
+    /**
+     * 詳細統計レポートをファイルに保存（Phase 9）
+     *
+     * @param detailedStats 詳細統計データ
+     * @param filename ファイル名（省略時は自動生成）
+     * @return 保存したファイル
+     */
+    fun saveToFile(detailedStats: DetailedStatistics, filename: String = generateFilename()): File {
+        val file = File(filename)
+        file.writeText(generate(detailedStats))
         return file
     }
 
@@ -336,6 +402,174 @@ class StatisticsReportGenerator(
                 appendLine("            <td class=\"number\">\$${String.format("%,.0f", playerStats.averageFinalAssets)}</td>")
                 appendLine("            <td class=\"number\">\$${String.format("%,.0f", playerStats.averageFinalCash)}</td>")
                 appendLine("            <td class=\"number\">${String.format("%.1f", playerStats.averagePropertiesOwned)}</td>")
+                appendLine("          </tr>")
+            }
+
+            appendLine("        </tbody>")
+            appendLine("      </table>")
+            appendLine("    </div>")
+        }
+    }
+
+    /**
+     * プロパティROIランキングセクションを生成（Phase 9）
+     */
+    private fun generatePropertyRoiSection(detailedStats: DetailedStatistics): String {
+        // ROIでソート（降順）
+        val sortedProperties = detailedStats.propertyStatistics.sortedByDescending { it.roi }
+
+        return buildString {
+            appendLine("    <div class=\"section\">")
+            appendLine("      <h2>🏠 Property ROI Ranking</h2>")
+            appendLine("      <table>")
+            appendLine("        <thead>")
+            appendLine("          <tr>")
+            appendLine("            <th>Property</th>")
+            appendLine("            <th>Color Group</th>")
+            appendLine("            <th class=\"number\">Price</th>")
+            appendLine("            <th class=\"number\">Purchase Rate</th>")
+            appendLine("            <th class=\"number\">Avg Rent/Game</th>")
+            appendLine("            <th class=\"number\">ROI</th>")
+            appendLine("            <th class=\"number\">Win Rate When Owned</th>")
+            appendLine("          </tr>")
+            appendLine("        </thead>")
+            appendLine("        <tbody>")
+
+            sortedProperties.forEach { prop ->
+                appendLine("          <tr>")
+                appendLine("            <td>${escapeHtml(prop.propertyName)}</td>")
+                appendLine("            <td>${escapeHtml(prop.colorGroup)}</td>")
+                appendLine("            <td class=\"number\">\$${prop.price}</td>")
+                appendLine("            <td class=\"number\">${String.format("%.1f%%", prop.purchaseRate * 100)}</td>")
+                appendLine("            <td class=\"number\">\$${String.format("%.1f", prop.averageRentPerGame)}</td>")
+                appendLine("            <td class=\"number\">${String.format("%.2f", prop.roi)}</td>")
+                appendLine("            <td class=\"number\">${String.format("%.1f%%", prop.winRateWhenOwned * 100)}</td>")
+                appendLine("          </tr>")
+            }
+
+            appendLine("        </tbody>")
+            appendLine("      </table>")
+            appendLine("    </div>")
+        }
+    }
+
+    /**
+     * 資産推移セクションを生成（Phase 9）
+     */
+    private fun generateAssetHistorySection(detailedStats: DetailedStatistics): String {
+        // 各プレイヤーの資産推移を取得
+        val playerNames = detailedStats.basicStats.playerStats.keys.toList()
+        val colors = listOf("#3498db", "#e74c3c", "#2ecc71", "#f39c12")
+
+        val lines = playerNames.mapIndexed { index, playerName ->
+            val points = detailedStats.assetHistory.getAverageAssetsByPlayer(playerName)
+            LineChartData.Line(
+                label = playerName,
+                points = points,
+                color = colors[index % colors.size]
+            )
+        }
+
+        val lineChartData = LineChartData(
+            title = "Average Asset Progression",
+            lines = lines
+        )
+
+        val svg = lineChartGenerator.generate(lineChartData)
+
+        return buildString {
+            appendLine("    <div class=\"section\">")
+            appendLine("      <h2>📈 Asset History</h2>")
+            appendLine("      <div class=\"chart-container\">")
+            appendLine(svg)
+            appendLine("      </div>")
+            appendLine("    </div>")
+        }
+    }
+
+    /**
+     * 破産分析セクションを生成（Phase 9）
+     */
+    private fun generateBankruptcySection(detailedStats: DetailedStatistics): String {
+        val analysis = detailedStats.bankruptcyAnalysis
+        val bankruptcyByPlayer = analysis.getBankruptcyCountByPlayer()
+        val topCausers = analysis.getTopBankruptcyCausers()
+
+        return buildString {
+            appendLine("    <div class=\"section\">")
+            appendLine("      <h2>💸 Bankruptcy Analysis</h2>")
+
+            // サマリー
+            appendLine("      <div class=\"summary-grid\">")
+            appendLine("        <div class=\"summary-card\">")
+            appendLine("          <div class=\"label\">Total Bankruptcies</div>")
+            appendLine("          <div class=\"value\">${analysis.totalBankruptcies}</div>")
+            appendLine("        </div>")
+            appendLine("        <div class=\"summary-card\">")
+            appendLine("          <div class=\"label\">Average Bankruptcy Turn</div>")
+            appendLine("          <div class=\"value\">${String.format("%.1f", analysis.averageBankruptcyTurn)}</div>")
+            appendLine("        </div>")
+            appendLine("      </div>")
+
+            // 破産回数テーブル
+            appendLine("      <h3>Bankruptcies by Player</h3>")
+            appendLine("      <table>")
+            appendLine("        <thead>")
+            appendLine("          <tr>")
+            appendLine("            <th>Player</th>")
+            appendLine("            <th class=\"number\">Bankruptcy Count</th>")
+            appendLine("          </tr>")
+            appendLine("        </thead>")
+            appendLine("        <tbody>")
+
+            bankruptcyByPlayer.entries.sortedByDescending { it.value }.forEach { (playerName, count) ->
+                appendLine("          <tr>")
+                appendLine("            <td>${escapeHtml(playerName)}</td>")
+                appendLine("            <td class=\"number\">$count</td>")
+                appendLine("          </tr>")
+            }
+
+            appendLine("        </tbody>")
+            appendLine("      </table>")
+
+            // トップ破産原因者テーブル
+            if (topCausers.isNotEmpty()) {
+                appendLine("      <h3>Top Bankruptcy Causers</h3>")
+                appendLine("      <table>")
+                appendLine("        <thead>")
+                appendLine("          <tr>")
+                appendLine("            <th>Player</th>")
+                appendLine("            <th class=\"number\">Times Caused Bankruptcy</th>")
+                appendLine("          </tr>")
+                appendLine("        </thead>")
+                appendLine("        <tbody>")
+
+                topCausers.forEach { (playerName, count) ->
+                    appendLine("          <tr>")
+                    appendLine("            <td>${escapeHtml(playerName)}</td>")
+                    appendLine("            <td class=\"number\">$count</td>")
+                    appendLine("          </tr>")
+                }
+
+                appendLine("        </tbody>")
+                appendLine("      </table>")
+            }
+
+            // 破産分布テーブル
+            appendLine("      <h3>Bankruptcy Distribution by Turn Range</h3>")
+            appendLine("      <table>")
+            appendLine("        <thead>")
+            appendLine("          <tr>")
+            appendLine("            <th>Turn Range</th>")
+            appendLine("            <th class=\"number\">Count</th>")
+            appendLine("          </tr>")
+            appendLine("        </thead>")
+            appendLine("        <tbody>")
+
+            analysis.bankruptcyDistribution.entries.sortedBy { it.key.first }.forEach { (range, count) ->
+                appendLine("          <tr>")
+                appendLine("            <td>${range.first}-${range.last}</td>")
+                appendLine("            <td class=\"number\">$count</td>")
                 appendLine("          </tr>")
             }
 
