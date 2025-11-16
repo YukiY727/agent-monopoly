@@ -59,6 +59,7 @@ class GameService {
     fun runGame(
         gameState: GameState,
         dice: com.monopoly.domain.model.Dice,
+        maxTurns: Int = 1000,
     ): Player {
         // GameStartedイベントを記録
         gameState.events.add(
@@ -68,12 +69,18 @@ class GameService {
             )
         )
 
-        while (!checkGameEnd(gameState)) {
+        while (!checkGameEnd(gameState) && gameState.turnNumber < maxTurns) {
             executeTurn(gameState, dice)
         }
         gameState.endGame()
 
-        val winner: Player = gameState.players.first { !it.isBankrupt }
+        // 最大ターン数に達した場合は、最も資産の多いプレイヤーを勝者とする
+        val winner: Player = if (gameState.getActivePlayerCount() > 1) {
+            gameState.players.filter { !it.isBankrupt }.maxByOrNull { it.getTotalAssets() }
+                ?: gameState.players.first { !it.isBankrupt }
+        } else {
+            gameState.players.first { !it.isBankrupt }
+        }
 
         // GameEndedイベントを記録
         gameState.events.add(
