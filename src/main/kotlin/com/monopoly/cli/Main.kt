@@ -13,7 +13,11 @@ import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import com.monopoly.domain.strategy.BuyStrategy
 import com.monopoly.domain.strategy.ConservativeStrategy
 import com.monopoly.domain.strategy.RandomStrategy
+import com.monopoly.export.CsvExporter
+import com.monopoly.export.JsonExporter
 import com.monopoly.simulation.GameRunner
+import com.monopoly.simulation.MultiGameResult
+import com.monopoly.statistics.StatisticsCalculator
 import kotlin.system.exitProcess
 
 @Suppress("MagicNumber")
@@ -61,6 +65,8 @@ data class GameConfig(
     val strategy: BuyStrategy,
     val numberOfGames: Int = 1,
     val generateReport: Boolean = true,
+    val exportJson: Boolean = true,
+    val exportCsv: Boolean = true,
 )
 
 fun createStrategy(strategyName: String): BuyStrategy =
@@ -85,6 +91,8 @@ fun parseArgs(args: Array<String>): GameConfig {
     var strategyName = "always-buy"
     var numberOfGames = 1
     var generateReport = true
+    var exportJson = true
+    var exportCsv = true
 
     var i = 0
     while (i < args.size) {
@@ -111,18 +119,30 @@ fun parseArgs(args: Array<String>): GameConfig {
             "--no-report" -> {
                 generateReport = false
             }
+            "--export-json" -> {
+                exportJson = true
+                exportCsv = false
+            }
+            "--export-csv" -> {
+                exportJson = false
+                exportCsv = true
+            }
+            "--no-export" -> {
+                exportJson = false
+                exportCsv = false
+            }
         }
         i++
     }
 
     val strategy = createStrategy(strategyName)
-    return GameConfig(strategy, numberOfGames, generateReport)
+    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv)
 }
 
 fun printHelp() {
     println(
         """
-        Monopoly Game Simulator - Phase 5
+        Monopoly Game Simulator - Phase 6
 
         Usage: ./gradlew run --args="[options]"
 
@@ -134,17 +154,23 @@ fun printHelp() {
                              デフォルト: always-buy
           --games <N>        実行するゲーム数を指定（デフォルト: 1）
           --no-report        HTMLレポート生成を抑制
+          --export-json      JSON形式のみでエクスポート
+          --export-csv       CSV形式のみでエクスポート
+          --no-export        統計エクスポートを抑制
           --help             ヘルプを表示
 
         Examples:
           # 単一ゲーム実行
           ./gradlew run --args="--strategy always-buy"
 
-          # 100ゲーム実行
+          # 100ゲーム実行（JSON/CSV両方エクスポート）
           ./gradlew run --args="--strategy random --games 100"
 
-          # 10ゲーム実行（レポートなし）
-          ./gradlew run --args="--strategy conservative --games 10 --no-report"
+          # JSON形式のみエクスポート
+          ./gradlew run --args="--strategy random --games 100 --export-json"
+
+          # エクスポートなし
+          ./gradlew run --args="--strategy random --games 100 --no-export"
         """.trimIndent(),
     )
 }
@@ -169,7 +195,7 @@ private fun runSingleGame(config: GameConfig) {
     val strategy2: BuyStrategy = config.strategy
 
     println("=".repeat(60))
-    println("Monopoly Game - Phase 5 (Single Game)")
+    println("Monopoly Game - Phase 6 (Single Game)")
     println("=".repeat(60))
     println()
 
@@ -257,7 +283,7 @@ private fun runSingleGame(config: GameConfig) {
 @Suppress("MagicNumber")
 private fun runMultipleGames(config: GameConfig) {
     println("=".repeat(60))
-    println("Monopoly Game - Phase 5 (Multiple Games)")
+    println("Monopoly Game - Phase 6 (Multiple Games)")
     println("Games: ${config.numberOfGames}")
     println("=".repeat(60))
     println()
@@ -284,6 +310,11 @@ private fun runMultipleGames(config: GameConfig) {
     val summaryPrinter = ResultSummaryPrinter()
     summaryPrinter.print(result)
 
+    // 統計エクスポート（Phase 6の新機能）
+    if (config.numberOfGames > 1) {
+        exportStatistics(result, config)
+    }
+
     // オプション: 最後のゲームのみレポート生成
     if (config.generateReport) {
         val lastGameState = result.gameResults.last().finalState
@@ -292,4 +323,29 @@ private fun runMultipleGames(config: GameConfig) {
         println("Last game summary report: ${reportFile.absolutePath}")
         println()
     }
+}
+
+/**
+ * 統計データをエクスポート
+ */
+private fun exportStatistics(result: MultiGameResult, config: GameConfig) {
+    // 統計計算
+    val calculator = StatisticsCalculator()
+    val statistics = calculator.calculate(result)
+
+    // JSON エクスポート
+    if (config.exportJson) {
+        val jsonExporter = JsonExporter()
+        val jsonFile = jsonExporter.export(statistics)
+        println("Statistics exported to JSON: ${jsonFile.absolutePath}")
+    }
+
+    // CSV エクスポート
+    if (config.exportCsv) {
+        val csvExporter = CsvExporter()
+        val csvFile = csvExporter.export(result)
+        println("Results exported to CSV: ${csvFile.absolutePath}")
+    }
+
+    println()
 }
