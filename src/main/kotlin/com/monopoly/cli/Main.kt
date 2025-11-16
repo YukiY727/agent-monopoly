@@ -17,8 +17,10 @@ import com.monopoly.export.CsvExporter
 import com.monopoly.export.JsonExporter
 import com.monopoly.simulation.GameRunner
 import com.monopoly.simulation.MultiGameResult
+import com.monopoly.simulation.ParallelGameRunner
 import com.monopoly.statistics.StatisticsCalculator
 import com.monopoly.visualization.StatisticsReportGenerator
+import kotlinx.coroutines.runBlocking
 import kotlin.system.exitProcess
 
 @Suppress("MagicNumber")
@@ -69,6 +71,8 @@ data class GameConfig(
     val exportJson: Boolean = true,
     val exportCsv: Boolean = true,
     val generateVisualization: Boolean = true,
+    val parallel: Int? = null,
+    val sequential: Boolean = false,
 )
 
 fun createStrategy(strategyName: String): BuyStrategy =
@@ -96,6 +100,8 @@ fun parseArgs(args: Array<String>): GameConfig {
     var exportJson = true
     var exportCsv = true
     var generateVisualization = true
+    var parallel: Int? = null
+    var sequential = false
 
     var i = 0
     while (i < args.size) {
@@ -118,6 +124,22 @@ fun parseArgs(args: Array<String>): GameConfig {
                     }
                     i++
                 }
+            }
+            "--parallel" -> {
+                if (i + 1 < args.size) {
+                    parallel = args[i + 1].toIntOrNull() ?: run {
+                        println("Error: --parallel requires a valid integer")
+                        exitProcess(1)
+                    }
+                    if (parallel!! <= 0) {
+                        println("Error: --parallel must be a positive integer")
+                        exitProcess(1)
+                    }
+                    i++
+                }
+            }
+            "--sequential" -> {
+                sequential = true
             }
             "--no-report" -> {
                 generateReport = false
@@ -142,13 +164,13 @@ fun parseArgs(args: Array<String>): GameConfig {
     }
 
     val strategy = createStrategy(strategyName)
-    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv, generateVisualization)
+    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv, generateVisualization, parallel, sequential)
 }
 
 fun printHelp() {
     println(
         """
-        Monopoly Game Simulator - Phase 7
+        Monopoly Game Simulator - Phase 8
 
         Usage: ./gradlew run --args="[options]"
 
@@ -159,6 +181,8 @@ fun printHelp() {
                              conservative: 一定額以上の現金を保持
                              デフォルト: always-buy
           --games <N>        実行するゲーム数を指定（デフォルト: 1）
+          --parallel <N>     並列度を指定（デフォルト: CPUコア数）
+          --sequential       逐次実行を強制（デバッグ用）
           --no-report        HTMLレポート生成を抑制
           --export-json      JSON形式のみでエクスポート
           --export-csv       CSV形式のみでエクスポート
@@ -170,20 +194,20 @@ fun printHelp() {
           # 単一ゲーム実行
           ./gradlew run --args="--strategy always-buy"
 
-          # 100ゲーム実行（JSON/CSV/可視化レポート全て生成）
+          # 100ゲーム実行（並列実行、デフォルト並列度）
           ./gradlew run --args="--strategy random --games 100"
 
-          # JSON形式のみエクスポート、可視化なし
-          ./gradlew run --args="--strategy random --games 100 --export-json --no-visualize"
+          # 並列度を指定して実行
+          ./gradlew run --args="--strategy random --games 1000 --parallel 4"
 
-          # 統計可視化レポートのみ生成（エクスポートなし）
-          ./gradlew run --args="--strategy random --games 100 --no-export"
+          # 逐次実行（デバッグ用）
+          ./gradlew run --args="--strategy random --games 100 --sequential"
         """.trimIndent(),
     )
 }
 
 @Suppress("MagicNumber")
-fun main(args: Array<String>) {
+fun main(args: Array<String>) = runBlocking {
     val config: GameConfig = parseArgs(args)
 
     if (config.numberOfGames == 1) {
@@ -202,7 +226,7 @@ private fun runSingleGame(config: GameConfig) {
     val strategy2: BuyStrategy = config.strategy
 
     println("=".repeat(60))
-    println("Monopoly Game - Phase 7 (Single Game)")
+    println("Monopoly Game - Phase 8 (Single Game)")
     println("=".repeat(60))
     println()
 
@@ -285,13 +309,18 @@ private fun runSingleGame(config: GameConfig) {
 }
 
 /**
- * 複数ゲームを実行（Phase 5の新機能）
+ * 複数ゲームを実行（Phase 5の新機能、Phase 8で並列化）
  */
 @Suppress("MagicNumber")
-private fun runMultipleGames(config: GameConfig) {
+private suspend fun runMultipleGames(config: GameConfig) {
+    val executionMode = if (config.sequential) "Sequential" else "Parallel"
     println("=".repeat(60))
-    println("Monopoly Game - Phase 7 (Multiple Games)")
+    println("Monopoly Game - Phase 8 (Multiple Games - $executionMode)")
     println("Games: ${config.numberOfGames}")
+    if (!config.sequential) {
+        val parallelism = config.parallel ?: Runtime.getRuntime().availableProcessors()
+        println("Parallelism: $parallelism")
+    }
     println("=".repeat(60))
     println()
 
@@ -302,16 +331,29 @@ private fun runMultipleGames(config: GameConfig) {
     )
 
     val gameService = GameService()
-    val dice = Dice()
-    val gameRunner = GameRunner(gameService, dice)
 
-    // 複数ゲーム実行
-    val result = gameRunner.runMultipleGames(
-        numberOfGames = config.numberOfGames,
-        playerStrategies = playerStrategies,
-        board = board,
-        showProgress = true,
-    )
+    // 並列実行 or 逐次実行
+    val result = if (config.sequential) {
+        // 逐次実行（デバッグ用）
+        val dice = Dice()
+        val gameRunner = GameRunner(gameService, dice)
+        gameRunner.runMultipleGames(
+            numberOfGames = config.numberOfGames,
+            playerStrategies = playerStrategies,
+            board = board,
+            showProgress = true,
+        )
+    } else {
+        // 並列実行（Phase 8の新機能）
+        val parallelism = config.parallel ?: Runtime.getRuntime().availableProcessors()
+        val parallelGameRunner = ParallelGameRunner(gameService, parallelism)
+        parallelGameRunner.runMultipleGames(
+            numberOfGames = config.numberOfGames,
+            playerStrategies = playerStrategies,
+            board = board,
+            showProgress = true,
+        )
+    }
 
     // 結果サマリー表示
     val summaryPrinter = ResultSummaryPrinter()
