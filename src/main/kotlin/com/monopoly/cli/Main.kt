@@ -18,6 +18,7 @@ import com.monopoly.export.JsonExporter
 import com.monopoly.simulation.GameRunner
 import com.monopoly.simulation.MultiGameResult
 import com.monopoly.statistics.StatisticsCalculator
+import com.monopoly.visualization.StatisticsReportGenerator
 import kotlin.system.exitProcess
 
 @Suppress("MagicNumber")
@@ -67,6 +68,7 @@ data class GameConfig(
     val generateReport: Boolean = true,
     val exportJson: Boolean = true,
     val exportCsv: Boolean = true,
+    val generateVisualization: Boolean = true,
 )
 
 fun createStrategy(strategyName: String): BuyStrategy =
@@ -93,6 +95,7 @@ fun parseArgs(args: Array<String>): GameConfig {
     var generateReport = true
     var exportJson = true
     var exportCsv = true
+    var generateVisualization = true
 
     var i = 0
     while (i < args.size) {
@@ -131,18 +134,21 @@ fun parseArgs(args: Array<String>): GameConfig {
                 exportJson = false
                 exportCsv = false
             }
+            "--no-visualize" -> {
+                generateVisualization = false
+            }
         }
         i++
     }
 
     val strategy = createStrategy(strategyName)
-    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv)
+    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv, generateVisualization)
 }
 
 fun printHelp() {
     println(
         """
-        Monopoly Game Simulator - Phase 6
+        Monopoly Game Simulator - Phase 7
 
         Usage: ./gradlew run --args="[options]"
 
@@ -157,19 +163,20 @@ fun printHelp() {
           --export-json      JSON形式のみでエクスポート
           --export-csv       CSV形式のみでエクスポート
           --no-export        統計エクスポートを抑制
+          --no-visualize     統計可視化レポート生成を抑制
           --help             ヘルプを表示
 
         Examples:
           # 単一ゲーム実行
           ./gradlew run --args="--strategy always-buy"
 
-          # 100ゲーム実行（JSON/CSV両方エクスポート）
+          # 100ゲーム実行（JSON/CSV/可視化レポート全て生成）
           ./gradlew run --args="--strategy random --games 100"
 
-          # JSON形式のみエクスポート
-          ./gradlew run --args="--strategy random --games 100 --export-json"
+          # JSON形式のみエクスポート、可視化なし
+          ./gradlew run --args="--strategy random --games 100 --export-json --no-visualize"
 
-          # エクスポートなし
+          # 統計可視化レポートのみ生成（エクスポートなし）
           ./gradlew run --args="--strategy random --games 100 --no-export"
         """.trimIndent(),
     )
@@ -195,7 +202,7 @@ private fun runSingleGame(config: GameConfig) {
     val strategy2: BuyStrategy = config.strategy
 
     println("=".repeat(60))
-    println("Monopoly Game - Phase 6 (Single Game)")
+    println("Monopoly Game - Phase 7 (Single Game)")
     println("=".repeat(60))
     println()
 
@@ -283,7 +290,7 @@ private fun runSingleGame(config: GameConfig) {
 @Suppress("MagicNumber")
 private fun runMultipleGames(config: GameConfig) {
     println("=".repeat(60))
-    println("Monopoly Game - Phase 6 (Multiple Games)")
+    println("Monopoly Game - Phase 7 (Multiple Games)")
     println("Games: ${config.numberOfGames}")
     println("=".repeat(60))
     println()
@@ -345,6 +352,13 @@ private fun exportStatistics(result: MultiGameResult, config: GameConfig) {
         val csvExporter = CsvExporter()
         val csvFile = csvExporter.export(result)
         println("Results exported to CSV: ${csvFile.absolutePath}")
+    }
+
+    // 統計可視化レポート生成（Phase 7の新機能）
+    if (config.generateVisualization) {
+        val statisticsReportGenerator = StatisticsReportGenerator()
+        val visualizationFile = statisticsReportGenerator.saveToFile(statistics)
+        println("Statistics visualization report: ${visualizationFile.absolutePath}")
     }
 
     println()
