@@ -65,14 +65,22 @@ dependencies {
 | **Svelte** | 高速、シンプル、バンドルサイズ小 | コミュニティ小、ライブラリ少 | ⭐⭐⭐ |
 | **Vanilla JS + Alpine.js** | 依存なし、軽量 | 大規模化困難 | ⭐⭐ |
 
-#### 推奨: **React + TypeScript**
+#### 推奨: **ハイブリッドアプローチ**
 
-**理由**:
-- データ可視化ライブラリが豊富（Recharts, D3.js, Plotly.js）
-- WebSocketとの統合が容易
-- TypeScriptで型安全性を確保
-- 保守性が高い
-- 将来的な拡張に対応しやすい
+Phase 13のUIは**性質が異なる2つの領域**で構成されるため、技術スタックを使い分けます。
+
+##### 領域A: データ分析ダッシュボード（React）
+
+**対象機能**:
+- シミュレーション設定フォーム
+- 統計グラフ（Recharts）
+- 進捗バー、データテーブル
+- 戦略比較チャート
+
+**選定理由**:
+- 宣言的UIで状態管理が重要
+- データ可視化ライブラリが豊富
+- フォームとグラフのエコシステムが成熟
 
 **技術スタック**:
 ```
@@ -83,6 +91,54 @@ dependencies {
 - TanStack Query（データフェッチング）
 - Zustand（状態管理、軽量）
 - Storybook（コンポーネント開発）
+```
+
+##### 領域B: ゲーム可視化エンジン（TypeScript スクラッチ）
+
+**対象機能**:
+- モノポリーボードのレンダリング
+- プレイヤーコマの移動アニメーション
+- ターン再生（再生/停止/早送り/巻き戻し）
+- イベントのビジュアル表現
+
+**選定理由**:
+- **頻繁なDOM更新**: Reactの仮想DOMはオーバーヘッド
+- **アニメーション制御**: requestAnimationFrameで直接制御が必要
+- **ゲーム特有ロジック**: デザインパターンで柔軟に実装
+- **パフォーマンス**: Canvas/SVGを直接操作
+
+**技術スタック**:
+```
+- TypeScript（純粋なOOP）
+- Canvas API（高速レンダリング）
+- SVG（インタラクティブな要素）
+- デザインパターン（Observer, Command, State, Strategy）
+- Web Animations API（スムーズなアニメーション）
+```
+
+**アーキテクチャ図**:
+```
+┌─────────────────────────────────────────────────┐
+│     React Dashboard (領域A)                     │
+│  ┌───────────────────────────────────────────┐  │
+│  │ SimulationSetup, Charts, DataTable       │  │
+│  └───────────────┬───────────────────────────┘  │
+│                  │ イベント通信                 │
+│  ┌───────────────▼───────────────────────────┐  │
+│  │ GameVisualizationWrapper (React)         │  │
+│  │  <canvas ref={canvasRef} />              │  │
+│  └───────────────┬───────────────────────────┘  │
+└──────────────────┼──────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────┐
+│  Game Visualization Engine (領域B - TS)         │
+│  ┌──────────────────────────────────────────┐  │
+│  │ GameRenderer (Canvas操作)                │  │
+│  │ AnimationController (タイムライン管理)   │  │
+│  │ EventPlayer (イベント再生)               │  │
+│  │ BoardRenderer (ボード描画)               │  │
+│  └──────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────┘
 ```
 
 ### 3. 状態管理戦略
@@ -458,7 +514,7 @@ agent-monopoly/
 │
 ├── frontend/                   # 🆕 React フロントエンド
 │   ├── src/
-│   │   ├── components/
+│   │   ├── components/        # 領域A: React コンポーネント
 │   │   │   ├── SimulationSetup/
 │   │   │   │   ├── SimulationSetup.tsx
 │   │   │   │   └── SimulationSetup.stories.tsx
@@ -468,20 +524,48 @@ agent-monopoly/
 │   │   │   ├── ProgressMonitor/
 │   │   │   │   ├── ProgressMonitor.tsx
 │   │   │   │   └── ProgressMonitor.stories.tsx
-│   │   │   └── ChartViewer/
-│   │   │       ├── ChartViewer.tsx
-│   │   │       └── ChartViewer.stories.tsx
+│   │   │   ├── ChartViewer/
+│   │   │   │   ├── ChartViewer.tsx
+│   │   │   │   └── ChartViewer.stories.tsx
+│   │   │   └── GameVisualization/
+│   │   │       ├── GameVisualizationWrapper.tsx  # React wrapper
+│   │   │       └── GameVisualizationWrapper.stories.tsx
+│   │   ├── game-engine/       # 🆕 領域B: TypeScript ゲームエンジン
+│   │   │   ├── core/
+│   │   │   │   ├── GameRenderer.ts          # メインレンダラー
+│   │   │   │   ├── AnimationController.ts   # アニメーション管理
+│   │   │   │   ├── EventPlayer.ts           # イベント再生
+│   │   │   │   └── TimelineManager.ts       # タイムライン制御
+│   │   │   ├── rendering/
+│   │   │   │   ├── BoardRenderer.ts         # ボード描画
+│   │   │   │   ├── PlayerRenderer.ts        # プレイヤーコマ描画
+│   │   │   │   ├── PropertyRenderer.ts      # プロパティ描画
+│   │   │   │   └── AnimationEngine.ts       # アニメーション実行
+│   │   │   ├── patterns/
+│   │   │   │   ├── Observer.ts              # Observer パターン
+│   │   │   │   ├── Command.ts               # Command パターン
+│   │   │   │   ├── State.ts                 # State パターン
+│   │   │   │   └── Strategy.ts              # Strategy パターン
+│   │   │   ├── models/
+│   │   │   │   ├── GameState.ts             # ゲーム状態
+│   │   │   │   ├── BoardModel.ts            # ボードモデル
+│   │   │   │   └── PlayerModel.ts           # プレイヤーモデル
+│   │   │   └── utils/
+│   │   │       ├── CanvasUtils.ts           # Canvas ユーティリティ
+│   │   │       └── AnimationUtils.ts        # アニメーションヘルパー
 │   │   ├── hooks/
 │   │   │   ├── useSimulation.ts
 │   │   │   ├── useWebSocket.ts
-│   │   │   └── useSimulationProgress.ts
+│   │   │   ├── useSimulationProgress.ts
+│   │   │   └── useGameEngine.ts             # 🆕 ゲームエンジン連携
 │   │   ├── stores/
 │   │   │   ├── useUIStore.ts
 │   │   │   └── useSimulationStore.ts
 │   │   ├── api/
 │   │   │   └── client.ts
 │   │   ├── types/
-│   │   │   └── simulation.ts
+│   │   │   ├── simulation.ts
+│   │   │   └── gameEvents.ts                # 🆕 ゲームイベント型定義
 │   │   └── App.tsx
 │   ├── .storybook/
 │   │   ├── main.ts
@@ -660,6 +744,454 @@ ws://localhost:8080/ws/simulation/{simulationId}
 }
 ```
 
+## ゲーム可視化エンジンの設計パターン（領域B）
+
+このセクションでは、領域B（TypeScriptゲーム可視化エンジン）で使用するデザインパターンを詳述します。
+
+### 1. Observer パターン（イベント駆動アーキテクチャ）
+
+**目的**: ゲームイベントの発生を監視し、複数のレンダラーに通知
+
+**実装例**:
+```typescript
+// patterns/Observer.ts
+export interface Observer<T> {
+  update(data: T): void;
+}
+
+export class Subject<T> {
+  private observers: Observer<T>[] = [];
+
+  attach(observer: Observer<T>): void {
+    this.observers.push(observer);
+  }
+
+  detach(observer: Observer<T>): void {
+    const index = this.observers.indexOf(observer);
+    if (index > -1) {
+      this.observers.splice(index, 1);
+    }
+  }
+
+  notify(data: T): void {
+    for (const observer of this.observers) {
+      observer.update(data);
+    }
+  }
+}
+
+// core/EventPlayer.ts
+import { Subject } from '../patterns/Observer';
+import { GameEvent } from '../types/gameEvents';
+
+export class EventPlayer extends Subject<GameEvent> {
+  private timeline: GameEvent[] = [];
+  private currentIndex = 0;
+
+  loadTimeline(events: GameEvent[]): void {
+    this.timeline = events;
+    this.currentIndex = 0;
+  }
+
+  next(): void {
+    if (this.currentIndex < this.timeline.length) {
+      const event = this.timeline[this.currentIndex];
+      this.notify(event); // すべてのObserverに通知
+      this.currentIndex++;
+    }
+  }
+
+  playAll(): void {
+    while (this.currentIndex < this.timeline.length) {
+      this.next();
+    }
+  }
+}
+
+// rendering/PlayerRenderer.ts
+import { Observer } from '../patterns/Observer';
+import { GameEvent } from '../types/gameEvents';
+
+export class PlayerRenderer implements Observer<GameEvent> {
+  constructor(private canvas: HTMLCanvasElement) {}
+
+  update(event: GameEvent): void {
+    if (event.type === 'PlayerMoved') {
+      this.animatePlayerMove(event.playerId, event.fromPosition, event.toPosition);
+    }
+  }
+
+  private animatePlayerMove(playerId: string, from: number, to: number): void {
+    // Canvas上でプレイヤーコマを移動アニメーション
+  }
+}
+```
+
+**使用シーン**:
+- ゲームイベント（移動、購入、破産）の通知
+- 複数のレンダラー（ボード、プレイヤー、ログ）への同時更新
+
+### 2. Command パターン（再生制御）
+
+**目的**: 再生操作（再生/停止/巻き戻し/早送り）をコマンドオブジェクトとして実装
+
+**実装例**:
+```typescript
+// patterns/Command.ts
+export interface Command {
+  execute(): void;
+  undo(): void;
+}
+
+// core/TimelineManager.ts
+import { Command } from '../patterns/Command';
+import { EventPlayer } from './EventPlayer';
+
+export class PlayCommand implements Command {
+  constructor(private player: EventPlayer) {}
+
+  execute(): void {
+    this.player.play();
+  }
+
+  undo(): void {
+    this.player.pause();
+  }
+}
+
+export class RewindCommand implements Command {
+  private savedIndex: number = 0;
+
+  constructor(private player: EventPlayer) {}
+
+  execute(): void {
+    this.savedIndex = this.player.getCurrentIndex();
+    this.player.rewind(10); // 10イベント巻き戻し
+  }
+
+  undo(): void {
+    this.player.seekTo(this.savedIndex);
+  }
+}
+
+export class TimelineManager {
+  private commandHistory: Command[] = [];
+  private currentCommandIndex = -1;
+
+  executeCommand(command: Command): void {
+    command.execute();
+    this.commandHistory = this.commandHistory.slice(0, this.currentCommandIndex + 1);
+    this.commandHistory.push(command);
+    this.currentCommandIndex++;
+  }
+
+  undo(): void {
+    if (this.currentCommandIndex >= 0) {
+      const command = this.commandHistory[this.currentCommandIndex];
+      command.undo();
+      this.currentCommandIndex--;
+    }
+  }
+
+  redo(): void {
+    if (this.currentCommandIndex < this.commandHistory.length - 1) {
+      this.currentCommandIndex++;
+      const command = this.commandHistory[this.currentCommandIndex];
+      command.execute();
+    }
+  }
+}
+```
+
+**使用シーン**:
+- 再生/停止ボタンの実装
+- Undo/Redoの実装
+- タイムライン操作（シーク、早送り、巻き戻し）
+
+### 3. State パターン（アニメーション状態管理）
+
+**目的**: アニメーションの状態（停止/再生中/一時停止/完了）を管理
+
+**実装例**:
+```typescript
+// patterns/State.ts
+export interface AnimationState {
+  play(controller: AnimationController): void;
+  pause(controller: AnimationController): void;
+  stop(controller: AnimationController): void;
+  update(controller: AnimationController, deltaTime: number): void;
+}
+
+// core/AnimationController.ts
+import { AnimationState } from '../patterns/State';
+
+export class IdleState implements AnimationState {
+  play(controller: AnimationController): void {
+    controller.setState(new PlayingState());
+    controller.startAnimation();
+  }
+
+  pause(controller: AnimationController): void {
+    // 何もしない（すでに停止中）
+  }
+
+  stop(controller: AnimationController): void {
+    // 何もしない（すでに停止中）
+  }
+
+  update(controller: AnimationController, deltaTime: number): void {
+    // 何もしない
+  }
+}
+
+export class PlayingState implements AnimationState {
+  play(controller: AnimationController): void {
+    // すでに再生中
+  }
+
+  pause(controller: AnimationController): void {
+    controller.setState(new PausedState());
+    controller.pauseAnimation();
+  }
+
+  stop(controller: AnimationController): void {
+    controller.setState(new IdleState());
+    controller.resetAnimation();
+  }
+
+  update(controller: AnimationController, deltaTime: number): void {
+    controller.advanceAnimation(deltaTime);
+  }
+}
+
+export class PausedState implements AnimationState {
+  play(controller: AnimationController): void {
+    controller.setState(new PlayingState());
+    controller.resumeAnimation();
+  }
+
+  pause(controller: AnimationController): void {
+    // すでに一時停止中
+  }
+
+  stop(controller: AnimationController): void {
+    controller.setState(new IdleState());
+    controller.resetAnimation();
+  }
+
+  update(controller: AnimationController, deltaTime: number): void {
+    // 一時停止中は更新しない
+  }
+}
+
+export class AnimationController {
+  private state: AnimationState = new IdleState();
+  private animationId: number | null = null;
+
+  setState(state: AnimationState): void {
+    this.state = state;
+  }
+
+  play(): void {
+    this.state.play(this);
+  }
+
+  pause(): void {
+    this.state.pause(this);
+  }
+
+  stop(): void {
+    this.state.stop(this);
+  }
+
+  startAnimation(): void {
+    let lastTime = performance.now();
+    const animate = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      this.state.update(this, deltaTime);
+
+      this.animationId = requestAnimationFrame(animate);
+    };
+    this.animationId = requestAnimationFrame(animate);
+  }
+
+  pauseAnimation(): void {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  resumeAnimation(): void {
+    this.startAnimation();
+  }
+
+  resetAnimation(): void {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  advanceAnimation(deltaTime: number): void {
+    // アニメーションを進める
+  }
+}
+```
+
+**使用シーン**:
+- アニメーションの状態遷移（アイドル→再生中→一時停止→完了）
+- 状態に応じた振る舞いの変更
+
+### 4. Strategy パターン（レンダリング戦略）
+
+**目的**: Canvas vs SVGのレンダリング戦略を切り替え可能に
+
+**実装例**:
+```typescript
+// patterns/Strategy.ts
+export interface RenderStrategy {
+  renderBoard(board: BoardModel): void;
+  renderPlayer(player: PlayerModel): void;
+  renderProperty(property: PropertyModel): void;
+  clear(): void;
+}
+
+// rendering/CanvasRenderStrategy.ts
+import { RenderStrategy } from '../patterns/Strategy';
+
+export class CanvasRenderStrategy implements RenderStrategy {
+  constructor(private ctx: CanvasRenderingContext2D) {}
+
+  renderBoard(board: BoardModel): void {
+    // Canvasで高速描画
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+    for (const space of board.spaces) {
+      this.ctx.fillStyle = space.color;
+      this.ctx.fillRect(space.x, space.y, space.width, space.height);
+
+      this.ctx.strokeStyle = '#000';
+      this.ctx.strokeRect(space.x, space.y, space.width, space.height);
+
+      this.ctx.fillStyle = '#000';
+      this.ctx.fillText(space.name, space.x + 5, space.y + 15);
+    }
+  }
+
+  renderPlayer(player: PlayerModel): void {
+    this.ctx.beginPath();
+    this.ctx.arc(player.x, player.y, 10, 0, Math.PI * 2);
+    this.ctx.fillStyle = player.color;
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#000';
+    this.ctx.stroke();
+  }
+
+  renderProperty(property: PropertyModel): void {
+    // プロパティの所有状態を描画
+  }
+
+  clear(): void {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+  }
+}
+
+// rendering/SVGRenderStrategy.ts
+import { RenderStrategy } from '../patterns/Strategy';
+
+export class SVGRenderStrategy implements RenderStrategy {
+  constructor(private svgElement: SVGSVGElement) {}
+
+  renderBoard(board: BoardModel): void {
+    // SVGで描画（インタラクティブ性重視）
+    this.svgElement.innerHTML = ''; // クリア
+
+    for (const space of board.spaces) {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', space.x.toString());
+      rect.setAttribute('y', space.y.toString());
+      rect.setAttribute('width', space.width.toString());
+      rect.setAttribute('height', space.height.toString());
+      rect.setAttribute('fill', space.color);
+      rect.setAttribute('stroke', '#000');
+      rect.addEventListener('click', () => {
+        console.log(`Clicked on ${space.name}`);
+      });
+      this.svgElement.appendChild(rect);
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', (space.x + 5).toString());
+      text.setAttribute('y', (space.y + 15).toString());
+      text.textContent = space.name;
+      this.svgElement.appendChild(text);
+    }
+  }
+
+  renderPlayer(player: PlayerModel): void {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', player.x.toString());
+    circle.setAttribute('cy', player.y.toString());
+    circle.setAttribute('r', '10');
+    circle.setAttribute('fill', player.color);
+    circle.setAttribute('stroke', '#000');
+    this.svgElement.appendChild(circle);
+  }
+
+  renderProperty(property: PropertyModel): void {
+    // プロパティの所有状態をSVGで描画
+  }
+
+  clear(): void {
+    this.svgElement.innerHTML = '';
+  }
+}
+
+// core/GameRenderer.ts
+import { RenderStrategy } from '../patterns/Strategy';
+
+export class GameRenderer {
+  private strategy: RenderStrategy;
+
+  constructor(strategy: RenderStrategy) {
+    this.strategy = strategy;
+  }
+
+  setStrategy(strategy: RenderStrategy): void {
+    this.strategy = strategy;
+  }
+
+  render(gameState: GameState): void {
+    this.strategy.clear();
+    this.strategy.renderBoard(gameState.board);
+    for (const player of gameState.players) {
+      this.strategy.renderPlayer(player);
+    }
+  }
+}
+```
+
+**使用シーン**:
+- Canvas（高速）とSVG（インタラクティブ）の切り替え
+- パフォーマンスとインタラクティビティのトレードオフ
+
+### Canvas vs SVG 比較
+
+| 項目 | Canvas | SVG |
+|-----|--------|-----|
+| **パフォーマンス** | ⭐⭐⭐⭐⭐ ピクセルベース、大量描画に強い | ⭐⭐⭐ DOMベース、オブジェクト数増で遅延 |
+| **アニメーション** | ⭐⭐⭐⭐⭐ requestAnimationFrameで完全制御 | ⭐⭐⭐⭐ Web Animations APIやCSS利用 |
+| **インタラクティビティ** | ⭐⭐ 手動でヒット検出実装 | ⭐⭐⭐⭐⭐ DOMイベントが使える |
+| **拡大縮小** | ⭐⭐ ピクセルぼやけ | ⭐⭐⭐⭐⭐ ベクターで綺麗 |
+| **デバッグ** | ⭐⭐ ピクセル確認のみ | ⭐⭐⭐⭐⭐ DevToolsで要素検査可能 |
+| **推奨用途** | ゲームボード全体、高速アニメーション | プロパティカード、ホバー効果、クリック可能要素 |
+
+**推奨アプローチ**:
+- **ハイブリッド**: ボードはCanvas、プロパティカードやUIはSVG
+- **Strategy パターン**: パフォーマンスが問題になったらCanvasに切り替え可能
+
 ## 段階的実装計画
 
 ### Phase 13-1: バックエンドAPI（MVP）
@@ -778,20 +1310,318 @@ ws://localhost:8080/ws/simulation/{simulationId}
 
 **期間**: 5-7日
 
-### Phase 13-5: 1ゲーム詳細再生（オプション）
+### Phase 13-5: ゲーム可視化エンジン実装（領域B）
 
-**目標**: ゲームの可視化再生
+**目標**: TypeScriptスクラッチによるゲーム再生エンジン
 
 **実装内容**:
-1. ボード可視化コンポーネント
-2. ターンごとの状態再生
-3. イベントログ表示
-4. 再生コントロール（再生/停止/早送り）
+
+#### 1. デザインパターン基盤の実装（1-2日）
+
+```typescript
+// patterns/Observer.ts
+export interface Observer<T> { update(data: T): void; }
+export class Subject<T> { /* ... */ }
+
+// patterns/Command.ts
+export interface Command { execute(): void; undo(): void; }
+
+// patterns/State.ts
+export interface AnimationState { /* ... */ }
+
+// patterns/Strategy.ts
+export interface RenderStrategy { /* ... */ }
+```
+
+**成果物**: 再利用可能なパターンライブラリ
+
+#### 2. コアエンジン実装（2-3日）
+
+```typescript
+// core/EventPlayer.ts
+export class EventPlayer extends Subject<GameEvent> {
+  loadTimeline(events: GameEvent[]): void { /* ... */ }
+  next(): void { /* ... */ }
+  play(): void { /* ... */ }
+  pause(): void { /* ... */ }
+  seekTo(index: number): void { /* ... */ }
+}
+
+// core/AnimationController.ts
+export class AnimationController {
+  private state: AnimationState;
+  play(): void { /* State パターン */ }
+  pause(): void { /* State パターン */ }
+  stop(): void { /* State パターン */ }
+}
+
+// core/TimelineManager.ts
+export class TimelineManager {
+  executeCommand(command: Command): void { /* Command パターン */ }
+  undo(): void { /* ... */ }
+  redo(): void { /* ... */ }
+}
+
+// core/GameRenderer.ts
+export class GameRenderer {
+  private strategy: RenderStrategy;
+  render(gameState: GameState): void { /* Strategy パターン */ }
+  setStrategy(strategy: RenderStrategy): void { /* ... */ }
+}
+```
+
+**成果物**: 再生制御エンジン
+
+#### 3. レンダリング実装（2-3日）
+
+**Canvas戦略**:
+```typescript
+// rendering/CanvasRenderStrategy.ts
+export class CanvasRenderStrategy implements RenderStrategy {
+  renderBoard(board: BoardModel): void {
+    // モノポリーボードを11x11レイアウトで描画
+    // - 各マスを四角形で表示
+    // - プロパティ名、価格を表示
+    // - カラーグループを色分け
+  }
+
+  renderPlayer(player: PlayerModel): void {
+    // プレイヤーコマを円で描画
+    // - 複数プレイヤーが同じマスにいる場合は重ねて表示
+  }
+}
+
+// rendering/BoardRenderer.ts
+export class BoardRenderer implements Observer<GameEvent> {
+  update(event: GameEvent): void {
+    if (event.type === 'PropertyPurchased') {
+      this.highlightProperty(event.propertyPosition);
+    }
+  }
+}
+
+// rendering/PlayerRenderer.ts
+export class PlayerRenderer implements Observer<GameEvent> {
+  update(event: GameEvent): void {
+    if (event.type === 'PlayerMoved') {
+      this.animateMove(event.playerId, event.fromPosition, event.toPosition);
+    }
+  }
+
+  private animateMove(playerId: string, from: number, to: number): void {
+    // Web Animations API or requestAnimationFrameでスムーズ移動
+    const duration = 500; // 500ms
+    const startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // イージング関数適用
+      const eased = this.easeInOutCubic(progress);
+
+      // 位置計算と描画
+      const currentPos = this.interpolatePosition(from, to, eased);
+      this.drawPlayerAt(playerId, currentPos);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  private easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+}
+
+// rendering/AnimationEngine.ts
+export class AnimationEngine {
+  private animations: Map<string, Animation> = new Map();
+
+  addAnimation(id: string, animation: Animation): void { /* ... */ }
+  cancelAnimation(id: string): void { /* ... */ }
+  update(deltaTime: number): void { /* すべてのアニメーションを更新 */ }
+}
+```
+
+**SVG戦略（代替）**:
+```typescript
+// rendering/SVGRenderStrategy.ts
+export class SVGRenderStrategy implements RenderStrategy {
+  renderBoard(board: BoardModel): void {
+    // SVG要素を動的生成
+    // - クリック可能なプロパティ
+    // - ホバーで詳細表示
+  }
+
+  renderPlayer(player: PlayerModel): void {
+    // SVG circle要素でプレイヤー描画
+    // - CSS transitionでアニメーション
+  }
+}
+```
 
 **成果物**:
-- ゲームのビジュアル再生機能
+- Canvas/SVG両対応のレンダラー
+- スムーズなアニメーション
 
-**期間**: 5-7日
+#### 4. React統合（1日）
+
+```typescript
+// components/GameVisualization/GameVisualizationWrapper.tsx
+import React, { useRef, useEffect } from 'react';
+import { useGameEngine } from '../../hooks/useGameEngine';
+
+interface Props {
+  gameEvents: GameEvent[];
+  onEventChange?: (eventIndex: number) => void;
+}
+
+export const GameVisualizationWrapper: React.FC<Props> = ({
+  gameEvents,
+  onEventChange
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { engine, controls } = useGameEngine(canvasRef, gameEvents);
+
+  return (
+    <div className="game-visualization">
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={800}
+        style={{ border: '1px solid #ccc' }}
+      />
+      <div className="controls">
+        <button onClick={controls.play}>▶️ Play</button>
+        <button onClick={controls.pause}>⏸️ Pause</button>
+        <button onClick={controls.stop}>⏹️ Stop</button>
+        <button onClick={controls.rewind}>⏪ Rewind</button>
+        <button onClick={controls.fastForward}>⏩ Fast Forward</button>
+      </div>
+    </div>
+  );
+};
+
+// hooks/useGameEngine.ts
+import { useEffect, useState } from 'react';
+import { GameRenderer } from '../game-engine/core/GameRenderer';
+import { EventPlayer } from '../game-engine/core/EventPlayer';
+import { AnimationController } from '../game-engine/core/AnimationController';
+import { CanvasRenderStrategy } from '../game-engine/rendering/CanvasRenderStrategy';
+
+export function useGameEngine(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  events: GameEvent[]
+) {
+  const [engine, setEngine] = useState<GameRenderer | null>(null);
+  const [eventPlayer, setEventPlayer] = useState<EventPlayer | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    // エンジン初期化
+    const strategy = new CanvasRenderStrategy(ctx);
+    const renderer = new GameRenderer(strategy);
+    const player = new EventPlayer();
+
+    player.loadTimeline(events);
+
+    // Observer登録
+    const boardRenderer = new BoardRenderer(ctx);
+    const playerRenderer = new PlayerRenderer(ctx);
+    player.attach(boardRenderer);
+    player.attach(playerRenderer);
+
+    setEngine(renderer);
+    setEventPlayer(player);
+
+    // クリーンアップ
+    return () => {
+      player.detach(boardRenderer);
+      player.detach(playerRenderer);
+    };
+  }, [canvasRef, events]);
+
+  const controls = {
+    play: () => eventPlayer?.play(),
+    pause: () => eventPlayer?.pause(),
+    stop: () => eventPlayer?.stop(),
+    rewind: () => eventPlayer?.rewind(10),
+    fastForward: () => eventPlayer?.fastForward(10),
+  };
+
+  return { engine, eventPlayer, controls };
+}
+```
+
+**成果物**: ReactとTypeScriptエンジンの連携
+
+#### 5. イベントログとUI（1日）
+
+```typescript
+// components/GameVisualization/EventLog.tsx
+export const EventLog: React.FC<{ events: GameEvent[] }> = ({ events }) => {
+  return (
+    <div className="event-log">
+      <h3>Event Timeline</h3>
+      <ul>
+        {events.map((event, index) => (
+          <li key={index} className={`event-${event.type}`}>
+            <span className="event-time">Turn {event.turn}</span>
+            <span className="event-description">
+              {formatEvent(event)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+function formatEvent(event: GameEvent): string {
+  switch (event.type) {
+    case 'PlayerMoved':
+      return `${event.playerName} moved from ${event.from} to ${event.to}`;
+    case 'PropertyPurchased':
+      return `${event.playerName} purchased ${event.propertyName}`;
+    case 'RentPaid':
+      return `${event.playerName} paid $${event.amount} rent to ${event.owner}`;
+    case 'PlayerBankrupt':
+      return `${event.playerName} went bankrupt`;
+    default:
+      return 'Unknown event';
+  }
+}
+```
+
+**成果物**:
+- イベントログUI
+- タイムラインスライダー
+- 再生速度コントロール
+
+**総期間**: 7-9日
+
+**技術スタック（領域B専用）**:
+```json
+{
+  "devDependencies": {
+    "typescript": "^5.2.0",
+    "@types/node": "^20.0.0"
+  }
+}
+```
+
+**パフォーマンス目標**:
+- 60 FPS アニメーション
+- 1000イベント以上の再生に対応
+- メモリ使用量 < 100MB
 
 ## トレードオフ分析
 
@@ -842,6 +1672,14 @@ ws://localhost:8080/ws/simulation/{simulationId}
 | **CORSの設定ミス** | 開発困難 | 開発時はCORS全許可、本番で適切に制限 |
 | **Storybookの保守コスト** | ストーリーが古くなる | CI/CDでストーリーの動作確認、addon-interactionsで自動テスト |
 | **TypeScript型定義の不整合** | ランタイムエラー | API型定義をバックエンドから自動生成（OpenAPI等）|
+| **Canvas描画のパフォーマンス問題** | 低FPS、カクつき | requestAnimationFrameで最適化、描画範囲の限定、ダーティフラグ導入 |
+| **アニメーションの複雑化** | メモリリーク、バグ | AnimationControllerでライフサイクル管理、cancelAnimationFrame確実実行 |
+| **デザインパターンの過度な抽象化** | 開発速度低下 | 必要最小限のパターンのみ実装、YAGNIの原則を守る |
+| **Canvas vs SVGの技術選択ミス** | パフォーマンス低下 | Strategy パターンで切り替え可能に、初期はCanvasで実装 |
+| **ゲームエンジンとReactの結合** | 再レンダリングループ | useRefでCanvas参照、useEffectの依存配列を最小化 |
+| **1000+イベントの再生負荷** | ブラウザフリーズ | イベントの間引き、Web Worker検討、仮想化（見える範囲のみ描画）|
+| **クロスブラウザ互換性** | Canvas/アニメーション動作差異 | モダンブラウザのみ対応（Chrome, Firefox, Edge）、polyfillは使わない |
+| **アニメーションデバッグ困難** | 開発効率低下 | アニメーション速度調整UI、ステップ実行機能、DevToolsフレンドリーな実装 |
 
 ## 代替案：軽量アプローチ
 
