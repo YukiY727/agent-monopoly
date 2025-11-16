@@ -176,6 +176,21 @@ class HtmlReportGenerator {
 
             is GameEvent.PlayerExitedJail ->
                 "🔓 <strong>${event.playerName}</strong> exited jail (${event.method})"
+
+            is GameEvent.CardDrawn ->
+                "🎴 <strong>${event.playerName}</strong> drew a card: <em>${event.cardDescription}</em>"
+
+            is GameEvent.PassedGo ->
+                "✅ <strong>${event.playerName}</strong> passed GO! <span class=\"go-bonus\">+\$200</span>"
+
+            is GameEvent.PropertyTraded ->
+                "🔄 <strong>${event.player1Name}</strong> traded <em>${event.property1Name}</em> for <strong>${event.player2Name}</strong>'s <em>${event.property2Name}</em>"
+
+            is GameEvent.PropertySold ->
+                "💵 <strong>${event.sellerName}</strong> sold <em>${event.propertyName}</em> to <strong>${event.buyerName}</strong> for \$${event.price}"
+
+            is GameEvent.ComplexTrade ->
+                "🤝 Complex trade between <strong>${event.player1Name}</strong> (${event.player1PropertiesCount} properties, \$${event.player1Money}) and <strong>${event.player2Name}</strong> (${event.player2PropertiesCount} properties, \$${event.player2Money})"
         }
 
     /**

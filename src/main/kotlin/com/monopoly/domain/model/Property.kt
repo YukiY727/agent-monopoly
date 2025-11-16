@@ -38,6 +38,21 @@ open class Property(
     open fun withoutOwner(): Property =
         Property(name, position, price, baseRent, colorGroup, PropertyOwnership.Unowned, houses, hasHotel, isMortgaged)
 
+    /**
+     * Propertyのコピーを作成（Phase 19: プレイヤー間取引用）
+     */
+    open fun copy(
+        name: String = this.name,
+        position: Int = this.position,
+        price: Int = this.price,
+        baseRent: Int = this.baseRent,
+        colorGroup: ColorGroup = this.colorGroup,
+        ownership: PropertyOwnership = this.ownership,
+        houses: Int = this.houses,
+        hasHotel: Boolean = this.hasHotel,
+        isMortgaged: Boolean = this.isMortgaged
+    ): Property = Property(name, position, price, baseRent, colorGroup, ownership, houses, hasHotel, isMortgaged)
+
     fun isOwned(): Boolean = ownership is PropertyOwnership.OwnedByPlayer
 
     override fun equals(other: Any?): Boolean {

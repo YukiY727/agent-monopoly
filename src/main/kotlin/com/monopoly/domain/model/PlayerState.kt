@@ -24,6 +24,8 @@ data class PlayerState(
 
     fun withUpdatedProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.update(property))
 
+    fun withRemovedProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.remove(property))
+
     fun withJail(inJail: Boolean, jailTurns: Int = 0): PlayerState = copy(inJail = inJail, jailTurns = jailTurns)
 
     fun withJailTurns(turns: Int): PlayerState = copy(jailTurns = turns)

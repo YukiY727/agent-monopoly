@@ -125,4 +125,69 @@ sealed class GameEvent(
         val playerName: String,
         val method: String // "paid_fine", "rolled_doubles", "used_card", "forced_after_3_turns"
     ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * カードが引かれたイベント
+     *
+     * Phase 17: カードシステム
+     */
+    data class CardDrawn(
+        val playerName: String,
+        val cardDescription: String,
+        override val turnNumber: Int = 0,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * GO通過イベント
+     */
+    data class PassedGo(
+        val playerName: String,
+        override val turnNumber: Int = 0,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * プロパティ交換イベント
+     *
+     * Phase 19: プレイヤー間取引
+     */
+    data class PropertyTraded(
+        val player1Name: String,
+        val player2Name: String,
+        val property1Name: String,
+        val property2Name: String,
+        override val turnNumber: Int = 0,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * プロパティ売買イベント
+     *
+     * Phase 19: プレイヤー間取引
+     */
+    data class PropertySold(
+        val sellerName: String,
+        val buyerName: String,
+        val propertyName: String,
+        val price: Int,
+        override val turnNumber: Int = 0,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * 複合取引イベント
+     *
+     * Phase 19: プレイヤー間取引
+     */
+    data class ComplexTrade(
+        val player1Name: String,
+        val player2Name: String,
+        val player1PropertiesCount: Int,
+        val player2PropertiesCount: Int,
+        val player1Money: Int,
+        val player2Money: Int,
+        override val turnNumber: Int = 0,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : GameEvent(turnNumber, timestamp)
 }

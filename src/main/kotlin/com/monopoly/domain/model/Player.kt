@@ -7,7 +7,8 @@ class Player(
     val name: String,
     val strategy: BuyStrategy,
 ) {
-    private var state: PlayerState = PlayerState.initial()
+    var state: PlayerState = PlayerState.initial()
+        private set
 
     // Expose primitive Int for backward compatibility with existing tests
     val money: Int
@@ -78,6 +79,15 @@ class Player(
      */
     fun updateProperty(property: Property) {
         state = state.withUpdatedProperty(property)
+    }
+
+    /**
+     * プロパティを削除（取引で使用）
+     *
+     * Phase 19: プレイヤー間取引用
+     */
+    fun removeProperty(property: Property) {
+        state = state.withRemovedProperty(property)
     }
 
     fun goBankrupt() {

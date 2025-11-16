@@ -60,5 +60,20 @@ class ConsoleLogger {
 
             is GameEvent.PlayerExitedJail ->
                 "🔓 ${event.playerName} exited jail (${event.method})"
+
+            is GameEvent.CardDrawn ->
+                "🎴 ${event.playerName} drew a card: ${event.cardDescription}"
+
+            is GameEvent.PassedGo ->
+                "✅ ${event.playerName} passed GO! +\$200"
+
+            is GameEvent.PropertyTraded ->
+                "🔄 ${event.player1Name} traded ${event.property1Name} for ${event.player2Name}'s ${event.property2Name}"
+
+            is GameEvent.PropertySold ->
+                "💵 ${event.sellerName} sold ${event.propertyName} to ${event.buyerName} for \$${event.price}"
+
+            is GameEvent.ComplexTrade ->
+                "🤝 Complex trade between ${event.player1Name} (${event.player1PropertiesCount} properties, \$${event.player1Money}) and ${event.player2Name} (${event.player2PropertiesCount} properties, \$${event.player2Money})"
         }
 }

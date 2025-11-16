@@ -207,10 +207,16 @@ class GameService {
                 player.pay(Money(space.amount))
             }
             is Space.ChanceSpace -> {
-                // Chance: Phase 17で実装予定
+                // Chance: カードを引いて効果を適用
+                val cardService = CardService()
+                val newDeck = cardService.drawAndApplyCard(player, gameState, gameState.chanceDeck)
+                gameState.updateChanceDeck(newDeck)
             }
             is Space.CommunityChestSpace -> {
-                // Community Chest: Phase 17で実装予定
+                // Community Chest: カードを引いて効果を適用
+                val cardService = CardService()
+                val newDeck = cardService.drawAndApplyCard(player, gameState, gameState.communityChestDeck)
+                gameState.updateCommunityChestDeck(newDeck)
             }
             is Space.Other -> {
                 // その他のマス: 何もしない
