@@ -41,10 +41,17 @@ class Board(
     /**
      * 指定したカラーグループのプロパティを取得
      *
-     * @param colorGroup カラーグループ名
+     * @param colorGroup カラーグループ
      * @return 指定したカラーグループに属するプロパティのリスト
      */
-    fun getPropertiesByColorGroup(colorGroup: String): List<Property> {
+    fun getPropertiesByColorGroup(colorGroup: ColorGroup): List<Property> {
         return propertyMap.values.filter { it.colorGroup == colorGroup }
     }
+
+    /**
+     * 全スペースのリストを取得
+     *
+     * @return スペースのリスト
+     */
+    fun getSpaces(): List<Space> = spaces
 }

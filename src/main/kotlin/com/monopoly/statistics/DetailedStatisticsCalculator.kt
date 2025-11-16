@@ -52,7 +52,7 @@ class DetailedStatisticsCalculator(
             .firstOrNull()
             ?.finalState
             ?.board
-            ?.spaces
+            ?.getSpaces()
             ?.filterIsInstance<Space.PropertySpace>()
             ?.map { it.property }
             ?: emptyList()
@@ -76,7 +76,7 @@ class DetailedStatisticsCalculator(
 
             val wasPurchased = events.any { event ->
                 event is GameEvent.PropertyPurchased &&
-                    event.property.name == property.name
+                    event.propertyName == property.name
             }
 
             if (wasPurchased) {
@@ -84,7 +84,7 @@ class DetailedStatisticsCalculator(
 
                 val rentInThisGame = events
                     .filterIsInstance<GameEvent.RentPaid>()
-                    .filter { it.property.name == property.name }
+                    .filter { it.propertyName == property.name }
                     .sumOf { it.amount }
 
                 totalRentCollected += rentInThisGame
@@ -160,15 +160,15 @@ class DetailedStatisticsCalculator(
     ): BankruptcyAnalysis {
         val bankruptcyEvents = result.gameResults.flatMap { game ->
             game.finalState.events
-                .filterIsInstance<GameEvent.PlayerBankrupt>()
+                .filterIsInstance<GameEvent.PlayerBankrupted>()
                 .map { event ->
                     BankruptcyEvent(
                         gameNumber = game.gameNumber,
-                        turnNumber = game.finalState.turnNumber,
-                        playerName = event.player.name,
-                        causePlayerName = event.creditor?.name,
-                        lastCash = event.player.money,
-                        propertiesOwned = event.player.ownedProperties.size,
+                        turnNumber = event.turnNumber,
+                        playerName = event.playerName,
+                        causePlayerName = null, // イベントにcreditorフィールドがない
+                        lastCash = event.finalMoney,
+                        propertiesOwned = 0, // イベントにプロパティ情報がない
                     )
                 }
         }

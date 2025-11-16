@@ -32,6 +32,6 @@ class ROIStrategy(
      * @return ROI（基本レント ÷ 価格）
      */
     private fun calculateROI(property: Property): Double {
-        return property.baseRent.toDouble() / property.price.toDouble()
+        return property.rent.toDouble() / property.price.toDouble()
     }
 }

@@ -1,6 +1,7 @@
 package com.monopoly.domain.strategy
 
 import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 
@@ -35,22 +36,22 @@ data class BuyDecisionContext(
     val otherPlayers: List<Player>
         get() = allPlayers.filter { player ->
             // 所有プロパティリストが一致しないプレイヤー = 他人
-            player.properties != ownedProperties
+            player.ownedProperties != ownedProperties
         }
 
     /**
      * 指定したカラーグループで自分が所有しているプロパティ数
      */
-    fun countOwnedInColorGroup(colorGroup: String): Int {
+    fun countOwnedInColorGroup(colorGroup: ColorGroup): Int {
         return ownedProperties.count { it.colorGroup == colorGroup }
     }
 
     /**
      * 指定したカラーグループで他プレイヤーが所有している最大プロパティ数
      */
-    fun maxOtherPlayerCountInColorGroup(colorGroup: String): Int {
+    fun maxOtherPlayerCountInColorGroup(colorGroup: ColorGroup): Int {
         return otherPlayers.maxOfOrNull { player ->
-            player.properties.count { it.colorGroup == colorGroup }
+            player.ownedProperties.count { it.colorGroup == colorGroup }
         } ?: 0
     }
 

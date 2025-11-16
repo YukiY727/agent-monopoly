@@ -15,12 +15,12 @@ class HighValueStrategy(
     private val minCashReserve: Int = 100,
 ) : BuyStrategy {
     override fun shouldBuy(context: BuyDecisionContext): Boolean {
-        return context.property.baseRent >= minRent &&
+        return context.property.rent >= minRent &&
             context.moneyAfterPurchase >= minCashReserve
     }
 
     override fun shouldBuy(property: Property, currentMoney: Int): Boolean {
-        return property.baseRent >= minRent &&
+        return property.rent >= minRent &&
             (currentMoney - property.price) >= minCashReserve
     }
 }

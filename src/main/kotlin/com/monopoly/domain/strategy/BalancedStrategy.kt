@@ -37,14 +37,14 @@ class BalancedStrategy(
         score += ownedCount * 20
 
         // ROIスコア
-        val roi = context.property.baseRent.toDouble() / context.property.price.toDouble()
+        val roi = context.property.rent.toDouble() / context.property.price.toDouble()
         score += (roi * 100).toInt()
 
         // 価格スコア（安いほど高スコア）
         score += (500 - context.property.price) / 10
 
         // レントスコア
-        score += context.property.baseRent
+        score += context.property.rent
 
         return score
     }

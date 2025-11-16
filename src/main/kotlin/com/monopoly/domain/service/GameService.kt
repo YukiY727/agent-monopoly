@@ -212,7 +212,7 @@ class GameService {
         val context = com.monopoly.domain.strategy.BuyDecisionContext(
             property = property,
             playerMoney = player.money,
-            ownedProperties = player.properties,
+            ownedProperties = player.ownedProperties,
             board = gameState.board,
             allPlayers = gameState.players,
             currentTurn = gameState.turnNumber,

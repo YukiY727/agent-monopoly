@@ -21,7 +21,7 @@ class AggressiveStrategy(
 
         // 他プレイヤーが同じカラーグループを所有している数
         context.otherPlayers.forEach { otherPlayer ->
-            val sameColorCount = otherPlayer.properties.count {
+            val sameColorCount = otherPlayer.ownedProperties.count {
                 it.colorGroup == context.property.colorGroup
             }
 

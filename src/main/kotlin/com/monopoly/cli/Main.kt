@@ -320,8 +320,7 @@ fun main(args: Array<String>) = runBlocking {
             val gridConfig = GridSearchConfig.fromJson(File(gridSearchFile).readText())
             val board = createStandardBoard()
             val gameService = GameService()
-            val dice = Dice()
-            val parallelGameRunner = ParallelGameRunner(gameService, dice)
+            val parallelGameRunner = ParallelGameRunner(gameService)
             val runner = GridSearchRunner(parallelGameRunner, board)
 
             val result = runner.run(gridConfig)
