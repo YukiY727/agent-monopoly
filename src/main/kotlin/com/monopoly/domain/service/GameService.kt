@@ -21,24 +21,83 @@ class GameService {
         dice: com.monopoly.domain.model.Dice,
     ) {
         val player: Player = gameState.currentPlayer
+
+        // 破産したプレイヤーはスキップ
+        if (player.isBankrupt) {
+            gameState.nextPlayer()
+            return
+        }
+
+        // TurnStartedイベントを記録
+        gameState.incrementTurnNumber()
+        gameState.events.add(
+            GameEvent.TurnStarted(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+            ),
+        )
+
         val roll: Int = dice.roll()
 
         movePlayer(player, roll, gameState)
         processSpace(player, gameState)
 
-        gameState.incrementTurnNumber()
+        // TurnEndedイベントを記録
+        gameState.events.add(
+            GameEvent.TurnEnded(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+            ),
+        )
+
         gameState.nextPlayer()
     }
 
     fun runGame(
         gameState: GameState,
         dice: com.monopoly.domain.model.Dice,
+        maxTurns: Int = Int.MAX_VALUE,
     ): Player {
-        while (!checkGameEnd(gameState)) {
+        // GameStartedイベントを記録
+        gameState.events.add(
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                timestamp = System.currentTimeMillis(),
+                playerNames = gameState.players.map { it.name },
+            ),
+        )
+
+        var turns: Int = 0
+        while (!checkGameEnd(gameState) && turns < maxTurns) {
             executeTurn(gameState, dice)
+            turns++
         }
         gameState.endGame()
-        return gameState.players.first { !it.isBankrupt }
+
+        // ターン数上限に達した場合は、最も資産の多いプレイヤーを勝者とする
+        val activePlayers: List<Player> = gameState.players.filter { !it.isBankrupt }
+        val winner: Player =
+            if (activePlayers.size == 1) {
+                activePlayers.first()
+            } else {
+                // 複数のアクティブプレイヤーがいる場合は資産で判定
+                activePlayers.maxByOrNull { it.calculateTotalAssets().amount }
+                    ?: gameState.players.first()
+            }
+
+        // GameEndedイベントを記録
+        gameState.events.add(
+            GameEvent.GameEnded(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                winner = winner.name,
+                totalTurns = gameState.turnNumber,
+            ),
+        )
+
+        return winner
     }
 
     fun movePlayer(
@@ -147,7 +206,7 @@ class GameService {
 
         when (val ownership: PropertyOwnership = property.ownership) {
             is PropertyOwnership.Unowned -> processUnownedProperty(player, gameState, property)
-            is PropertyOwnership.OwnedByPlayer -> processOwnedProperty(player, ownership, property)
+            is PropertyOwnership.OwnedByPlayer -> processOwnedProperty(player, gameState, ownership, property)
         }
     }
 
@@ -158,18 +217,45 @@ class GameService {
     ) {
         if (player.strategy.shouldBuy(property, player.money)) {
             val ownedProperty: Property = buyProperty(player, property, gameState)
-            gameState.board.updateProperty(ownedProperty)
+            gameState.updateProperty(ownedProperty)
         }
     }
 
     private fun processOwnedProperty(
         player: Player,
+        gameState: GameState,
         ownership: PropertyOwnership.OwnedByPlayer,
         property: Property,
     ) {
         val owner: Player = ownership.player
+
+        // 破産したプレイヤーが所有するプロパティは解放済みのはず
+        if (owner.isBankrupt) {
+            val releasedProperty: Property = property.withoutOwner()
+            gameState.releaseProperty(releasedProperty)
+            return
+        }
+
         if (owner != player) {
+            // レント支払い前にプロパティリストを保存（pay()内でgoBankrupt()が呼ばれると空になるため）
+            val propertiesBeforePayment: List<Property> = player.ownedProperties.toList()
+
             payRent(player, owner, property.rent)
+
+            // レント支払い後にプレイヤーが破産したかチェック
+            if (player.isBankrupt) {
+                releasePlayerPropertiesOnBoard(propertiesBeforePayment, gameState)
+            }
+        }
+    }
+
+    private fun releasePlayerPropertiesOnBoard(
+        properties: List<Property>,
+        gameState: GameState,
+    ) {
+        properties.forEach { property ->
+            val releasedProperty: Property = property.withoutOwner()
+            gameState.releaseProperty(releasedProperty)
         }
     }
 }
