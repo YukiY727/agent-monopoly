@@ -189,10 +189,31 @@ class GameService {
         when (space) {
             is Space.PropertySpace -> processPropertySpace(player, gameState, space)
             is Space.Go -> {
-                // GO: Phase 1では何もしない（GOボーナスはadvanceで処理済み）
+                // GO: GOボーナスはadvanceで処理済み
+            }
+            is Space.Jail -> {
+                // Jail: Just Visiting（訪問のみ、何もしない）
+            }
+            is Space.FreeParking -> {
+                // Free Parking: 何もしない
+            }
+            is Space.GoToJail -> {
+                // Go to Jail: プレイヤーをJailに送る
+                val jailService = JailService()
+                jailService.sendToJail(player, gameState)
+            }
+            is Space.Tax -> {
+                // Tax: 税金を支払う
+                player.pay(Money(space.amount))
+            }
+            is Space.ChanceSpace -> {
+                // Chance: Phase 17で実装予定
+            }
+            is Space.CommunityChestSpace -> {
+                // Community Chest: Phase 17で実装予定
             }
             is Space.Other -> {
-                // その他のマス: Phase 1では何もしない
+                // その他のマス: 何もしない
             }
         }
     }

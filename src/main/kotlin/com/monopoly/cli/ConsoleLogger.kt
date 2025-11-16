@@ -54,5 +54,11 @@ class ConsoleLogger {
 
             is GameEvent.GameEnded ->
                 "🏆 Game Over! Winner: ${event.winner} (Total turns: ${event.totalTurns})"
+
+            is GameEvent.PlayerSentToJail ->
+                "🚔 ${event.playerName} was sent to JAIL!"
+
+            is GameEvent.PlayerExitedJail ->
+                "🔓 ${event.playerName} exited jail (${event.method})"
         }
 }

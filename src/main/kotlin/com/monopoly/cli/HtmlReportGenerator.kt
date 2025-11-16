@@ -170,6 +170,12 @@ class HtmlReportGenerator {
 
             is GameEvent.GameEnded ->
                 "🏆 <strong>Game Over!</strong> Winner: <span class=\"winner\">${event.winner}</span> (Total turns: ${event.totalTurns})"
+
+            is GameEvent.PlayerSentToJail ->
+                "🚔 <strong>${event.playerName}</strong> was sent to <span class=\"jail\">JAIL!</span>"
+
+            is GameEvent.PlayerExitedJail ->
+                "🔓 <strong>${event.playerName}</strong> exited jail (${event.method})"
         }
 
     /**
