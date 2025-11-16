@@ -61,6 +61,22 @@ class Player(
         state = state.withProperty(property)
     }
 
+    /**
+     * プロパティを更新（家・ホテル建設などで使用）
+     *
+     * Phase 14: 家・ホテルシステム用
+     */
+    fun updateProperty(property: Property) {
+        // 既存のプロパティを削除して新しいものを追加
+        val newProperties = state.ownedProperties.filter { it.position != property.position } + property
+        state = PlayerState(
+            money = state.money,
+            position = state.position,
+            isBankrupt = state.isBankrupt,
+            ownedProperties = newProperties,
+        )
+    }
+
     fun goBankrupt() {
         state = state.withBankruptcy()
     }
