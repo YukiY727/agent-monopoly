@@ -22,6 +22,16 @@ class Player(
     val ownedProperties: List<Property>
         get() = state.ownedProperties.toList()
 
+    // Phase 16: Jail関連のプロパティ
+    val inJail: Boolean
+        get() = state.inJail
+
+    val jailTurns: Int
+        get() = state.jailTurns
+
+    val getOutOfJailFreeCards: Int
+        get() = state.getOutOfJailFreeCards
+
     // New value object accessors
     val moneyValue: Money
         get() = state.money
@@ -105,4 +115,29 @@ class Player(
     }
 
     fun getTotalAssets(): Int = calculateTotalAssets().amount
+
+    // Phase 16: Jail関連のメソッド
+    fun sendToJail() {
+        state = state.withJail(inJail = true, jailTurns = 0)
+        moveTo(BoardPosition(10)) // Jail position
+    }
+
+    fun releaseFromJail() {
+        state = state.withJail(inJail = false, jailTurns = 0)
+    }
+
+    fun incrementJailTurns() {
+        state = state.withJailTurns(state.jailTurns + 1)
+    }
+
+    fun addGetOutOfJailFreeCard() {
+        state = state.withGetOutOfJailFreeCards(state.getOutOfJailFreeCards + 1)
+    }
+
+    fun useGetOutOfJailFreeCard() {
+        require(state.getOutOfJailFreeCards > 0) {
+            "No Get Out of Jail Free cards available"
+        }
+        state = state.withGetOutOfJailFreeCards(state.getOutOfJailFreeCards - 1)
+    }
 }

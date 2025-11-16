@@ -102,4 +102,27 @@ sealed class GameEvent(
         val winner: String,
         val totalTurns: Int
     ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * プレイヤーがJailに送られたイベント
+     *
+     * Phase 16: Jailシステム
+     */
+    data class PlayerSentToJail(
+        override val turnNumber: Int,
+        override val timestamp: Long = System.currentTimeMillis(),
+        val playerName: String
+    ) : GameEvent(turnNumber, timestamp)
+
+    /**
+     * プレイヤーがJailから脱出したイベント
+     *
+     * Phase 16: Jailシステム
+     */
+    data class PlayerExitedJail(
+        override val turnNumber: Int,
+        override val timestamp: Long = System.currentTimeMillis(),
+        val playerName: String,
+        val method: String // "paid_fine", "rolled_doubles", "used_card", "forced_after_3_turns"
+    ) : GameEvent(turnNumber, timestamp)
 }
