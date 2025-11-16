@@ -5,6 +5,7 @@ package com.monopoly.domain.model
  *
  * Phase 13: baseRentを追加し、rent算出の基礎とする
  * Phase 14: 家・ホテルによる家賃変動を実装
+ * Phase 18: 抵当（Mortgage）システム
  */
 open class Property(
     val name: String,
@@ -15,6 +16,7 @@ open class Property(
     val ownership: PropertyOwnership = PropertyOwnership.Unowned,
     val houses: Int = 0,
     val hasHotel: Boolean = false,
+    val isMortgaged: Boolean = false,
 ) {
     // 後方互換性のため、rentプロパティを提供（Phase 14で家賃計算ロジックに置き換え）
     open val rent: Int
@@ -31,10 +33,10 @@ open class Property(
         get() = Money(rent)
 
     open fun withOwner(newOwner: Player): Property =
-        Property(name, position, price, baseRent, colorGroup, PropertyOwnership.OwnedByPlayer(newOwner), houses, hasHotel)
+        Property(name, position, price, baseRent, colorGroup, PropertyOwnership.OwnedByPlayer(newOwner), houses, hasHotel, isMortgaged)
 
     open fun withoutOwner(): Property =
-        Property(name, position, price, baseRent, colorGroup, PropertyOwnership.Unowned, houses, hasHotel)
+        Property(name, position, price, baseRent, colorGroup, PropertyOwnership.Unowned, houses, hasHotel, isMortgaged)
 
     fun isOwned(): Boolean = ownership is PropertyOwnership.OwnedByPlayer
 
