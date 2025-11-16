@@ -134,7 +134,7 @@ class JailServiceTest : DescribeSpec({
             jailService.attemptExitWithDoubles(player, die1 = 1, die2 = 3, gameState)
             jailService.attemptExitWithDoubles(player, die1 = 2, die2 = 3, gameState)
 
-            player.jailTurns shouldBe 3
+            player.jailTurns shouldBe 0 // forceExit後はjailTurnsが0にリセットされる
             player.inJail shouldBe false // 自動的に脱出
             player.money shouldBe (1500 + 1000 - 50) // 罰金$50が自動的に支払われる
         }

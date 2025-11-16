@@ -73,7 +73,9 @@ class StandardBoardTest : DescribeSpec({
 
         it("should have 22 regular properties") {
             val board = StandardBoard.create()
-            val regularProperties = board.getAllProperties().filterIsInstance<Property>()
+            val regularProperties = board.getAllProperties().filter {
+                it !is Railroad && it !is Utility
+            }
             regularProperties.size shouldBe 22
         }
 
