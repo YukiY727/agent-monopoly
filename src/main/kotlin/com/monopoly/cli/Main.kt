@@ -134,6 +134,7 @@ fun main(args: Array<String>) {
     val gameService = GameService()
     val consoleLogger = ConsoleLogger()
     val htmlReportGenerator = HtmlReportGenerator()
+    val summaryReportGenerator = SummaryReportGenerator()
 
     println("Starting game...")
     println()
@@ -178,9 +179,14 @@ fun main(args: Array<String>) {
     }
     println()
 
-    // HTMLレポートの生成
-    val htmlFile = htmlReportGenerator.saveToFile(gameState)
-    println("HTML report generated: ${htmlFile.absolutePath}")
+    // HTMLレポートの生成（Phase 2 - 詳細レポート）
+    val detailedReportFile = htmlReportGenerator.saveToFile(gameState)
+    println("Detailed report generated: ${detailedReportFile.absolutePath}")
+
+    // サマリーレポートの生成（Phase 4 - サマリーレポート）
+    val summaryReportFile = summaryReportGenerator.saveToFile(gameState)
+    println("Summary report generated: ${summaryReportFile.absolutePath}")
+
     println()
     println("=".repeat(60))
 }
