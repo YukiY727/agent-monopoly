@@ -240,4 +240,60 @@ class GameStateTest : StringSpec({
         gameState.events[1] shouldBe turnStarted
         gameState.events[2] shouldBe diceRolled
     }
+
+    // TC-041: プロパティを解放する（デメテルの法則）
+    // Given: GameState、ボード上に所有されているプロパティ
+    // When: releaseProperty(property)
+    // Then: ボード上のプロパティが未所有になる
+    "should release property on board" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 200,
+                rent = 20,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val board = BoardFixtures.createBoardWithProperties(listOf(property))
+        val gameState = GameState(listOf(player1), board)
+
+        // プロパティを所有状態にする
+        val ownedProperty: Property = property.withOwner(player1)
+        board.updateProperty(ownedProperty)
+
+        // プロパティを解放
+        val releasedProperty: Property = ownedProperty.withoutOwner()
+        gameState.releaseProperty(releasedProperty)
+
+        // ボード上のプロパティが未所有になっている
+        val propertyOnBoard: Property? = board.getPropertyAt(1)
+        propertyOnBoard shouldBe releasedProperty
+    }
+
+    // TC-042: プロパティを更新する（デメテルの法則）
+    // Given: GameState、ボード上の未所有プロパティ
+    // When: updateProperty(ownedProperty)
+    // Then: ボード上のプロパティが所有状態になる
+    "should update property on board" {
+        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 200,
+                rent = 20,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val board = BoardFixtures.createBoardWithProperties(listOf(property))
+        val gameState = GameState(listOf(player1), board)
+
+        // プロパティを所有状態にする
+        val ownedProperty: Property = property.withOwner(player1)
+        gameState.updateProperty(ownedProperty)
+
+        // ボード上のプロパティが所有状態になっている
+        val propertyOnBoard: Property? = board.getPropertyAt(1)
+        propertyOnBoard shouldBe ownedProperty
+    }
 })

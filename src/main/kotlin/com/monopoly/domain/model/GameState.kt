@@ -40,4 +40,12 @@ class GameState(
     private fun shouldSkipPlayer(index: Int): Boolean = players[index].isBankrupt && getActivePlayerCount() > 1
 
     fun getActivePlayerCount(): Int = players.count { !it.isBankrupt }
+
+    fun releaseProperty(property: Property) {
+        board.updateProperty(property)
+    }
+
+    fun updateProperty(property: Property) {
+        board.updateProperty(property)
+    }
 }
