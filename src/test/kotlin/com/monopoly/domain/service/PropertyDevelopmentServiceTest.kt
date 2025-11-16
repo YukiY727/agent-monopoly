@@ -1,4 +1,5 @@
 package com.monopoly.domain.service
+import com.monopoly.domain.strategy.AlwaysBuyStrategy
 
 import com.monopoly.domain.model.AlwaysBuyStrategy
 import com.monopoly.domain.model.Board
@@ -56,7 +57,7 @@ class PropertyDevelopmentServiceTest : DescribeSpec({
             player.addProperty(ownedProp)
             player.addProperty(board.getPropertyAt(3)!!.withOwner(player))
 
-            val rent = service.calculateRent(ownedProp, board, player, diceRoll = 0)
+            val baseRent = service.calculateRent(ownedProp, board, player, diceRoll = 0)
             rent shouldBe 4 // 2 * 2 (monopoly doubles base rent)
         }
 
@@ -70,7 +71,7 @@ class PropertyDevelopmentServiceTest : DescribeSpec({
                 houses = 1,
             ).withOwner(player)
 
-            val rent = service.calculateRent(prop, board, player, diceRoll = 0)
+            val baseRent = service.calculateRent(prop, board, player, diceRoll = 0)
             rent shouldBe 50 // 1 house rent (typically 5x base rent)
         }
 
@@ -84,7 +85,7 @@ class PropertyDevelopmentServiceTest : DescribeSpec({
                 houses = 2,
             ).withOwner(player)
 
-            val rent = service.calculateRent(prop, board, player, diceRoll = 0)
+            val baseRent = service.calculateRent(prop, board, player, diceRoll = 0)
             rent shouldBe 150 // 2 houses rent
         }
 
@@ -99,7 +100,7 @@ class PropertyDevelopmentServiceTest : DescribeSpec({
                 houses = 0, // Hotel replaces houses
             ).withOwner(player)
 
-            val rent = service.calculateRent(prop, board, player, diceRoll = 0)
+            val baseRent = service.calculateRent(prop, board, player, diceRoll = 0)
             rent shouldBe 250 // Hotel rent
         }
     }

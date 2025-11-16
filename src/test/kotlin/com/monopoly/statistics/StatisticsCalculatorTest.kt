@@ -306,7 +306,7 @@ private fun createDummyProperty(index: Int): Property {
         name = "Property $index",
         position = index % 40,
         price = 100,
-        rent = 10,
+        baseRent = 10,
         colorGroup = ColorGroup.BROWN
     )
 }

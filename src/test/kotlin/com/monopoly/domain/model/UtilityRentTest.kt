@@ -1,4 +1,5 @@
 package com.monopoly.domain.model
+import com.monopoly.domain.strategy.AlwaysBuyStrategy
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

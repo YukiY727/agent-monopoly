@@ -15,7 +15,7 @@ class PropertyTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
 

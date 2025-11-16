@@ -24,7 +24,7 @@ class GameServiceBuyTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 10,
+                baseRent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createStandardBoard()
@@ -52,7 +52,7 @@ class GameServiceBuyTest : StringSpec({
                 name = "Park Place",
                 position = 37,
                 price = 350,
-                rent = 35,
+                baseRent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
         val board = BoardFixtures.createStandardBoard()
@@ -78,7 +78,7 @@ class GameServiceBuyTest : StringSpec({
                 name = "Boardwalk",
                 position = 39,
                 price = 400,
-                rent = 50,
+                baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
         val board = BoardFixtures.createStandardBoard()

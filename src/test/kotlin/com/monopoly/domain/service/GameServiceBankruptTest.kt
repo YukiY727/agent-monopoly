@@ -40,7 +40,7 @@ class GameServiceBankruptTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             ).withOwner(player)
 
@@ -49,7 +49,7 @@ class GameServiceBankruptTest : StringSpec({
                 name = "Baltic Avenue",
                 position = 3,
                 price = 60,
-                rent = 4,
+                baseRent = 4,
                 colorGroup = ColorGroup.BROWN,
             ).withOwner(player)
 
