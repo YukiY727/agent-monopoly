@@ -11,6 +11,7 @@ import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.Space
 import com.monopoly.domain.model.SpaceType
+import com.monopoly.domain.model.StandardBoard
 import com.monopoly.domain.service.GameService
 import com.monopoly.domain.strategy.BuyStrategy
 import com.monopoly.domain.strategy.StrategyRegistry
