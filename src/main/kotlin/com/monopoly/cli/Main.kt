@@ -52,7 +52,7 @@ fun createStandardBoard(): Board {
 @Suppress("MagicNumber")
 fun main() {
     println("=".repeat(60))
-    println("Monopoly Game - Phase 1")
+    println("Monopoly Game - Phase 2")
     println("=".repeat(60))
     println()
 
@@ -73,6 +73,8 @@ fun main() {
         )
     val dice = Dice()
     val gameService = GameService()
+    val consoleLogger = ConsoleLogger()
+    val htmlReportGenerator = HtmlReportGenerator()
 
     println("Starting game...")
     println()
@@ -80,7 +82,15 @@ fun main() {
     // ゲームの実行
     val winner = gameService.runGame(gameState, dice)
 
+    // イベントログの表示
+    println()
+    println("=".repeat(60))
+    println("Game Events:")
+    println("=".repeat(60))
+    consoleLogger.logEvents(gameState.events)
+
     // 結果の表示
+    println()
     println("=".repeat(60))
     println("Game Over!")
     println("=".repeat(60))
@@ -93,6 +103,7 @@ fun main() {
     println("Game Statistics:")
     println("  - Total Turns: ${gameState.turnNumber}")
     println("  - Active Players: ${gameState.getActivePlayerCount()}")
+    println("  - Total Events: ${gameState.events.size}")
     println()
 
     // 全プレイヤーの最終状態
@@ -106,6 +117,11 @@ fun main() {
                 "Total Assets: \$${player.getTotalAssets()}"
         println(playerInfo)
     }
+    println()
+
+    // HTMLレポートの生成
+    val htmlFile = htmlReportGenerator.saveToFile(gameState)
+    println("HTML report generated: ${htmlFile.absolutePath}")
     println()
     println("=".repeat(60))
 }

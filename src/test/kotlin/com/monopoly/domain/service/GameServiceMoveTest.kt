@@ -1,5 +1,7 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
@@ -13,10 +15,12 @@ class GameServiceMoveTest : StringSpec({
     "should move player to new position normally" {
         // Given
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        gameService.movePlayer(player, 7)
+        gameService.movePlayer(player, 7, gameState)
 
         // Then
         player.position shouldBe 7
@@ -30,11 +34,13 @@ class GameServiceMoveTest : StringSpec({
         // Given
         val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         player.setPosition(38)
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
         val initialMoney = player.money
 
         // When
-        gameService.movePlayer(player, 5)
+        gameService.movePlayer(player, 5, gameState)
 
         // Then
         player.position shouldBe 3
@@ -49,10 +55,12 @@ class GameServiceMoveTest : StringSpec({
         // Given
         val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
         player.setPosition(39)
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        gameService.movePlayer(player, 1)
+        gameService.movePlayer(player, 1, gameState)
 
         // Then
         player.position shouldBe 0

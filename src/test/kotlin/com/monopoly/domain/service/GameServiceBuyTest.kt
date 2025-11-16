@@ -1,6 +1,8 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.ColorGroup
+import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
@@ -24,10 +26,12 @@ class GameServiceBuyTest : StringSpec({
                 rent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        val updatedProperty = gameService.buyProperty(player, property)
+        val updatedProperty = gameService.buyProperty(player, property, gameState)
 
         // Then
         player.money shouldBe 1300
@@ -50,10 +54,12 @@ class GameServiceBuyTest : StringSpec({
                 rent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        val updatedProperty = gameService.buyProperty(player, property)
+        val updatedProperty = gameService.buyProperty(player, property, gameState)
 
         // Then
         updatedProperty.ownership shouldBe PropertyOwnership.OwnedByPlayer(player)
@@ -74,10 +80,12 @@ class GameServiceBuyTest : StringSpec({
                 rent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        gameService.buyProperty(player, property)
+        gameService.buyProperty(player, property, gameState)
 
         // Then
         player.ownedProperties.size shouldBe 1

@@ -1,6 +1,10 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.ColorGroup
+import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.Property
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -15,10 +19,13 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
+        val property = Property("Test Property", 1, 200, 100, ColorGroup.BROWN)
+        val board = Board()
+        val gameState = GameState(players = listOf(payer, receiver), board = board)
         val gameService = GameService()
 
         // When
-        gameService.payRent(payer, receiver, 100)
+        gameService.payRent(payer, receiver, 100, property, gameState)
 
         // Then
         payer.money shouldBe 1400
@@ -34,10 +41,13 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Carol", strategy = AlwaysBuyStrategy())
         payer.subtractMoney(1450) // Set payer's money to $50
         val receiver = Player(name = "Dave", strategy = AlwaysBuyStrategy())
+        val property = Property("Test Property", 1, 200, 100, ColorGroup.BROWN)
+        val board = Board()
+        val gameState = GameState(players = listOf(payer, receiver), board = board)
         val gameService = GameService()
 
         // When
-        gameService.payRent(payer, receiver, 100)
+        gameService.payRent(payer, receiver, 100, property, gameState)
 
         // Then
         payer.money shouldBe -50
@@ -53,10 +63,13 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Eve", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Frank", strategy = AlwaysBuyStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
+        val property = Property("Test Property", 1, 200, 50, ColorGroup.BROWN)
+        val board = Board()
+        val gameState = GameState(players = listOf(payer, receiver), board = board)
         val gameService = GameService()
 
         // When
-        gameService.payRent(payer, receiver, 50)
+        gameService.payRent(payer, receiver, 50, property, gameState)
 
         // Then
         receiver.money shouldBe 1050

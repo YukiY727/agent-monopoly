@@ -1,6 +1,8 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.ColorGroup
+import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
@@ -16,8 +18,10 @@ class GameServiceBankruptTest : StringSpec({
     "should set bankrupt flag when player goes bankrupt" {
         val gameService = GameService()
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
 
-        gameService.bankruptPlayer(player)
+        gameService.bankruptPlayer(player, gameState)
 
         player.isBankrupt shouldBe true
     }
@@ -51,7 +55,10 @@ class GameServiceBankruptTest : StringSpec({
         player.addProperty(property1)
         player.addProperty(property2)
 
-        val releasedProperties = gameService.bankruptPlayer(player)
+        val board = Board()
+        val gameState = GameState(players = listOf(player), board = board)
+
+        val releasedProperties = gameService.bankruptPlayer(player, gameState)
 
         player.isBankrupt shouldBe true
         player.ownedProperties.size shouldBe 0
