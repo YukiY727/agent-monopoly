@@ -170,7 +170,7 @@ class ScatterPlotGeneratorTest : DescribeSpec({
                     // Assert
                     // 10個のcircleが含まれる（おおよそ）
                     val circleCount = svg.split("<circle").size - 1
-                    circleCount shouldContain 10
+                    circleCount shouldBe 10
                 }
             }
         }
