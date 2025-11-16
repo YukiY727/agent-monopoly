@@ -3,8 +3,7 @@ package com.monopoly.visualization
 import com.monopoly.statistics.BoardStatistics
 import com.monopoly.statistics.DetailedStatistics
 import java.io.File
-import java.time.Instant
-import java.time.ZoneId
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -382,8 +381,7 @@ class ResearchReportGenerator(
 
     private fun generateFilename(): String {
         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
-            .withZoneId(ZoneId.systemDefault())
-        val timestamp = formatter.format(Instant.now())
+        val timestamp = LocalDateTime.now().format(formatter)
         return "monopoly-research-report-$timestamp.html"
     }
 }
