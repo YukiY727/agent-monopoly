@@ -20,7 +20,10 @@ import com.monopoly.simulation.GameRunner
 import com.monopoly.simulation.GridSearchRunner
 import com.monopoly.simulation.MultiGameResult
 import com.monopoly.simulation.ParallelGameRunner
+import com.monopoly.statistics.BoardStatisticsCalculator
+import com.monopoly.statistics.DetailedStatisticsCalculator
 import com.monopoly.statistics.StatisticsCalculator
+import com.monopoly.visualization.ResearchReportGenerator
 import com.monopoly.visualization.StatisticsReportGenerator
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -76,6 +79,8 @@ data class GameConfig(
     val generateVisualization: Boolean = true,
     val parallel: Int? = null,
     val sequential: Boolean = false,
+    val generateResearchReport: Boolean = false,
+    val generatePdf: Boolean = false,
 )
 
 fun createStrategy(strategyName: String, config: StrategyConfig? = null): BuyStrategy {
@@ -119,6 +124,8 @@ fun parseArgs(args: Array<String>, strategyConfig: StrategyConfig? = null): Game
     var generateVisualization = true
     var parallel: Int? = null
     var sequential = false
+    var generateResearchReport = false
+    var generatePdf = false
 
     var i = 0
     while (i < args.size) {
@@ -176,12 +183,18 @@ fun parseArgs(args: Array<String>, strategyConfig: StrategyConfig? = null): Game
             "--no-visualize" -> {
                 generateVisualization = false
             }
+            "--research-report" -> {
+                generateResearchReport = true
+            }
+            "--pdf" -> {
+                generatePdf = true
+            }
         }
         i++
     }
 
     val strategy = createStrategy(strategyName, strategyConfig)
-    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv, generateVisualization, parallel, sequential)
+    return GameConfig(strategy, numberOfGames, generateReport, exportJson, exportCsv, generateVisualization, parallel, sequential, generateResearchReport, generatePdf)
 }
 
 fun printHelp() {
@@ -205,6 +218,8 @@ fun printHelp() {
           --export-csv       CSV形式のみでエクスポート
           --no-export        統計エクスポートを抑制
           --no-visualize     統計可視化レポート生成を抑制
+          --research-report  研究論文用レポートを生成（Phase 12）
+          --pdf              研究レポートをPDFでも出力（--research-report必須）
           --help             ヘルプを表示
 
         Examples:
@@ -515,6 +530,35 @@ private fun exportStatistics(result: MultiGameResult, config: GameConfig) {
         val statisticsReportGenerator = StatisticsReportGenerator()
         val visualizationFile = statisticsReportGenerator.saveToFile(statistics)
         println("Statistics visualization report: ${visualizationFile.absolutePath}")
+    }
+
+    // 研究論文用レポート生成（Phase 12の新機能）
+    if (config.generateResearchReport) {
+        println("\nGenerating research report...")
+
+        val board = createStandardBoard()
+        val boardStats = BoardStatisticsCalculator().calculate(result, board)
+        val detailedStats = DetailedStatisticsCalculator().calculate(result)
+
+        val researchReportGenerator = ResearchReportGenerator()
+        val htmlFile = researchReportGenerator.saveToFile(detailedStats, boardStats)
+
+        println("Research report saved: ${htmlFile.absolutePath}")
+
+        // PDF出力（オプション）
+        if (config.generatePdf) {
+            println("Generating PDF...")
+            val pdfExporter = PdfExporter()
+            val pdfFile = File(htmlFile.absolutePath.replace(".html", ".pdf"))
+
+            pdfExporter.export(htmlFile, pdfFile)
+                .onSuccess {
+                    println("PDF report saved: ${it.absolutePath}")
+                }
+                .onFailure {
+                    println("PDF generation failed: ${it.message}")
+                }
+        }
     }
 
     println()
