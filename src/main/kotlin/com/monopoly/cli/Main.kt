@@ -13,6 +13,7 @@ import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import com.monopoly.domain.strategy.BuyStrategy
 import com.monopoly.domain.strategy.ConservativeStrategy
 import com.monopoly.domain.strategy.RandomStrategy
+import com.monopoly.simulation.GameRunner
 import kotlin.system.exitProcess
 
 @Suppress("MagicNumber")
@@ -53,6 +54,15 @@ fun createStandardBoard(): Board {
     return Board(spaces)
 }
 
+/**
+ * ゲーム設定
+ */
+data class GameConfig(
+    val strategy: BuyStrategy,
+    val numberOfGames: Int = 1,
+    val generateReport: Boolean = true,
+)
+
 fun createStrategy(strategyName: String): BuyStrategy =
     when (strategyName.lowercase()) {
         "always-buy" -> AlwaysBuyStrategy()
@@ -66,26 +76,55 @@ fun createStrategy(strategyName: String): BuyStrategy =
         }
     }
 
-fun parseArgs(args: Array<String>): String {
+fun parseArgs(args: Array<String>): GameConfig {
     if (args.contains("--help")) {
         printHelp()
         exitProcess(0)
     }
 
-    val strategyIndex: Int = args.indexOf("--strategy")
-    if (strategyIndex != -1 && strategyIndex + 1 < args.size) {
-        return args[strategyIndex + 1]
+    var strategyName = "always-buy"
+    var numberOfGames = 1
+    var generateReport = true
+
+    var i = 0
+    while (i < args.size) {
+        when (args[i]) {
+            "--strategy" -> {
+                if (i + 1 < args.size) {
+                    strategyName = args[i + 1]
+                    i++
+                }
+            }
+            "--games" -> {
+                if (i + 1 < args.size) {
+                    numberOfGames = args[i + 1].toIntOrNull() ?: run {
+                        println("Error: --games requires a valid integer")
+                        exitProcess(1)
+                    }
+                    if (numberOfGames <= 0) {
+                        println("Error: --games must be a positive integer")
+                        exitProcess(1)
+                    }
+                    i++
+                }
+            }
+            "--no-report" -> {
+                generateReport = false
+            }
+        }
+        i++
     }
 
-    return "always-buy" // デフォルト
+    val strategy = createStrategy(strategyName)
+    return GameConfig(strategy, numberOfGames, generateReport)
 }
 
 fun printHelp() {
     println(
         """
-        Monopoly Game Simulator - Phase 3
+        Monopoly Game Simulator - Phase 5
 
-        Usage: ./gradlew run --args="--strategy <strategy-name>"
+        Usage: ./gradlew run --args="[options]"
 
         Options:
           --strategy <name>  戦略を指定
@@ -93,25 +132,44 @@ fun printHelp() {
                              random: ランダムに購入する
                              conservative: 一定額以上の現金を保持
                              デフォルト: always-buy
+          --games <N>        実行するゲーム数を指定（デフォルト: 1）
+          --no-report        HTMLレポート生成を抑制
           --help             ヘルプを表示
 
         Examples:
+          # 単一ゲーム実行
           ./gradlew run --args="--strategy always-buy"
-          ./gradlew run --args="--strategy random"
-          ./gradlew run --args="--strategy conservative"
+
+          # 100ゲーム実行
+          ./gradlew run --args="--strategy random --games 100"
+
+          # 10ゲーム実行（レポートなし）
+          ./gradlew run --args="--strategy conservative --games 10 --no-report"
         """.trimIndent(),
     )
 }
 
 @Suppress("MagicNumber")
 fun main(args: Array<String>) {
-    val strategyName: String = parseArgs(args)
-    val strategy1: BuyStrategy = createStrategy(strategyName)
-    val strategy2: BuyStrategy = createStrategy(strategyName)
+    val config: GameConfig = parseArgs(args)
+
+    if (config.numberOfGames == 1) {
+        runSingleGame(config)
+    } else {
+        runMultipleGames(config)
+    }
+}
+
+/**
+ * 単一ゲームを実行（Phase 4までの動作）
+ */
+@Suppress("MagicNumber")
+private fun runSingleGame(config: GameConfig) {
+    val strategy1: BuyStrategy = config.strategy
+    val strategy2: BuyStrategy = config.strategy
 
     println("=".repeat(60))
-    println("Monopoly Game - Phase 3")
-    println("Strategy: $strategyName")
+    println("Monopoly Game - Phase 5 (Single Game)")
     println("=".repeat(60))
     println()
 
@@ -119,8 +177,8 @@ fun main(args: Array<String>) {
     val player1: Player = Player("Alice", strategy1)
     val player2: Player = Player("Bob", strategy2)
     println("Players:")
-    println("  - ${player1.name} ($strategyName)")
-    println("  - ${player2.name} ($strategyName)")
+    println("  - ${player1.name}")
+    println("  - ${player2.name}")
     println()
 
     // ゲームの初期化
@@ -179,14 +237,59 @@ fun main(args: Array<String>) {
     }
     println()
 
-    // HTMLレポートの生成（Phase 2 - 詳細レポート）
-    val detailedReportFile = htmlReportGenerator.saveToFile(gameState)
-    println("Detailed report generated: ${detailedReportFile.absolutePath}")
+    if (config.generateReport) {
+        // HTMLレポートの生成（Phase 2 - 詳細レポート）
+        val detailedReportFile = htmlReportGenerator.saveToFile(gameState)
+        println("Detailed report generated: ${detailedReportFile.absolutePath}")
 
-    // サマリーレポートの生成（Phase 4 - サマリーレポート）
-    val summaryReportFile = summaryReportGenerator.saveToFile(gameState)
-    println("Summary report generated: ${summaryReportFile.absolutePath}")
+        // サマリーレポートの生成（Phase 4 - サマリーレポート）
+        val summaryReportFile = summaryReportGenerator.saveToFile(gameState)
+        println("Summary report generated: ${summaryReportFile.absolutePath}")
+    }
 
     println()
     println("=".repeat(60))
+}
+
+/**
+ * 複数ゲームを実行（Phase 5の新機能）
+ */
+@Suppress("MagicNumber")
+private fun runMultipleGames(config: GameConfig) {
+    println("=".repeat(60))
+    println("Monopoly Game - Phase 5 (Multiple Games)")
+    println("Games: ${config.numberOfGames}")
+    println("=".repeat(60))
+    println()
+
+    val board: Board = createStandardBoard()
+    val playerStrategies = listOf(
+        "Alice" to config.strategy,
+        "Bob" to config.strategy,
+    )
+
+    val gameService = GameService()
+    val dice = Dice()
+    val gameRunner = GameRunner(gameService, dice)
+
+    // 複数ゲーム実行
+    val result = gameRunner.runMultipleGames(
+        numberOfGames = config.numberOfGames,
+        playerStrategies = playerStrategies,
+        board = board,
+        showProgress = true,
+    )
+
+    // 結果サマリー表示
+    val summaryPrinter = ResultSummaryPrinter()
+    summaryPrinter.print(result)
+
+    // オプション: 最後のゲームのみレポート生成
+    if (config.generateReport) {
+        val lastGameState = result.gameResults.last().finalState
+        val summaryReportGenerator = SummaryReportGenerator()
+        val reportFile = summaryReportGenerator.saveToFile(lastGameState)
+        println("Last game summary report: ${reportFile.absolutePath}")
+        println()
+    }
 }
