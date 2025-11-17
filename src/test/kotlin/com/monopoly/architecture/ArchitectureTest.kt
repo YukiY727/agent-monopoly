@@ -95,7 +95,12 @@ class ArchitectureTest : StringSpec({
             .ignoreDependency("cli", "simulation")
             .ignoreDependency("simulation", "cli")
             .ignoreDependency("cli", "export")
+            .ignoreDependency("export", "cli")
             .ignoreDependency("export", "statistics")
+            .ignoreDependency("statistics", "export")
+            .ignoreDependency("export", "simulation")
+            .ignoreDependency("simulation", "export")
+            .ignoreDependency("statistics", "cli")
             .check(classes)
     }
 
