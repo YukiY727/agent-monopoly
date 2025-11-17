@@ -234,6 +234,7 @@ class GameService {
         when (val ownership: PropertyOwnership = property.ownership) {
             is PropertyOwnership.Unowned -> processUnownedProperty(player, gameState, property)
             is PropertyOwnership.OwnedByPlayer -> processOwnedProperty(player, ownership, property, gameState)
+            is PropertyOwnership.Owned -> processOwnedPropertyByName(player, ownership, property, gameState)
         }
     }
 
@@ -267,6 +268,18 @@ class GameService {
     ) {
         val owner: Player = ownership.player
         if (owner != player) {
+            payRent(player, owner, property.rent, property, gameState)
+        }
+    }
+
+    private fun processOwnedPropertyByName(
+        player: Player,
+        ownership: PropertyOwnership.Owned,
+        property: Property,
+        gameState: GameState,
+    ) {
+        val owner: Player? = gameState.players.find { it.name == ownership.ownerName }
+        if (owner != null && owner != player) {
             payRent(player, owner, property.rent, property, gameState)
         }
     }
