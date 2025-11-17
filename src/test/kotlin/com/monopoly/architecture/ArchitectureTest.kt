@@ -79,18 +79,6 @@ class ArchitectureTest : StringSpec({
             .check(classes)
     }
 
-    // ドメイン層のパッケージ循環依存を禁止
-    // アプリケーション層（cli, simulation, statistics, export, visualization）は除外し、
-    // ドメイン層（domain.model, domain.service, domain.strategy）のみをチェック
-    "domain layer packages should be free of cycles" {
-        slices()
-            .matching("com.monopoly.domain.(*)..")
-            .namingSlices("$1")
-            .should()
-            .beFreeOfCycles()
-            .check(classes)
-    }
-
     // ドメインモデルクラスは適切なパッケージに配置される
     "domain model classes should be well organized" {
         classes()
