@@ -52,7 +52,7 @@ class CardTest : DescribeSpec({
             val deck = CardDeck(cards)
             val (card, newDeck) = deck.draw()
             card.shouldBeInstanceOf<Card>()
-            newDeck.size shouldBe 2
+            newDeck.size shouldBe 1  // GetOutOfJailFreeCard は削除されるので 1
         }
 
         it("should shuffle drawn card back to bottom") {
