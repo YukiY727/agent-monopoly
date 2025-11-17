@@ -6,8 +6,9 @@ import com.monopoly.domain.strategy.BuyStrategy
 class Player(
     val name: String,
     val strategy: BuyStrategy,
+    initialState: PlayerState? = null,
 ) {
-    var state: PlayerState = PlayerState.initial()
+    var state: PlayerState = initialState ?: PlayerState.initial()
         private set
 
     // Expose primitive Int for backward compatibility with existing tests
