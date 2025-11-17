@@ -44,7 +44,13 @@ class CardService {
                     GameEvent.CardDrawn(player.name, card.description)
                 )
             }
-            is Card.MoveTo -> {
+            is Card.AdvanceToGo -> {
+                handleMoveToCard(card, player, gameState)
+            }
+            is Card.GoToJail -> {
+                handleMoveToCard(card, player, gameState)
+            }
+            is Card.MoveToPosition -> {
                 handleMoveToCard(card, player, gameState)
             }
             is Card.CollectFromEachPlayer -> {
@@ -68,13 +74,13 @@ class CardService {
             val jailService = JailService()
             jailService.sendToJail(player, gameState)
             gameState.events.add(
-                GameEvent.CardDrawn(player.name, card.description)
+                GameEvent.CardDrawn(player.name, (card as Card).description)
             )
             return
         }
 
         // 通常の移動処理
-        player.moveTo(targetPosition)
+        player.moveTo(BoardPosition(targetPosition))
 
         // GO を通過したかチェック
         if (targetPosition < currentPosition || targetPosition == 0) {
@@ -85,7 +91,7 @@ class CardService {
         }
 
         gameState.events.add(
-            GameEvent.CardDrawn(player.name, card.description)
+            GameEvent.CardDrawn(player.name, (card as Card).description)
         )
     }
 
@@ -130,7 +136,7 @@ class CardService {
         player: Player,
         gameState: GameState
     ) {
-        val properties = player.state.ownedProperties.getAll()
+        val properties = player.ownedProperties
         val totalHouses = properties.sumOf { it.houses }
         val totalHotels = properties.count { it.hasHotel }
 

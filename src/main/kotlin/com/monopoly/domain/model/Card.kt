@@ -45,7 +45,7 @@ sealed class Card(val description: String) {
     /**
      * 指定された位置に移動
      */
-    data class MoveToPosition(override val position: Int, desc: String) : Card(desc), MoveTo
+    data class MoveToPosition(override val position: Int, val desc: String) : Card(desc), MoveTo
 
     /**
      * 各プレイヤーからお金を受け取る
