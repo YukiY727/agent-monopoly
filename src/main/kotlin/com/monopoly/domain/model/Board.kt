@@ -30,4 +30,28 @@ class Board(
     fun updateProperty(property: Property) {
         propertyMap[property.position] = property
     }
+
+    /**
+     * 全プロパティのリストを取得
+     *
+     * @return プロパティのリスト
+     */
+    fun getAllProperties(): List<Property> = propertyMap.values.toList()
+
+    /**
+     * 指定したカラーグループのプロパティを取得
+     *
+     * @param colorGroup カラーグループ
+     * @return 指定したカラーグループに属するプロパティのリスト
+     */
+    fun getPropertiesByColorGroup(colorGroup: ColorGroup): List<Property> {
+        return propertyMap.values.filter { it.colorGroup == colorGroup }
+    }
+
+    /**
+     * 全スペースのリストを取得
+     *
+     * @return スペースのリスト
+     */
+    fun getSpaces(): List<Space> = spaces
 }

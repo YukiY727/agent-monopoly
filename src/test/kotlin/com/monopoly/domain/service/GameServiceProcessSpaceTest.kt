@@ -22,7 +22,7 @@ class GameServiceProcessSpaceTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 20,
+                baseRent = 20,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))
@@ -50,7 +50,7 @@ class GameServiceProcessSpaceTest : StringSpec({
                 name = "Park Place",
                 position = 2,
                 price = 350,
-                rent = 50,
+                baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))
@@ -82,7 +82,7 @@ class GameServiceProcessSpaceTest : StringSpec({
                 name = "Boardwalk",
                 position = 3,
                 price = 400,
-                rent = 50,
+                baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))

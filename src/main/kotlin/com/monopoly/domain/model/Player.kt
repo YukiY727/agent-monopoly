@@ -6,8 +6,10 @@ import com.monopoly.domain.strategy.BuyStrategy
 class Player(
     val name: String,
     val strategy: BuyStrategy,
+    initialState: PlayerState? = null,
 ) {
-    private var state: PlayerState = PlayerState.initial()
+    var state: PlayerState = initialState ?: PlayerState.initial()
+        private set
 
     // Expose primitive Int for backward compatibility with existing tests
     val money: Int
@@ -21,6 +23,16 @@ class Player(
 
     val ownedProperties: List<Property>
         get() = state.ownedProperties.toList()
+
+    // Phase 16: Jail関連のプロパティ
+    val inJail: Boolean
+        get() = state.inJail
+
+    val jailTurns: Int
+        get() = state.jailTurns
+
+    val getOutOfJailFreeCards: Int
+        get() = state.getOutOfJailFreeCards
 
     // New value object accessors
     val moneyValue: Money
@@ -61,6 +73,24 @@ class Player(
         state = state.withProperty(property)
     }
 
+    /**
+     * プロパティを更新（家・ホテル建設などで使用）
+     *
+     * Phase 14: 家・ホテルシステム用
+     */
+    fun updateProperty(property: Property) {
+        state = state.withUpdatedProperty(property)
+    }
+
+    /**
+     * プロパティを削除（取引で使用）
+     *
+     * Phase 19: プレイヤー間取引用
+     */
+    fun removeProperty(property: Property) {
+        state = state.withRemovedProperty(property)
+    }
+
     fun goBankrupt() {
         state = state.withBankruptcy()
     }
@@ -89,4 +119,29 @@ class Player(
     }
 
     fun getTotalAssets(): Int = calculateTotalAssets().amount
+
+    // Phase 16: Jail関連のメソッド
+    fun sendToJail() {
+        state = state.withJail(inJail = true, jailTurns = 0)
+        moveTo(BoardPosition(10)) // Jail position
+    }
+
+    fun releaseFromJail() {
+        state = state.withJail(inJail = false, jailTurns = 0)
+    }
+
+    fun incrementJailTurns() {
+        state = state.withJailTurns(state.jailTurns + 1)
+    }
+
+    fun addGetOutOfJailFreeCard() {
+        state = state.withGetOutOfJailFreeCards(state.getOutOfJailFreeCards + 1)
+    }
+
+    fun useGetOutOfJailFreeCard() {
+        require(state.getOutOfJailFreeCards > 0) {
+            "No Get Out of Jail Free cards available"
+        }
+        state = state.withGetOutOfJailFreeCards(state.getOutOfJailFreeCards - 1)
+    }
 }

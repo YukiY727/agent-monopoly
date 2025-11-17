@@ -75,7 +75,7 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 20,
+                baseRent = 20,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))

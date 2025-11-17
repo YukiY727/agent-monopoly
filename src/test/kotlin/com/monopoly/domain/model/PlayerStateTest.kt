@@ -53,7 +53,7 @@ class PlayerStateTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
         val state = PlayerState.initial().withProperty(property)
@@ -71,7 +71,7 @@ class PlayerStateTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -87,7 +87,7 @@ class PlayerStateTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
         val property2 =
@@ -95,7 +95,7 @@ class PlayerStateTest : StringSpec({
                 name = "Baltic Avenue",
                 position = 3,
                 price = 60,
-                rent = 4,
+                baseRent = 4,
                 colorGroup = ColorGroup.BROWN,
             )
         val state =

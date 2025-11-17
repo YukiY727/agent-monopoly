@@ -1,0 +1,13 @@
+{
+  "strategy": "roi",
+  "parameters": {
+    "minROI": [0.10, 0.15, 0.20, 0.25],
+    "minCashReserve": [200, 300, 400, 500]
+  },
+  "opponents": [
+    {"strategy": "monopoly"},
+    {"strategy": "aggressive"},
+    {"strategy": "conservative"}
+  ],
+  "gamesPerCombination": 100
+}

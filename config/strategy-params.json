@@ -1,0 +1,27 @@
+{
+  "strategies": {
+    "monopoly": {
+      "blockOpponentMonopoly": true,
+      "minCashReserve": 250
+    },
+    "roi": {
+      "minROI": 0.18,
+      "minCashReserve": 350
+    },
+    "balanced": {
+      "threshold": 70,
+      "minCashReserve": 450
+    },
+    "lowprice": {
+      "maxPrice": 180,
+      "minCashReserve": 150
+    },
+    "highvalue": {
+      "minRent": 25,
+      "minCashReserve": 120
+    },
+    "aggressive": {
+      "minCashReserve": 280
+    }
+  }
+}

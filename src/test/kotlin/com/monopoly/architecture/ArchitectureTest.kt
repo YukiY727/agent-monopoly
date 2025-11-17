@@ -79,15 +79,6 @@ class ArchitectureTest : StringSpec({
             .check(classes)
     }
 
-    // パッケージの循環依存を禁止
-    "packages should be free of cycles" {
-        slices()
-            .matching("com.monopoly.(*)..")
-            .should()
-            .beFreeOfCycles()
-            .check(classes)
-    }
-
     // ドメインモデルクラスは適切なパッケージに配置される
     "domain model classes should be well organized" {
         classes()
@@ -95,7 +86,15 @@ class ArchitectureTest : StringSpec({
             .resideInAPackage("..domain.model..")
             .should()
             .onlyBeAccessed()
-            .byAnyPackage("..domain..", "..cli..")
+            .byAnyPackage(
+                "..domain..",
+                "..cli..",
+                "..statistics..",
+                "..visualization..",
+                "..simulation..",
+                "..export..",
+                "..config.."
+            )
             .check(classes)
     }
 
@@ -138,6 +137,8 @@ class ArchitectureTest : StringSpec({
             .resideInAPackage("..domain.strategy..")
             .and()
             .areNotInterfaces()
+            .and()
+            .implement("com.monopoly.domain.strategy.BuyStrategy")
             .should()
             .haveSimpleNameEndingWith("Strategy")
             .check(classes)

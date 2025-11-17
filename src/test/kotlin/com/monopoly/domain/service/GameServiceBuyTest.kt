@@ -1,6 +1,9 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.model.Board
+import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.ColorGroup
+import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
@@ -21,13 +24,15 @@ class GameServiceBuyTest : StringSpec({
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 10,
+                baseRent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
+        val board = BoardFixtures.createStandardBoard()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        val updatedProperty = gameService.buyProperty(player, property)
+        val updatedProperty = gameService.buyProperty(player, property, gameState)
 
         // Then
         player.money shouldBe 1300
@@ -47,13 +52,15 @@ class GameServiceBuyTest : StringSpec({
                 name = "Park Place",
                 position = 37,
                 price = 350,
-                rent = 35,
+                baseRent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
+        val board = BoardFixtures.createStandardBoard()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        val updatedProperty = gameService.buyProperty(player, property)
+        val updatedProperty = gameService.buyProperty(player, property, gameState)
 
         // Then
         updatedProperty.ownership shouldBe PropertyOwnership.OwnedByPlayer(player)
@@ -71,13 +78,15 @@ class GameServiceBuyTest : StringSpec({
                 name = "Boardwalk",
                 position = 39,
                 price = 400,
-                rent = 50,
+                baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
+        val board = BoardFixtures.createStandardBoard()
+        val gameState = GameState(players = listOf(player), board = board)
         val gameService = GameService()
 
         // When
-        gameService.buyProperty(player, property)
+        gameService.buyProperty(player, property, gameState)
 
         // Then
         player.ownedProperties.size shouldBe 1
