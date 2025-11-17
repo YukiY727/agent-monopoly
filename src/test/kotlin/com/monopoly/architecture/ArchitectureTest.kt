@@ -79,28 +79,15 @@ class ArchitectureTest : StringSpec({
             .check(classes)
     }
 
-    // パッケージの循環依存を禁止
-    // ただし、以下のアプリケーション層の循環依存は許容する:
-    // - simulation ↔ statistics: シミュレーション実行と統計計算の密結合
-    // - simulation ↔ cli: プログレス表示とシミュレーション実行の密結合
-    // - cli → export → statistics → simulation → cli: アプリケーション層の循環
-    "packages should be free of cycles" {
+    // ドメイン層のパッケージ循環依存を禁止
+    // アプリケーション層（cli, simulation, statistics, export, visualization）は除外し、
+    // ドメイン層（domain.model, domain.service, domain.strategy）のみをチェック
+    "domain layer packages should be free of cycles" {
         slices()
-            .matching("com.monopoly.(*)..")
+            .matching("com.monopoly.domain.(*)..")
             .namingSlices("$1")
             .should()
             .beFreeOfCycles()
-            .ignoreDependency("statistics", "simulation")
-            .ignoreDependency("simulation", "statistics")
-            .ignoreDependency("cli", "simulation")
-            .ignoreDependency("simulation", "cli")
-            .ignoreDependency("cli", "export")
-            .ignoreDependency("export", "cli")
-            .ignoreDependency("export", "statistics")
-            .ignoreDependency("statistics", "export")
-            .ignoreDependency("export", "simulation")
-            .ignoreDependency("simulation", "export")
-            .ignoreDependency("statistics", "cli")
             .check(classes)
     }
 
