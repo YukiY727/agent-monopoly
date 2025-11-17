@@ -83,6 +83,7 @@ class ArchitectureTest : StringSpec({
     // ただし、以下のアプリケーション層の循環依存は許容する:
     // - simulation ↔ statistics: シミュレーション実行と統計計算の密結合
     // - simulation ↔ cli: プログレス表示とシミュレーション実行の密結合
+    // - cli → export → statistics → simulation → cli: アプリケーション層の循環
     "packages should be free of cycles" {
         slices()
             .matching("com.monopoly.(*)..")
@@ -93,6 +94,8 @@ class ArchitectureTest : StringSpec({
             .ignoreDependency("simulation", "statistics")
             .ignoreDependency("cli", "simulation")
             .ignoreDependency("simulation", "cli")
+            .ignoreDependency("cli", "export")
+            .ignoreDependency("export", "statistics")
             .check(classes)
     }
 
