@@ -1,5 +1,6 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

@@ -26,8 +26,8 @@ class MainSequenceTest : StringSpec({
 
         // ドメインモデルは具象クラスが多いが依存も少ないため、主系列に近い
         // Phase 2: GameStateにイベントログとプロパティ操作メソッドを追加したため、
-        // 結合度がわずかに上昇（0.303）。デメテルの法則に従った設計のトレードオフ。
-        distance shouldBeLessThan 0.35
+        // 結合度がわずかに上昇（0.303 -> 0.352）。GameEventの追加によるもの。
+        distance shouldBeLessThan 0.3
     }
 
     "domain.service package should be close to main sequence" {

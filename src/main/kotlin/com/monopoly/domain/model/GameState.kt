@@ -1,5 +1,7 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.event.GameEvent
+
 class GameState(
     val players: List<Player>,
     val board: Board,

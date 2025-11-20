@@ -1,7 +1,7 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy

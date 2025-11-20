@@ -1,7 +1,7 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.Board
-import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Money
 import com.monopoly.domain.model.Player
@@ -39,6 +39,19 @@ class GameService {
         )
 
         val roll: Int = dice.roll()
+        val lastRoll: Pair<Int, Int> = dice.getLastRoll()
+
+        // DiceRolledイベントを記録
+        gameState.events.add(
+            GameEvent.DiceRolled(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                die1 = lastRoll.first,
+                die2 = lastRoll.second,
+                total = roll,
+            ),
+        )
 
         movePlayer(player, roll, gameState)
         processSpace(player, gameState)
@@ -167,6 +180,30 @@ class GameService {
         payer: Player,
         receiver: Player,
         rentAmount: Int,
+        propertyName: String,
+        gameState: GameState,
+    ) {
+        val amount: Money = Money(rentAmount)
+        payer.pay(amount)
+        receiver.receiveMoney(amount)
+
+        gameState.events.add(
+            GameEvent.RentPaid(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                payerName = payer.name,
+                receiverName = receiver.name,
+                propertyName = propertyName,
+                amount = rentAmount,
+            ),
+        )
+    }
+
+    // Phase 1のテストとの互換性のための overload
+    fun payRent(
+        payer: Player,
+        receiver: Player,
+        rentAmount: Int,
     ) {
         val amount: Money = Money(rentAmount)
         payer.pay(amount)
@@ -240,7 +277,7 @@ class GameService {
             // レント支払い前にプロパティリストを保存（pay()内でgoBankrupt()が呼ばれると空になるため）
             val propertiesBeforePayment: List<Property> = player.ownedProperties.toList()
 
-            payRent(player, owner, property.rent)
+            payRent(player, owner, property.rent, property.name, gameState)
 
             // レント支払い後にプレイヤーが破産したかチェック
             if (player.isBankrupt) {

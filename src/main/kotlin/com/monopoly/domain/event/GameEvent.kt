@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.event
 
 /**
  * ゲーム内で発生するすべてのイベントを表すsealed class

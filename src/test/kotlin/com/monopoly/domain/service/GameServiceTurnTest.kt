@@ -1,8 +1,8 @@
 package com.monopoly.domain.service
 
+import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
-import com.monopoly.domain.model.GameEvent
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
@@ -98,6 +98,38 @@ class GameServiceTurnTest : StringSpec({
         val turnEndedEvent: GameEvent.TurnEnded = turnEndedEvents.first()
         turnEndedEvent.playerName shouldBe "Alice"
         turnEndedEvent.turnNumber shouldBe 1
+    }
+
+    // TC-236: DiceRolledイベントに正しいサイコロの目が記録される
+    // Given: シード固定のDice、GameState
+    // When: executeTurn(gameState, dice)
+    // Then: DiceRolledイベントのdie1, die2, totalが正しい値
+    "should record DiceRolled event with correct dice values" {
+        val player1 = Player("Alice", AlwaysBuyStrategy())
+        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
+
+        val dice = Dice(Random(42)) // 固定シードで再現性を確保
+        gameService.executeTurn(gameState, dice)
+
+        // DiceRolledイベントが記録されている
+        val diceRolledEvents: List<GameEvent.DiceRolled> =
+            gameState.events.filterIsInstance<GameEvent.DiceRolled>()
+        diceRolledEvents.size shouldBe 1
+        val diceRolledEvent: GameEvent.DiceRolled = diceRolledEvents.first()
+
+        // イベントに正しい値が記録されている
+        diceRolledEvent.playerName shouldBe "Alice"
+        diceRolledEvent.turnNumber shouldBe 1
+        // die1, die2は1-6の範囲
+        diceRolledEvent.die1 shouldBeGreaterThan 0
+        diceRolledEvent.die2 shouldBeGreaterThan 0
+        // totalはdie1 + die2
+        diceRolledEvent.total shouldBe (diceRolledEvent.die1 + diceRolledEvent.die2)
     }
 
     // TC-237: runGame実行後、GameStarted, GameEndedイベントが記録される
