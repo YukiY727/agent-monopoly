@@ -210,6 +210,27 @@ class GameService {
         receiver.receiveMoney(amount)
     }
 
+    fun bankruptPlayer(
+        player: Player,
+        gameState: GameState,
+    ): List<Property> {
+        val properties: List<Property> = player.ownedProperties.toList()
+        val releasedProperties: List<Property> = properties.map { it.withoutOwner() }
+        player.goBankrupt()
+
+        gameState.events.add(
+            GameEvent.PlayerBankrupted(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                finalMoney = player.money,
+            ),
+        )
+
+        return releasedProperties
+    }
+
+    // Phase 1のテストとの互換性のための overload
     fun bankruptPlayer(player: Player): List<Property> {
         val properties: List<Property> = player.ownedProperties.toList()
         val releasedProperties: List<Property> = properties.map { it.withoutOwner() }
