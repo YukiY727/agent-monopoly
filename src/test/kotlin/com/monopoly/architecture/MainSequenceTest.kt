@@ -63,7 +63,8 @@ class MainSequenceTest : StringSpec({
             println("Distance (D): %.3f".format(metrics.distance))
 
             // 主系列からの距離は0.3以下が望ましい
-            metrics.distance shouldBeLessThan 0.5 // domain層は具象が多いので0.5まで許容
+            // Phase 2: GameEventをdomain.eventに分離したことで、全パッケージが0.3以下を達成
+            metrics.distance shouldBeLessThan 0.3
         }
     }
 })
