@@ -247,13 +247,13 @@ class GameStateTest : StringSpec({
     // When: releaseProperty(property)
     // Then: ボード上のプロパティが未所有になる
     "should release property on board" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
-            Property(
+        val player1: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 20,
+                baseRent = 20,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))
@@ -277,13 +277,13 @@ class GameStateTest : StringSpec({
     // When: updateProperty(ownedProperty)
     // Then: ボード上のプロパティが所有状態になる
     "should update property on board" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
-            Property(
+        val player1: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 20,
+                baseRent = 20,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))

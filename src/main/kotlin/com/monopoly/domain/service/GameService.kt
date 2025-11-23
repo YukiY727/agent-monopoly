@@ -298,7 +298,7 @@ class GameService {
             // レント支払い前にプロパティリストを保存（pay()内でgoBankrupt()が呼ばれると空になるため）
             val propertiesBeforePayment: List<Property> = player.ownedProperties.toList()
 
-            payRent(player, owner, property.rent, property.name, gameState)
+            payRent(player, owner, property.rentValue.amount, property.name, gameState)
 
             // レント支払い後にプレイヤーが破産したかチェック
             if (player.isBankrupt) {

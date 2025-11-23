@@ -16,6 +16,10 @@
           buildInputs = with pkgs; [
             # Java 21
             jdk21
+            
+            # Node.js & pnpm
+            nodejs_22    # または nodejs_20
+            pnpm
 
             # Git
             git

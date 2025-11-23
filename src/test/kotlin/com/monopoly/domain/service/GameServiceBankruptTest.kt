@@ -4,6 +4,7 @@ import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
+import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -30,23 +31,25 @@ class GameServiceBankruptTest : StringSpec({
         val gameService = GameService()
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
 
-        val property1 =
-            Property(
-                name = "Mediterranean Avenue",
-                position = 1,
-                price = 60,
-                rent = 2,
-                colorGroup = ColorGroup.BROWN,
-            ).withOwner(player)
+        val property1: Property =
+            PropertyTestFixtures
+                .createTestProperty(
+                    name = "Mediterranean Avenue",
+                    position = 1,
+                    price = 60,
+                    baseRent = 2,
+                    colorGroup = ColorGroup.BROWN,
+                ).withOwner(player)
 
-        val property2 =
-            Property(
-                name = "Baltic Avenue",
-                position = 3,
-                price = 60,
-                rent = 4,
-                colorGroup = ColorGroup.BROWN,
-            ).withOwner(player)
+        val property2: Property =
+            PropertyTestFixtures
+                .createTestProperty(
+                    name = "Baltic Avenue",
+                    position = 3,
+                    price = 60,
+                    baseRent = 4,
+                    colorGroup = ColorGroup.BROWN,
+                ).withOwner(player)
 
         player.addProperty(property1)
         player.addProperty(property2)

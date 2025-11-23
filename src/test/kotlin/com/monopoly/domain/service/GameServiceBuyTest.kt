@@ -7,6 +7,7 @@ import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
+import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -20,18 +21,18 @@ class GameServiceBuyTest : StringSpec({
     "should successfully buy property when player has enough money" {
         // Given
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 10,
+                baseRent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
         val gameService = GameService()
 
         // When
-        val updatedProperty = gameService.buyProperty(player, property)
+        val updatedProperty: Property = gameService.buyProperty(player, property)
 
         // Then
         player.money shouldBe 1300
@@ -46,18 +47,18 @@ class GameServiceBuyTest : StringSpec({
     "should set owner correctly after purchase" {
         // Given
         val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Park Place",
                 position = 37,
                 price = 350,
-                rent = 35,
+                baseRent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
         val gameService = GameService()
 
         // When
-        val updatedProperty = gameService.buyProperty(player, property)
+        val updatedProperty: Property = gameService.buyProperty(player, property)
 
         // Then
         updatedProperty.ownership shouldBe PropertyOwnership.OwnedByPlayer(player)
@@ -70,12 +71,12 @@ class GameServiceBuyTest : StringSpec({
     "should add property to player's owned properties list" {
         // Given
         val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Boardwalk",
                 position = 39,
                 price = 400,
-                rent = 50,
+                baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
         val gameService = GameService()
@@ -97,12 +98,12 @@ class GameServiceBuyTest : StringSpec({
     "should record PropertyPurchased event when buying property" {
         // Given
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 10,
+                baseRent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createStandardBoard()
@@ -114,7 +115,8 @@ class GameServiceBuyTest : StringSpec({
 
         // Then
         player.money shouldBe 1300
-        val purchaseEvent = gameState.events.filterIsInstance<GameEvent.PropertyPurchased>().firstOrNull()
+        val purchaseEvent: GameEvent.PropertyPurchased? =
+            gameState.events.filterIsInstance<GameEvent.PropertyPurchased>().firstOrNull()
         purchaseEvent shouldNotBe null
         purchaseEvent?.playerName shouldBe "Alice"
         purchaseEvent?.propertyName shouldBe "Mediterranean Avenue"
