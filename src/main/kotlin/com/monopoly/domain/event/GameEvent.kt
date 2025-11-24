@@ -123,4 +123,27 @@ sealed class GameEvent {
         val playerName: String,
         val finalMoney: Int,
     ) : GameEvent()
+
+    /**
+     * ゾロ目を出したイベント（Phase 2）
+     * @property playerName ゾロ目を出したプレイヤー名
+     * @property doublesCount 連続ゾロ目の回数（1, 2, or 3）
+     */
+    data class DoublesRolled(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val doublesCount: Int,
+    ) : GameEvent()
+
+    /**
+     * 3回連続ゾロ目イベント（Phase 2）
+     * プレイヤーは刑務所に送られる
+     * @property playerName 3回連続ゾロ目を出したプレイヤー名
+     */
+    data class ThreeConsecutiveDoubles(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+    ) : GameEvent()
 }

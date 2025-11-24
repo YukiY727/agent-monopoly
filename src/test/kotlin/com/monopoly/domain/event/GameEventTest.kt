@@ -398,4 +398,42 @@ class GameEventTest : StringSpec({
         copied.totalTurns shouldBe 50
         (copied === original) shouldBe false
     }
+
+    // Phase 2: Doubles events tests
+
+    // TC-250: DoublesRolled初期化
+    // Given: ターン番号5、プレイヤー名"Player 1"、連続ゾロ目回数2
+    // When: DoublesRolledイベントを作成
+    // Then: すべてのプロパティが正しく設定されている
+    "DoublesRolled event should have correct properties" {
+        val event =
+            GameEvent.DoublesRolled(
+                turnNumber = 5,
+                timestamp = 1000L,
+                playerName = "Player 1",
+                doublesCount = 2,
+            )
+
+        event.turnNumber shouldBe 5
+        event.timestamp shouldBe 1000L
+        event.playerName shouldBe "Player 1"
+        event.doublesCount shouldBe 2
+    }
+
+    // TC-251: ThreeConsecutiveDoubles初期化
+    // Given: ターン番号10、プレイヤー名"Player 2"
+    // When: ThreeConsecutiveDoublesイベントを作成
+    // Then: すべてのプロパティが正しく設定されている
+    "ThreeConsecutiveDoubles event should have correct properties" {
+        val event =
+            GameEvent.ThreeConsecutiveDoubles(
+                turnNumber = 10,
+                timestamp = 2000L,
+                playerName = "Player 2",
+            )
+
+        event.turnNumber shouldBe 10
+        event.timestamp shouldBe 2000L
+        event.playerName shouldBe "Player 2"
+    }
 })
