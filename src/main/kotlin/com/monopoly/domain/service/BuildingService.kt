@@ -32,23 +32,11 @@ class BuildingService(
         player: Player,
         property: Property,
     ): Boolean {
-        // 1. モノポリーチェック
-        if (!monopolyChecker.hasMonopoly(player, property.colorGroup)) {
-            return false
-        }
+        // 建設可能チェック
+        val canBuild: Boolean =
+            canBuildHouseImpl(player, property)
 
-        // 2. 建設可能チェック（4つ未満、ホテルなし）
-        if (!property.buildings.canBuildHouse()) {
-            return false
-        }
-
-        // 3. 所持金チェック
-        if (player.money < property.houseCost) {
-            return false
-        }
-
-        // 4. 均等建設ルールチェック
-        if (!canBuildHouseEvenly(player, property)) {
+        if (!canBuild) {
             return false
         }
 
@@ -66,6 +54,15 @@ class BuildingService(
         return true
     }
 
+    private fun canBuildHouseImpl(
+        player: Player,
+        property: Property,
+    ): Boolean =
+        monopolyChecker.hasMonopoly(player, property.colorGroup) &&
+            property.buildings.canBuildHouse() &&
+            player.money >= property.houseCost &&
+            canBuildHouseEvenly(player, property)
+
     /**
      * プロパティにホテルを建設する
      *
@@ -82,18 +79,11 @@ class BuildingService(
         player: Player,
         property: Property,
     ): Boolean {
-        // 1. モノポリーチェック
-        if (!monopolyChecker.hasMonopoly(player, property.colorGroup)) {
-            return false
-        }
+        // 建設可能チェック
+        val canBuild: Boolean =
+            canBuildHotelImpl(player, property)
 
-        // 2. 建設可能チェック（家4つ、ホテルなし）
-        if (!property.buildings.canBuildHotel()) {
-            return false
-        }
-
-        // 3. 所持金チェック
-        if (player.money < property.hotelCost) {
+        if (!canBuild) {
             return false
         }
 
@@ -110,6 +100,14 @@ class BuildingService(
 
         return true
     }
+
+    private fun canBuildHotelImpl(
+        player: Player,
+        property: Property,
+    ): Boolean =
+        monopolyChecker.hasMonopoly(player, property.colorGroup) &&
+            property.buildings.canBuildHotel() &&
+            player.money >= property.hotelCost
 
     /**
      * 均等建設ルールをチェックする

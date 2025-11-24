@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 
 class PropertyTest : StringSpec({
     // Helper function to create test PropertyRent
+    @Suppress("LongParameterList")
     fun createTestRent(
         base: Int = 2,
         withHouse1: Int = 10,

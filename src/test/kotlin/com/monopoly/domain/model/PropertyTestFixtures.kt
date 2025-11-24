@@ -7,6 +7,7 @@ object PropertyTestFixtures {
     /**
      * テスト用のPropertyRentを作成
      */
+    @Suppress("LongParameterList")
     fun createTestRent(
         base: Int = 2,
         withHouse1: Int = base * 5,
@@ -27,6 +28,7 @@ object PropertyTestFixtures {
     /**
      * テスト用のPropertyを作成
      */
+    @Suppress("LongParameterList")
     fun createTestProperty(
         name: String = "Test Property",
         position: Int = 1,

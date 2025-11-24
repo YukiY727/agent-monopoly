@@ -31,6 +31,7 @@ data class Property(
      * 現在の建物状態に基づいて家賃を計算
      * @return 適用される家賃額
      */
+    @Suppress("MagicNumber")
     private fun calculateRent(): Int =
         when {
             buildings.hasHotel -> rent.withHotel
