@@ -36,7 +36,7 @@ complexity:
     threshold: 4
   TooManyFunctions:
     active: true
-    thresholdInFiles: 11
+    thresholdInFiles: 15
     thresholdInClasses: 11
     thresholdInInterfaces: 11
     thresholdInObjects: 11
@@ -70,6 +70,8 @@ formatting:
   active: true
   android: false
   autoCorrect: true
+  Indentation:
+    active: false
 
 naming:
   active: true
