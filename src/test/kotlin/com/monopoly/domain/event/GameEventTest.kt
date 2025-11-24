@@ -185,4 +185,217 @@ class GameEventTest : StringSpec({
         event.winner shouldBe "Alice"
         event.totalTurns shouldBe 50
     }
+
+    // TC-211: GameEvent.equals should work correctly for same data
+    // Given: 2つの同じデータを持つGameStartedイベント
+    // When: equalsで比較
+    // Then: trueを返す
+    "GameStarted events with same data should be equal" {
+        val event1 =
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                timestamp = 1000L,
+                playerNames = listOf("Alice", "Bob"),
+            )
+        val event2 =
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                timestamp = 1000L,
+                playerNames = listOf("Alice", "Bob"),
+            )
+
+        (event1 == event2) shouldBe true
+        event1.hashCode() shouldBe event2.hashCode()
+    }
+
+    // TC-212: GameEvent.equals should work correctly for different data
+    // Given: 2つの異なるデータを持つGameStartedイベント
+    // When: equalsで比較
+    // Then: falseを返す
+    "GameStarted events with different data should not be equal" {
+        val event1 =
+            GameEvent.GameStarted(
+                turnNumber = 0,
+                timestamp = 1000L,
+                playerNames = listOf("Alice", "Bob"),
+            )
+        val event2 =
+            GameEvent.GameStarted(
+                turnNumber = 1,
+                timestamp = 1000L,
+                playerNames = listOf("Alice", "Bob"),
+            )
+
+        (event1 == event2) shouldBe false
+    }
+
+    // TC-213: DiceRolled toString should contain key information
+    // Given: DiceRolledイベント
+    // When: toStringを呼び出す
+    // Then: プレイヤー名とサイコロの値が含まれる
+    "DiceRolled toString should contain player name and dice values" {
+        val event =
+            GameEvent.DiceRolled(
+                turnNumber = 1,
+                timestamp = 1000L,
+                playerName = "Alice",
+                die1 = 3,
+                die2 = 4,
+                total = 7,
+            )
+
+        val result: String = event.toString()
+        result.contains("Alice") shouldBe true
+        result.contains("3") shouldBe true
+        result.contains("4") shouldBe true
+    }
+
+    // TC-214: PlayerMoved copy should create new instance with changed values
+    // Given: PlayerMovedイベント
+    // When: copyでpassedGoをtrueに変更
+    // Then: 新しいインスタンスが作成され、passedGoがtrueになる
+    "PlayerMoved copy should create new instance with changed passedGo" {
+        val original =
+            GameEvent.PlayerMoved(
+                turnNumber = 1,
+                timestamp = 1000L,
+                playerName = "Alice",
+                fromPosition = 0,
+                toPosition = 7,
+                passedGo = false,
+            )
+
+        val copied: GameEvent.PlayerMoved = original.copy(passedGo = true)
+
+        copied.passedGo shouldBe true
+        copied.playerName shouldBe "Alice"
+        copied.fromPosition shouldBe 0
+        copied.toPosition shouldBe 7
+        (copied === original) shouldBe false
+    }
+
+    // TC-215: PropertyPurchased equality test
+    // Given: 2つの同じPropertyPurchasedイベント
+    // When: equalsで比較
+    // Then: trueを返す
+    "PropertyPurchased events with same data should be equal" {
+        val event1 =
+            GameEvent.PropertyPurchased(
+                turnNumber = 2,
+                timestamp = 1000L,
+                playerName = "Bob",
+                propertyName = "Park Place",
+                price = 350,
+            )
+        val event2 =
+            GameEvent.PropertyPurchased(
+                turnNumber = 2,
+                timestamp = 1000L,
+                playerName = "Bob",
+                propertyName = "Park Place",
+                price = 350,
+            )
+
+        (event1 == event2) shouldBe true
+        event1.hashCode() shouldBe event2.hashCode()
+    }
+
+    // TC-216: RentPaid toString test
+    // Given: RentPaidイベント
+    // When: toStringを呼び出す
+    // Then: 支払者、受取者、金額が含まれる
+    "RentPaid toString should contain payer, receiver, and amount" {
+        val event =
+            GameEvent.RentPaid(
+                turnNumber = 3,
+                timestamp = 1000L,
+                payerName = "Alice",
+                receiverName = "Bob",
+                propertyName = "Boardwalk",
+                amount = 50,
+            )
+
+        val result: String = event.toString()
+        result.contains("Alice") shouldBe true
+        result.contains("Bob") shouldBe true
+        result.contains("50") shouldBe true
+    }
+
+    // TC-217: PlayerBankrupted copy test
+    // Given: PlayerBankruptedイベント
+    // When: copyでfinalMoneyを変更
+    // Then: 新しいインスタンスが作成され、finalMoneyが変更される
+    "PlayerBankrupted copy should create new instance with changed finalMoney" {
+        val original =
+            GameEvent.PlayerBankrupted(
+                turnNumber = 10,
+                timestamp = 1000L,
+                playerName = "Alice",
+                finalMoney = -50,
+            )
+
+        val copied: GameEvent.PlayerBankrupted = original.copy(finalMoney = -100)
+
+        copied.finalMoney shouldBe -100
+        copied.playerName shouldBe "Alice"
+        (copied === original) shouldBe false
+    }
+
+    // TC-218: TurnStarted equality test
+    // Given: 2つの異なるTurnStartedイベント
+    // When: equalsで比較
+    // Then: falseを返す
+    "TurnStarted events with different player names should not be equal" {
+        val event1 =
+            GameEvent.TurnStarted(
+                turnNumber = 5,
+                timestamp = 1000L,
+                playerName = "Bob",
+            )
+        val event2 =
+            GameEvent.TurnStarted(
+                turnNumber = 5,
+                timestamp = 1000L,
+                playerName = "Alice",
+            )
+
+        (event1 == event2) shouldBe false
+    }
+
+    // TC-219: TurnEnded toString test
+    // Given: TurnEndedイベント
+    // When: toStringを呼び出す
+    // Then: プレイヤー名とターン番号が含まれる
+    "TurnEnded toString should contain player name and turn number" {
+        val event =
+            GameEvent.TurnEnded(
+                turnNumber = 5,
+                timestamp = 1000L,
+                playerName = "Bob",
+            )
+
+        val result: String = event.toString()
+        result.contains("Bob") shouldBe true
+        result.contains("5") shouldBe true
+    }
+
+    // TC-220: GameEnded copy test
+    // Given: GameEndedイベント
+    // When: copyでwinnerを変更
+    // Then: 新しいインスタンスが作成され、winnerが変更される
+    "GameEnded copy should create new instance with changed winner" {
+        val original =
+            GameEvent.GameEnded(
+                turnNumber = 50,
+                timestamp = 1000L,
+                winner = "Alice",
+                totalTurns = 50,
+            )
+
+        val copied: GameEvent.GameEnded = original.copy(winner = "Bob")
+
+        copied.winner shouldBe "Bob"
+        copied.totalTurns shouldBe 50
+        (copied === original) shouldBe false
+    }
 })

@@ -1,7 +1,7 @@
 [config]
-model = "gemini/gemini-2.0-flash-exp"
+model = "gemini/gemini-1.5-flash"
 language = "ja"
-fallback_models = ["gemini/gemini-1.5-flash", "gemini/gemini-1.5-pro"]
+fallback_models = ["gemini/gemini-1.5-pro"]
 
 [github_action_config]
 auto_review = true
@@ -20,10 +20,10 @@ require_score_review = true
 require_estimate_effort_to_review = true
 inline_code_comments = true
 persistent_comment = true
-num_code_suggestions = 4
+num_code_suggestions = 2
 
 [pr_code_suggestions]
-num_code_suggestions = 4
+num_code_suggestions = 2
 auto_review = true
 auto_improve = false
 

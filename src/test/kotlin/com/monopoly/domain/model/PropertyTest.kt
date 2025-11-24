@@ -183,4 +183,89 @@ class PropertyTest : StringSpec({
 
         property.rentValue shouldBe Money(2)
     }
+
+    // TC-018: rentValue（家1つ）
+    "should calculate rent with 1 house" {
+        val property: Property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 1),
+            )
+
+        property.rentValue shouldBe Money(10)
+    }
+
+    // TC-019: rentValue（家2つ）
+    "should calculate rent with 2 houses" {
+        val property: Property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 2),
+            )
+
+        property.rentValue shouldBe Money(30)
+    }
+
+    // TC-020: rentValue（家3つ）
+    "should calculate rent with 3 houses" {
+        val property: Property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 3),
+            )
+
+        property.rentValue shouldBe Money(90)
+    }
+
+    // TC-021: rentValue（家4つ）
+    "should calculate rent with 4 houses" {
+        val property: Property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 4),
+            )
+
+        property.rentValue shouldBe Money(160)
+    }
+
+    // TC-022: rentValue（ホテル）
+    "should calculate rent with hotel" {
+        val property: Property =
+            Property(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 0, hasHotel = true),
+            )
+
+        property.rentValue shouldBe Money(250)
+    }
 })
