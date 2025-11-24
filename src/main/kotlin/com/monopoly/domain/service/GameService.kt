@@ -38,8 +38,7 @@ class GameService {
             ),
         )
 
-        val roll: Int = dice.roll()
-        val lastRoll: Pair<Int, Int> = dice.getLastRoll()
+        val diceRoll: com.monopoly.domain.model.DiceRoll = dice.roll()
 
         // DiceRolledイベントを記録
         gameState.events.add(
@@ -47,13 +46,13 @@ class GameService {
                 turnNumber = gameState.turnNumber,
                 timestamp = System.currentTimeMillis(),
                 playerName = player.name,
-                die1 = lastRoll.first,
-                die2 = lastRoll.second,
-                total = roll,
+                die1 = diceRoll.die1,
+                die2 = diceRoll.die2,
+                total = diceRoll.total,
             ),
         )
 
-        movePlayer(player, roll, gameState)
+        movePlayer(player, diceRoll.total, gameState)
         processSpace(player, gameState)
 
         // TurnEndedイベントを記録

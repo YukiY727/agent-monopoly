@@ -16,7 +16,7 @@ class DiceTest : StringSpec({
         // 100回ロールして全て範囲内であることを確認
         repeat(100) {
             val result = dice.roll()
-            result shouldBeInRange 2..12
+            result.total shouldBeInRange 2..12
         }
     }
 
@@ -27,7 +27,7 @@ class DiceTest : StringSpec({
 
         val result = dice.roll()
 
-        result shouldBeInRange 2..12
+        result.total shouldBeInRange 2..12
     }
 
     // TC-042: 決定的な結果
@@ -38,7 +38,7 @@ class DiceTest : StringSpec({
         val result1 = dice1.roll()
         val result2 = dice2.roll()
 
-        result1 shouldBe result2
+        result1.total shouldBe result2.total
     }
 
     // TC-043: 最小値のロール
@@ -58,7 +58,7 @@ class DiceTest : StringSpec({
 
         val result = dice.roll()
 
-        result shouldBe 2
+        result.total shouldBe 2
     }
 
     // TC-044: 最大値のロール
@@ -78,7 +78,7 @@ class DiceTest : StringSpec({
 
         val result = dice.roll()
 
-        result shouldBe 12
+        result.total shouldBe 12
     }
 
     // Phase 2: lastロール記録機能のテスト
@@ -106,11 +106,14 @@ class DiceTest : StringSpec({
             }
         val dice = Dice(fixedRandom)
 
-        dice.roll()
+        val diceRoll = dice.roll()
         val (die1, die2) = dice.getLastRoll()
 
         die1 shouldBe 3
         die2 shouldBe 4
+        // DiceRollとgetLastRollの結果が一致することも確認
+        diceRoll.die1 shouldBe die1
+        diceRoll.die2 shouldBe die2
     }
 
     // TC-241: getLastRollが複数回roll後も正しい値を返す
@@ -121,10 +124,93 @@ class DiceTest : StringSpec({
         val dice = Dice(Random(999))
 
         dice.roll() // 最初のロール
-        val secondRollTotal = dice.roll() // 2回目のロール
+        val secondRoll = dice.roll() // 2回目のロール
         val (die1, die2) = dice.getLastRoll()
 
         // 2回目のロール結果と一致すること
-        (die1 + die2) shouldBe secondRollTotal
+        (die1 + die2) shouldBe secondRoll.total
+        secondRoll.die1 shouldBe die1
+        secondRoll.die2 shouldBe die2
+    }
+
+    // Phase 2: DiceRoll返却機能のテスト
+
+    // TC-243: DiceRollのtotalが正しく計算される
+    // Given: Dice with fixed random
+    // When: roll()を実行
+    // Then: DiceRoll.totalがdie1 + die2と等しい
+    "DiceRoll total should equal sum of dice" {
+        val fixedRandom =
+            object : Random() {
+                private var callCount = 0
+
+                override fun nextBits(bitCount: Int): Int = callCount++
+
+                override fun nextInt(
+                    from: Int,
+                    until: Int,
+                ): Int {
+                    callCount++
+                    return if (callCount == 1) 3 else 5
+                }
+            }
+        val dice = Dice(fixedRandom)
+
+        val result = dice.roll()
+
+        result.die1 shouldBe 3
+        result.die2 shouldBe 5
+        result.total shouldBe 8
+    }
+
+    // TC-244: DiceRollのisDoublesが正しく判定される
+    // Given: Dice with fixed random returning doubles
+    // When: roll()を実行
+    // Then: DiceRoll.isDoublesがtrueである
+    "DiceRoll isDoubles should be true for doubles" {
+        val doublesRandom =
+            object : Random() {
+                override fun nextBits(bitCount: Int): Int = 0
+
+                override fun nextInt(
+                    from: Int,
+                    until: Int,
+                ): Int = 4
+            }
+        val dice = Dice(doublesRandom)
+
+        val result = dice.roll()
+
+        result.die1 shouldBe 4
+        result.die2 shouldBe 4
+        result.isDoubles shouldBe true
+    }
+
+    // TC-245: DiceRollのisDoublesが正しく判定される（非ゾロ目）
+    // Given: Dice with fixed random returning non-doubles
+    // When: roll()を実行
+    // Then: DiceRoll.isDoublesがfalseである
+    "DiceRoll isDoubles should be false for non-doubles" {
+        val nonDoublesRandom =
+            object : Random() {
+                private var callCount = 0
+
+                override fun nextBits(bitCount: Int): Int = callCount++
+
+                override fun nextInt(
+                    from: Int,
+                    until: Int,
+                ): Int {
+                    callCount++
+                    return if (callCount == 1) 2 else 5
+                }
+            }
+        val dice = Dice(nonDoublesRandom)
+
+        val result = dice.roll()
+
+        result.die1 shouldBe 2
+        result.die2 shouldBe 5
+        result.isDoubles shouldBe false
     }
 })

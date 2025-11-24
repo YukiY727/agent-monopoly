@@ -7,10 +7,10 @@ class Dice(private val random: Random = Random.Default) {
     private var lastDie2: Int = 0
 
     @Suppress("MagicNumber") // サイコロの標準的な値（1-6）
-    fun roll(): Int {
+    fun roll(): DiceRoll {
         lastDie1 = random.nextInt(1, 7) // 1-6
         lastDie2 = random.nextInt(1, 7) // 1-6
-        return lastDie1 + lastDie2 // 2-12
+        return DiceRoll(die1 = lastDie1, die2 = lastDie2)
     }
 
     /**
