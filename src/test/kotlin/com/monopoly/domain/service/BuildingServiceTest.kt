@@ -342,4 +342,89 @@ class BuildingServiceTest : StringSpec({
         property.buildings.hasHotel shouldBe false
         player.money shouldBe 30
     }
+
+    // TC-409: 家が既に4つある時は追加の家を建てられない
+    // Given: 家が既に4つあるプロパティ、モノポリーあり
+    // When: buildHouse()
+    // Then: falseを返し、家は増えない
+    "should not allow building 5th house when property already has 4 houses" {
+        val player = Player("Ivy", AlwaysBuyStrategy())
+
+        val property1: Property =
+            PropertyTestFixtures
+                .createTestProperty(
+                    name = "Mediterranean Avenue",
+                    position = 1,
+                    price = 60,
+                    baseRent = 2,
+                    houseCost = 50,
+                    colorGroup = ColorGroup.BROWN,
+                    buildings = PropertyBuildings(houseCount = 4),
+                ).withOwner(player)
+
+        val property2: Property =
+            PropertyTestFixtures
+                .createTestProperty(
+                    name = "Baltic Avenue",
+                    position = 3,
+                    price = 60,
+                    baseRent = 4,
+                    houseCost = 50,
+                    colorGroup = ColorGroup.BROWN,
+                    buildings = PropertyBuildings(houseCount = 4),
+                ).withOwner(player)
+
+        player.acquireProperty(property1)
+        player.acquireProperty(property2)
+
+        val buildingService = BuildingService(MonopolyCheckerService())
+        val result: Boolean = buildingService.buildHouse(player, property1)
+
+        result shouldBe false
+        property1.buildings.houseCount shouldBe 4
+    }
+
+    // TC-410: ホテルが既にある時は追加のホテルを建てられない
+    // Given: ホテルが既にあるプロパティ、モノポリーあり
+    // When: buildHotel()
+    // Then: falseを返し、状態は変わらない
+    "should not allow building second hotel when property already has hotel" {
+        val player = Player("Jack", AlwaysBuyStrategy())
+
+        val property1: Property =
+            PropertyTestFixtures
+                .createTestProperty(
+                    name = "Mediterranean Avenue",
+                    position = 1,
+                    price = 60,
+                    baseRent = 2,
+                    houseCost = 50,
+                    hotelCost = 50,
+                    colorGroup = ColorGroup.BROWN,
+                    buildings = PropertyBuildings(houseCount = 0, hasHotel = true),
+                ).withOwner(player)
+
+        val property2: Property =
+            PropertyTestFixtures
+                .createTestProperty(
+                    name = "Baltic Avenue",
+                    position = 3,
+                    price = 60,
+                    baseRent = 4,
+                    houseCost = 50,
+                    hotelCost = 50,
+                    colorGroup = ColorGroup.BROWN,
+                    buildings = PropertyBuildings(houseCount = 4),
+                ).withOwner(player)
+
+        player.acquireProperty(property1)
+        player.acquireProperty(property2)
+
+        val buildingService = BuildingService(MonopolyCheckerService())
+        val result: Boolean = buildingService.buildHotel(player, property1)
+
+        result shouldBe false
+        property1.buildings.hasHotel shouldBe true
+        property1.buildings.houseCount shouldBe 0
+    }
 })
