@@ -7,7 +7,7 @@ import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
-class MonopolyCheckerTest : StringSpec({
+class MonopolyCheckerServiceTest : StringSpec({
     // TC-301: プレイヤーがモノポリーを持っている（BROWN 2つ全て所有）
     // Given: BROWNグループ2つ全てを所有するPlayer
     // When: hasMonopoly(player, ColorGroup.BROWN)
@@ -36,7 +36,7 @@ class MonopolyCheckerTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val checker = MonopolyChecker()
+        val checker = MonopolyCheckerService()
 
         checker.hasMonopoly(player, ColorGroup.BROWN) shouldBe true
     }
@@ -59,7 +59,7 @@ class MonopolyCheckerTest : StringSpec({
 
         player.acquireProperty(property1)
 
-        val checker = MonopolyChecker()
+        val checker = MonopolyCheckerService()
 
         checker.hasMonopoly(player, ColorGroup.BROWN) shouldBe false
     }
@@ -71,7 +71,7 @@ class MonopolyCheckerTest : StringSpec({
     "should return false when player owns no properties" {
         val player = Player("Carol", AlwaysBuyStrategy())
 
-        val checker = MonopolyChecker()
+        val checker = MonopolyCheckerService()
 
         checker.hasMonopoly(player, ColorGroup.BROWN) shouldBe false
     }
@@ -114,7 +114,7 @@ class MonopolyCheckerTest : StringSpec({
         player.acquireProperty(property2)
         player.acquireProperty(property3)
 
-        val checker = MonopolyChecker()
+        val checker = MonopolyCheckerService()
 
         checker.hasMonopoly(player, ColorGroup.LIGHT_BLUE) shouldBe true
     }
@@ -147,7 +147,7 @@ class MonopolyCheckerTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val checker = MonopolyChecker()
+        val checker = MonopolyCheckerService()
 
         checker.hasMonopoly(player, ColorGroup.LIGHT_BLUE) shouldBe false
     }
@@ -190,7 +190,7 @@ class MonopolyCheckerTest : StringSpec({
         player.acquireProperty(brownProperty2)
         player.acquireProperty(lightBlueProperty)
 
-        val checker = MonopolyChecker()
+        val checker = MonopolyCheckerService()
 
         checker.hasMonopoly(player, ColorGroup.LIGHT_BLUE) shouldBe false
         checker.hasMonopoly(player, ColorGroup.BROWN) shouldBe true

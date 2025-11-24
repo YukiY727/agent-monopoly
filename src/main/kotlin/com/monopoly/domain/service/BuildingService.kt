@@ -13,7 +13,7 @@ import com.monopoly.domain.model.PropertyBuildings
  * - 均等建設ルールの適用
  */
 class BuildingService(
-    private val monopolyChecker: MonopolyChecker,
+    private val monopolyChecker: MonopolyCheckerService,
 ) {
     /**
      * プロパティに家を建設する

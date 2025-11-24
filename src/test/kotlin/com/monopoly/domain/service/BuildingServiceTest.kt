@@ -28,7 +28,7 @@ class BuildingServiceTest : StringSpec({
 
         player.acquireProperty(property)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHouse(player, property)
 
         result shouldBe false
@@ -67,7 +67,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHouse(player, property1)
 
         result shouldBe true
@@ -110,7 +110,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHouse(player, property1)
 
         result shouldBe false
@@ -151,7 +151,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHouse(player, property1)
 
         result shouldBe false
@@ -193,7 +193,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHouse(player, property1)
 
         result shouldBe true
@@ -242,7 +242,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property1)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHotel(player, property1)
 
         result shouldBe true
@@ -289,7 +289,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHotel(player, property)
 
         result shouldBe false
@@ -335,7 +335,7 @@ class BuildingServiceTest : StringSpec({
         player.acquireProperty(property)
         player.acquireProperty(property2)
 
-        val buildingService = BuildingService(MonopolyChecker())
+        val buildingService = BuildingService(MonopolyCheckerService())
         val result: Boolean = buildingService.buildHotel(player, property)
 
         result shouldBe false

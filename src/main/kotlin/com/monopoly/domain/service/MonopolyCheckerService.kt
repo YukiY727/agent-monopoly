@@ -6,7 +6,7 @@ import com.monopoly.domain.model.Player
 /**
  * モノポリー（特定の色グループ全てを所有している状態）をチェックするサービス
  */
-class MonopolyChecker {
+class MonopolyCheckerService {
     companion object {
         // 各色グループに含まれるプロパティ数
         private val COLOR_GROUP_SIZES: Map<ColorGroup, Int> =
