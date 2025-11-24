@@ -1,7 +1,5 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.strategy.BuyStrategy
-
 @Suppress("TooManyFunctions") // Compatibility methods for existing tests will be removed
 class Player(
     val name: String,

@@ -8,7 +8,7 @@ import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
-import com.monopoly.domain.strategy.BuyStrategy
+import com.monopoly.domain.model.BuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 

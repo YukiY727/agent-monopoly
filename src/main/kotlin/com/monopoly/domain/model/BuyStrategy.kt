@@ -1,6 +1,4 @@
-package com.monopoly.domain.strategy
-
-import com.monopoly.domain.model.Property
+package com.monopoly.domain.model
 
 interface BuyStrategy {
     fun shouldBuy(
