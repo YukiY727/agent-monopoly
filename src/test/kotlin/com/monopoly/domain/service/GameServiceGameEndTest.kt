@@ -54,4 +54,49 @@ class GameServiceGameEndTest : StringSpec({
 
         result shouldBe false
     }
+
+    // TC-152: runGame - 最大ターン数到達時の勝者決定（資産比較）
+    // Given: 複数のアクティブプレイヤー、maxTurns=1
+    // When: runGame(gameState, dice, maxTurns=1)
+    // Then: 最も資産の多いプレイヤーが勝者として返される
+    "should determine winner by total assets when max turns reached" {
+        val player1 = Player("Alice", AlwaysBuyStrategy())
+        val player2 = Player("Bob", AlwaysBuyStrategy())
+
+        // Player2により多くの所持金を与える
+        player2.receiveMoney(com.monopoly.domain.model.Money(1000))
+
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
+
+        val dice = com.monopoly.domain.model.Dice()
+        val winner: Player = gameService.runGame(gameState, dice, maxTurns = 1)
+
+        // Player2の方が資産が多いので勝者となる
+        winner shouldBe player2
+    }
+
+    // TC-153: runGame - 1人の勝者がいる場合
+    // Given: 1人のアクティブプレイヤー、他は破産
+    // When: runGame(gameState, dice, maxTurns=10)
+    // Then: アクティブなプレイヤーが勝者として返される
+    "should return the only active player as winner" {
+        val player1 = Player("Alice", AlwaysBuyStrategy())
+        val player2 = Player("Bob", AlwaysBuyStrategy())
+        player2.markAsBankrupt()
+
+        val gameState =
+            GameState(
+                players = listOf(player1, player2),
+                board = BoardFixtures.createStandardBoard(),
+            )
+
+        val dice = com.monopoly.domain.model.Dice()
+        val winner: Player = gameService.runGame(gameState, dice, maxTurns = 10)
+
+        winner shouldBe player1
+    }
 })
