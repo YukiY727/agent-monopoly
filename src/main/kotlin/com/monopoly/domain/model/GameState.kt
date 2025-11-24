@@ -1,8 +1,11 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.event.GameEvent
+
 class GameState(
     val players: List<Player>,
     val board: Board,
+    val events: MutableList<GameEvent> = mutableListOf(),
 ) {
     private var currentPlayerIndex: Int = 0
     private var gameOver: Boolean = false
@@ -39,4 +42,12 @@ class GameState(
     private fun shouldSkipPlayer(index: Int): Boolean = players[index].isBankrupt && getActivePlayerCount() > 1
 
     fun getActivePlayerCount(): Int = players.count { !it.isBankrupt }
+
+    fun releaseProperty(property: Property) {
+        board.updateProperty(property)
+    }
+
+    fun updateProperty(property: Property) {
+        board.updateProperty(property)
+    }
 }

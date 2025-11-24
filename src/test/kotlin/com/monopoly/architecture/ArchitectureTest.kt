@@ -69,6 +69,7 @@ class ArchitectureTest : StringSpec({
             .onlyDependOnClassesThat()
             .resideInAnyPackage(
                 "..domain.model..",
+                "..domain.event..",
                 "..domain.strategy..",
                 "..domain.service..",
                 "java..",

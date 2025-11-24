@@ -6,6 +6,7 @@ import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
+import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import com.monopoly.domain.strategy.BuyStrategy
 import io.kotest.core.spec.style.StringSpec
@@ -70,12 +71,12 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
             }
 
         val player = Player("Charlie", neverBuyStrategy)
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 200,
-                rent = 20,
+                baseRent = 20,
                 colorGroup = ColorGroup.BROWN,
             )
         val board = BoardFixtures.createBoardWithProperties(listOf(property))
