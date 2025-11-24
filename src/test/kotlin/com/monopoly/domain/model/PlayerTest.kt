@@ -46,13 +46,23 @@ class PlayerTest : StringSpec({
     // When: Propertyを追加
     // Then: 所有プロパティリストに含まれる
     "should add property to owned properties" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
+        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property: Property =
             Property(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                rent =
+                    PropertyRent(
+                        base = 2,
+                        withHouse1 = 10,
+                        withHouse2 = 30,
+                        withHouse3 = 90,
+                        withHouse4 = 160,
+                        withHotel = 250,
+                    ),
+                houseCost = 50,
+                hotelCost = 50,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -67,11 +77,29 @@ class PlayerTest : StringSpec({
     // When: getTotalAssets()
     // Then: $1400を返す
     "should calculate total assets with properties" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         player.subtractMoney(500) // 1500 - 500 = 1000
 
-        val property1 = Property("Prop1", 1, 200, 10, ColorGroup.BROWN)
-        val property2 = Property("Prop2", 3, 200, 10, ColorGroup.BROWN)
+        val property1: Property =
+            Property(
+                name = "Prop1",
+                position = 1,
+                price = 200,
+                rent = PropertyRent(10, 50, 150, 450, 800, 1250),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val property2: Property =
+            Property(
+                name = "Prop2",
+                position = 3,
+                price = 200,
+                rent = PropertyRent(10, 50, 150, 450, 800, 1250),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.BROWN,
+            )
         player.addProperty(property1)
         player.addProperty(property2)
 
@@ -167,13 +195,15 @@ class PlayerTest : StringSpec({
 
     // TC-015: acquireProperty
     "should acquire property using value object method" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
+        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property: Property =
             Property(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                rent = PropertyRent(2, 10, 30, 90, 160, 250),
+                houseCost = 50,
+                hotelCost = 50,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -185,13 +215,15 @@ class PlayerTest : StringSpec({
 
     // TC-016: goBankrupt
     "should go bankrupt and clear properties" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property =
+        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property: Property =
             Property(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                rent = PropertyRent(2, 10, 30, 90, 160, 250),
+                houseCost = 50,
+                hotelCost = 50,
                 colorGroup = ColorGroup.BROWN,
             )
         player.addProperty(property)
@@ -214,11 +246,20 @@ class PlayerTest : StringSpec({
 
     // TC-018: calculateTotalAssets
     "should calculate total assets using Money value object" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property = Property("Prop1", 1, 200, 10, ColorGroup.BROWN)
+        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val property: Property =
+            Property(
+                name = "Prop1",
+                position = 1,
+                price = 200,
+                rent = PropertyRent(10, 50, 150, 450, 800, 1250),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.BROWN,
+            )
         player.addProperty(property)
 
-        val totalAssets = player.calculateTotalAssets()
+        val totalAssets: Money = player.calculateTotalAssets()
 
         totalAssets shouldBe Money(1700)
     }
@@ -251,10 +292,38 @@ class PlayerTest : StringSpec({
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         player.pay(Money(300)) // 1500 - 300 = 1200
 
-        val property1 = Property("Prop1", 1, 100, 10, ColorGroup.BROWN)
-        val property2 = Property("Prop2", 3, 150, 15, ColorGroup.BROWN)
-        val property3 = Property("Prop3", 5, 200, 20, ColorGroup.LIGHT_BLUE)
-        val property4 = Property("Prop4", 7, 250, 25, ColorGroup.PINK)
+        val property1: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop1",
+                position = 1,
+                price = 100,
+                baseRent = 10,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val property2: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop2",
+                position = 3,
+                price = 150,
+                baseRent = 15,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val property3: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop3",
+                position = 5,
+                price = 200,
+                baseRent = 20,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
+        val property4: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop4",
+                position = 7,
+                price = 250,
+                baseRent = 25,
+                colorGroup = ColorGroup.PINK,
+            )
 
         player.acquireProperty(property1)
         player.acquireProperty(property2)
@@ -317,9 +386,30 @@ class PlayerTest : StringSpec({
     // Then: すべてのプロパティが失われる
     "should lose all properties when going bankrupt" {
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val property1 = Property("Prop1", 1, 100, 10, ColorGroup.BROWN)
-        val property2 = Property("Prop2", 3, 150, 15, ColorGroup.BROWN)
-        val property3 = Property("Prop3", 5, 200, 20, ColorGroup.LIGHT_BLUE)
+        val property1: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop1",
+                position = 1,
+                price = 100,
+                baseRent = 10,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val property2: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop2",
+                position = 3,
+                price = 150,
+                baseRent = 15,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val property3: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Prop3",
+                position = 5,
+                price = 200,
+                baseRent = 20,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
 
         player.acquireProperty(property1)
         player.acquireProperty(property2)

@@ -47,9 +47,10 @@ class PropertyOwnershipTest : StringSpec({
     // Then: 正しいサブクラスとして認識される
     "PropertyOwnership subclasses should be correctly identified" {
         val unowned: PropertyOwnership = PropertyOwnership.Unowned
-        val owned: PropertyOwnership = PropertyOwnership.OwnedByPlayer(
-            Player(name = "Charlie", strategy = AlwaysBuyStrategy()),
-        )
+        val owned: PropertyOwnership =
+            PropertyOwnership.OwnedByPlayer(
+                Player(name = "Charlie", strategy = AlwaysBuyStrategy()),
+            )
 
         unowned.shouldBeInstanceOf<PropertyOwnership.Unowned>()
         owned.shouldBeInstanceOf<PropertyOwnership.OwnedByPlayer>()
@@ -98,9 +99,10 @@ class PropertyOwnershipTest : StringSpec({
     // Then: 異なる型なので等しくない
     "Unowned and OwnedByPlayer should not be equal" {
         val unowned = PropertyOwnership.Unowned
-        val owned = PropertyOwnership.OwnedByPlayer(
-            Player(name = "George", strategy = AlwaysBuyStrategy()),
-        )
+        val owned =
+            PropertyOwnership.OwnedByPlayer(
+                Player(name = "George", strategy = AlwaysBuyStrategy()),
+            )
 
         unowned shouldNotBe owned
     }

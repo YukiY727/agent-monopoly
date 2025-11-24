@@ -14,6 +14,8 @@ data class PlayerState(
 
     fun withProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.add(property))
 
+    fun withoutProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.remove(property))
+
     fun calculateTotalAssets(): Money = money.plus(ownedProperties.calculateTotalValue())
 
     companion object {

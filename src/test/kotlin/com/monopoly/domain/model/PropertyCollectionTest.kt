@@ -13,12 +13,12 @@ class PropertyCollectionTest : StringSpec({
 
     "should add property to collection" {
         val collection = PropertyCollection()
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -31,20 +31,20 @@ class PropertyCollectionTest : StringSpec({
 
     "should calculate total value of properties" {
         val collection = PropertyCollection()
-        val property1 =
-            Property(
+        val property1: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
-        val property2 =
-            Property(
+        val property2: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Baltic Avenue",
                 position = 3,
                 price = 60,
-                rent = 4,
+                baseRent = 4,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -55,12 +55,12 @@ class PropertyCollectionTest : StringSpec({
 
     "should remove all properties" {
         val collection = PropertyCollection()
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -73,20 +73,20 @@ class PropertyCollectionTest : StringSpec({
 
     "should convert to list" {
         val collection = PropertyCollection()
-        val property1 =
-            Property(
+        val property1: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
-        val property2 =
-            Property(
+        val property2: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Baltic Avenue",
                 position = 3,
                 price = 60,
-                rent = 4,
+                baseRent = 4,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -107,20 +107,20 @@ class PropertyCollectionTest : StringSpec({
 
     "should check contains returns false for non-existent property" {
         val collection = PropertyCollection()
-        val property1 =
-            Property(
+        val property1: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
-        val property2 =
-            Property(
+        val property2: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Baltic Avenue",
                 position = 3,
                 price = 60,
-                rent = 4,
+                baseRent = 4,
                 colorGroup = ColorGroup.BROWN,
             )
 

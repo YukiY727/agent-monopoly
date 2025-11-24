@@ -3,6 +3,11 @@ model = "gemini/gemini-1.5-flash"
 language = "ja"
 fallback_models = ["gemini/gemini-1.5-pro"]
 
+[github_action_config]
+auto_review = true
+auto_describe = true
+auto_improve = false
+
 [pr_description]
 publish_description_as_comment = true
 enable_semantic_files_types = true

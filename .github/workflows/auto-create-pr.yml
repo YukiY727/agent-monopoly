@@ -1,0 +1,60 @@
+name: Auto Create PR
+
+on:
+  push:
+    branches-ignore:
+      - 'main'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if PR exists
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          PR_COUNT=$(gh pr list --head "$BRANCH_NAME" --json number --jq 'length')
+          echo "pr_count=$PR_COUNT" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.check_pr.outputs.pr_count == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ steps.check_pr.outputs.branch_name }}"
+
+          # Create a meaningful title from branch name
+          # Convert slashes and hyphens to spaces and capitalize words
+          TITLE=$(echo "$BRANCH_NAME" | tr '/-' ' ' | sed 's/\b\(.\)/\u\1/g')
+
+          # Get the most recent commit message for PR body
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          # Create PR with auto-generated title and body
+          gh pr create \
+            --title "$TITLE" \
+            --body "$(cat <<EOF
+## Summary
+Auto-generated PR from branch: \`$BRANCH_NAME\`
+
+## Recent Changes
+$COMMIT_MSG
+
+---
+_This PR was automatically created by GitHub Actions when the branch was pushed._
+EOF
+)" \
+            --base main \
+            --head "$BRANCH_NAME"

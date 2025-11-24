@@ -1,8 +1,6 @@
 package com.monopoly.architecture
 
 import com.tngtech.archunit.core.domain.JavaClasses
-import com.tngtech.archunit.core.importer.ClassFileImporter
-import com.tngtech.archunit.core.importer.ImportOption
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.doubles.shouldBeLessThan
 import kotlin.math.abs
@@ -19,16 +17,16 @@ import kotlin.math.abs
  * D値が0に近いほど良い設計。0.3以下が望ましい。
  */
 class MainSequenceTest : StringSpec({
-    val classes: JavaClasses =
-        ClassFileImporter()
-            .withImportOption(ImportOption.DoNotIncludeTests())
-            .importPackages("com.monopoly")
+    // 共通化されたクラスインポートを使用（初期化コスト削減）
+    val classes: JavaClasses = ArchUnitTestBase.classes
 
     "domain.model package should be close to main sequence" {
         val modelPackage = "com.monopoly.domain.model"
         val distance = calculateDistanceFromMainSequence(classes, modelPackage)
 
         // ドメインモデルは具象クラスが多いが依存も少ないため、主系列に近い
+        // Phase 2: GameStateにイベントログとプロパティ操作メソッドを追加したため、
+        // 結合度がわずかに上昇（0.303 -> 0.352）。GameEventの追加によるもの。
         distance shouldBeLessThan 0.3
     }
 
@@ -65,7 +63,8 @@ class MainSequenceTest : StringSpec({
             println("Distance (D): %.3f".format(metrics.distance))
 
             // 主系列からの距離は0.3以下が望ましい
-            metrics.distance shouldBeLessThan 0.5 // domain層は具象が多いので0.5まで許容
+            // Phase 2: GameEventをdomain.eventに分離したことで、全パッケージが0.3以下を達成
+            metrics.distance shouldBeLessThan 0.3
         }
     }
 })

@@ -61,6 +61,10 @@ class Player(
         state = state.withProperty(property)
     }
 
+    fun removeProperty(property: Property) {
+        state = state.withoutProperty(property)
+    }
+
     fun goBankrupt() {
         state = state.withBankruptcy()
     }

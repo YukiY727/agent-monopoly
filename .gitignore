@@ -17,6 +17,7 @@ mvnw.cmd
 build/
 bin/
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # IDEs
 .idea/
@@ -64,6 +65,11 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Nix
+.direnv/
+result
+result-*
 
 # Logs
 *.log

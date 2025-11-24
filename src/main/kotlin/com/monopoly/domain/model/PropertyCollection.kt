@@ -5,6 +5,8 @@ class PropertyCollection(
 ) {
     fun add(property: Property): PropertyCollection = PropertyCollection(properties + property)
 
+    fun remove(property: Property): PropertyCollection = PropertyCollection(properties - property)
+
     fun removeAll(): PropertyCollection = PropertyCollection(emptyList())
 
     fun calculateTotalValue(): Money = Money(properties.sumOf { it.price })

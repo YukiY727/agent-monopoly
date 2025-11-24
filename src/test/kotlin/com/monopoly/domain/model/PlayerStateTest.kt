@@ -48,12 +48,12 @@ class PlayerStateTest : StringSpec({
     }
 
     "should mark as bankrupt and clear properties" {
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
         val state = PlayerState.initial().withProperty(property)
@@ -66,12 +66,12 @@ class PlayerStateTest : StringSpec({
 
     "should add property" {
         val state = PlayerState.initial()
-        val property =
-            Property(
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
 
@@ -82,20 +82,20 @@ class PlayerStateTest : StringSpec({
     }
 
     "should calculate total assets" {
-        val property1 =
-            Property(
+        val property1: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
-                rent = 2,
+                baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
-        val property2 =
-            Property(
+        val property2: Property =
+            PropertyTestFixtures.createTestProperty(
                 name = "Baltic Avenue",
                 position = 3,
                 price = 60,
-                rent = 4,
+                baseRent = 4,
                 colorGroup = ColorGroup.BROWN,
             )
         val state =

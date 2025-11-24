@@ -163,4 +163,34 @@ class GameServicePayRentTest : StringSpec({
         payer.money shouldBe -200
         payer.isBankrupt shouldBe true
     }
+
+    // Phase 2: イベント記録のテスト
+
+    // TC-233: payRent実行後、RentPaidイベントが記録される
+    // Given: 支払者、受取者、Property、GameState
+    // When: payRent(payer, receiver, rent, propertyName, gameState)
+    // Then: gameState.eventsにRentPaidイベントが追加されている、amountが正しい
+    "should record RentPaid event when paying rent" {
+        // Given
+        val payer = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
+        val gameState = com.monopoly.domain.model.GameState(listOf(payer, receiver), board)
+        val gameService = GameService()
+
+        // When
+        gameService.payRent(payer, receiver, 100, "Park Place", gameState)
+
+        // Then
+        payer.money shouldBe 1400
+        receiver.money shouldBe 1600
+        val rentPaidEvents: List<com.monopoly.domain.event.GameEvent.RentPaid> =
+            gameState.events.filterIsInstance<com.monopoly.domain.event.GameEvent.RentPaid>()
+        rentPaidEvents.size shouldBe 1
+        val rentPaidEvent: com.monopoly.domain.event.GameEvent.RentPaid = rentPaidEvents.first()
+        rentPaidEvent.payerName shouldBe "Alice"
+        rentPaidEvent.receiverName shouldBe "Bob"
+        rentPaidEvent.propertyName shouldBe "Park Place"
+        rentPaidEvent.amount shouldBe 100
+    }
 })

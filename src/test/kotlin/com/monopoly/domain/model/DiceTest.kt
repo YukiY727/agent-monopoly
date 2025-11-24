@@ -80,4 +80,51 @@ class DiceTest : StringSpec({
 
         result shouldBe 12
     }
+
+    // Phase 2: lastロール記録機能のテスト
+
+    // TC-240: getLastRollが最後のサイコロの目を返す
+    // Given: Dice
+    // When: roll()を実行
+    // Then: getLastRoll()が最後のdie1, die2を返す
+    "getLastRoll should return last dice values" {
+        val fixedRandom =
+            object : Random() {
+                private var callCount = 0
+
+                override fun nextBits(bitCount: Int): Int = callCount++
+
+                override fun nextInt(until: Int): Int = if (callCount == 0) 3 else 4
+
+                override fun nextInt(
+                    from: Int,
+                    until: Int,
+                ): Int {
+                    callCount++
+                    return if (callCount == 1) 3 else 4
+                }
+            }
+        val dice = Dice(fixedRandom)
+
+        dice.roll()
+        val (die1, die2) = dice.getLastRoll()
+
+        die1 shouldBe 3
+        die2 shouldBe 4
+    }
+
+    // TC-241: getLastRollが複数回roll後も正しい値を返す
+    // Given: Dice
+    // When: roll()を2回実行
+    // Then: getLastRoll()が2回目のdie1, die2を返す
+    "getLastRoll should return latest dice values after multiple rolls" {
+        val dice = Dice(Random(999))
+
+        dice.roll() // 最初のロール
+        val secondRollTotal = dice.roll() // 2回目のロール
+        val (die1, die2) = dice.getLastRoll()
+
+        // 2回目のロール結果と一致すること
+        (die1 + die2) shouldBe secondRollTotal
+    }
 })

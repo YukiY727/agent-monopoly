@@ -21,13 +21,14 @@ class SpaceTest : StringSpec({
     // When: PropertySpaceを作成
     // Then: position, spaceType, property が正しく設定される
     "PropertySpace should be initialized with correct position, type and property" {
-        val property = Property(
-            name = "Mediterranean Avenue",
-            position = 1,
-            price = 60,
-            rent = 2,
-            colorGroup = ColorGroup.BROWN,
-        )
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                baseRent = 2,
+                colorGroup = ColorGroup.BROWN,
+            )
         val propertySpace = Space.PropertySpace(position = 1, property = property)
 
         propertySpace.position shouldBe 1
@@ -40,13 +41,14 @@ class SpaceTest : StringSpec({
     // When: propertyフィールドにアクセス
     // Then: 正しいPropertyが返される
     "PropertySpace should allow access to property field" {
-        val property = Property(
-            name = "Park Place",
-            position = 37,
-            price = 350,
-            rent = 35,
-            colorGroup = ColorGroup.DARK_BLUE,
-        )
+        val property: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Park Place",
+                position = 37,
+                price = 350,
+                baseRent = 35,
+                colorGroup = ColorGroup.DARK_BLUE,
+            )
         val propertySpace = Space.PropertySpace(position = 37, property = property)
 
         propertySpace.property.name shouldBe "Park Place"
@@ -74,10 +76,15 @@ class SpaceTest : StringSpec({
     // Then: 正しいサブクラスとして認識される
     "Space subclasses should be correctly identified" {
         val goSpace: Space = Space.Go(0)
-        val propertySpace: Space = Space.PropertySpace(
-            1,
-            Property("Test", 1, 60, 2, ColorGroup.BROWN),
-        )
+        val testProperty: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Test",
+                position = 1,
+                price = 60,
+                baseRent = 2,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val propertySpace: Space = Space.PropertySpace(1, testProperty)
         val otherSpace: Space = Space.Other(7, SpaceType.CHANCE)
 
         goSpace.shouldBeInstanceOf<Space.Go>()

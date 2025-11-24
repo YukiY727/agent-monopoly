@@ -139,9 +139,30 @@ class ColorGroupTest : StringSpec({
     // When: colorGroupフィールドにアクセス
     // Then: 正しいColorGroupが設定される
     "color groups should be usable in Property objects" {
-        val brownProperty = Property("Mediterranean Avenue", 1, 60, 2, ColorGroup.BROWN)
-        val blueProperty = Property("Park Place", 37, 350, 35, ColorGroup.DARK_BLUE)
-        val greenProperty = Property("Pacific Avenue", 26, 300, 26, ColorGroup.GREEN)
+        val brownProperty: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                baseRent = 2,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val blueProperty: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Park Place",
+                position = 37,
+                price = 350,
+                baseRent = 35,
+                colorGroup = ColorGroup.DARK_BLUE,
+            )
+        val greenProperty: Property =
+            PropertyTestFixtures.createTestProperty(
+                name = "Pacific Avenue",
+                position = 26,
+                price = 300,
+                baseRent = 26,
+                colorGroup = ColorGroup.GREEN,
+            )
 
         brownProperty.colorGroup shouldBe ColorGroup.BROWN
         blueProperty.colorGroup shouldBe ColorGroup.DARK_BLUE

@@ -16,9 +16,10 @@
           buildInputs = with pkgs; [
             # Java 21
             jdk21
-
-            # Build tool
-            gradle
+            
+            # Node.js & pnpm
+            nodejs_22    # または nodejs_20
+            pnpm
 
             # Git
             git
@@ -35,8 +36,8 @@
             echo "Java version:"
             java -version
             echo ""
-            echo "Gradle version:"
-            gradle -version
+            echo "Gradle Wrapper version:"
+            ./gradlew --version | head -5
             echo ""
             echo "Ready to start Phase 1 development!"
           '';
