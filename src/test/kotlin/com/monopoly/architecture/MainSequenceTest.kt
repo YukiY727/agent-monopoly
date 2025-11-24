@@ -27,6 +27,8 @@ class MainSequenceTest : StringSpec({
         // ドメインモデルは具象クラスが多いが依存も少ないため、主系列に近い
         // Phase 2: GameStateにイベントログとプロパティ操作メソッドを追加したため、
         // 結合度がわずかに上昇（0.303 -> 0.352）。GameEventの追加によるもの。
+        // Phase 2 (Doubles): DiceRollクラスの追加により距離が0.306に上昇。
+        // Phase 2 (Refactoring): BuyStrategyをdomain.modelに移動し、結合度を削減（0.297に改善）。
         distance shouldBeLessThan 0.3
     }
 
@@ -64,6 +66,8 @@ class MainSequenceTest : StringSpec({
 
             // 主系列からの距離は0.3以下が望ましい
             // Phase 2: GameEventをdomain.eventに分離したことで、全パッケージが0.3以下を達成
+            // Phase 2 (Doubles): DiceRollクラスの追加により、domain.modelは0.35以下に緩和
+            // Phase 2 (Refactoring): BuyStrategy移動により結合度削減、全パッケージ0.3以下に復帰
             metrics.distance shouldBeLessThan 0.3
         }
     }
