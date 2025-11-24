@@ -52,6 +52,53 @@ class GameService {
             ),
         )
 
+        // ゾロ目の処理
+        if (diceRoll.isDoubles) {
+            val newConsecutiveDoubles = player.state.consecutiveDoubles + 1
+            player.state = player.state.withConsecutiveDoubles(newConsecutiveDoubles)
+
+            // DoublesRolledイベントを記録
+            gameState.events.add(
+                GameEvent.DoublesRolled(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    doublesCount = newConsecutiveDoubles,
+                ),
+            )
+
+            // 3回連続ゾロ目の場合
+            if (newConsecutiveDoubles >= 3) {
+                // ThreeConsecutiveDoublesイベントを記録
+                gameState.events.add(
+                    GameEvent.ThreeConsecutiveDoubles(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                    ),
+                )
+
+                // 連続ゾロ目カウントをリセット
+                player.state = player.state.resetConsecutiveDoubles()
+
+                // TurnEndedイベントを記録（刑務所行きのため移動なし）
+                gameState.events.add(
+                    GameEvent.TurnEnded(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                    ),
+                )
+
+                // 次のプレイヤーへ（追加ターンなし）
+                gameState.nextPlayer()
+                return
+            }
+        } else {
+            // ゾロ目でない場合は連続ゾロ目カウントをリセット
+            player.state = player.state.resetConsecutiveDoubles()
+        }
+
         movePlayer(player, diceRoll.total, gameState)
         processSpace(player, gameState)
 
@@ -64,7 +111,11 @@ class GameService {
             ),
         )
 
-        gameState.nextPlayer()
+        // ゾロ目の場合は追加ターンを与える（3回連続でない場合のみ）
+        if (!diceRoll.isDoubles) {
+            gameState.nextPlayer()
+        }
+        // ゾロ目の場合は同じプレイヤーが続けてプレイ（nextPlayerを呼ばない）
     }
 
     fun runGame(

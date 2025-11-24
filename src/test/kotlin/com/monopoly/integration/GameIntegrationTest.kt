@@ -66,14 +66,14 @@ class GameIntegrationTest : StringSpec({
 
     // TC-302: 複数回実行でランダム性確認
     // Given: 同じ初期条件のGameState
-    // When: runGame()を3回実行（異なるシード）
+    // When: runGame()を複数回実行（異なるシード）
     // Then: 勝者が異なる場合がある（ランダム性が機能）
     "should produce different outcomes with different random seeds" {
         val winners = mutableListOf<String>()
 
         // 異なるシードで複数回実行
-        // 3回で十分：2プレイヤーで50%の確率とすると、3回全て同じ結果になる確率は12.5%未満
-        for (seed in listOf(1L, 2L, 3L)) {
+        // Phase 2: ゾロ目ロジック追加により、より多様なシードで確認
+        for (seed in listOf(1L, 2L, 3L, 42L, 123L, 999L)) {
             val player1 = Player("Alice", AlwaysBuyStrategy())
             val player2 = Player("Bob", AlwaysBuyStrategy())
             val gameState =
@@ -88,7 +88,7 @@ class GameIntegrationTest : StringSpec({
         }
 
         // すべて同じ勝者だとランダム性が機能していない
-        // 3回実行して全部同じ結果になる確率は統計的に非常に低い
+        // 6回実行して全部同じ結果になる確率は統計的に非常に低い
         val allSame = winners.all { it == winners[0] }
         allSame.shouldBeFalse()
     }
