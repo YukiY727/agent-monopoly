@@ -120,6 +120,20 @@ tasks.jacocoTestReport {
 
 tasks.jacocoTestCoverageVerification {
     dependsOn(tasks.jacocoTestReport)
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude(
+                        // Exclude generated code if any
+                        "**/BuildConfig.*",
+                        // Exclude CLI entry point (not testable in unit tests)
+                        "**/cli/MainKt.*",
+                    )
+                }
+            },
+        ),
+    )
     violationRules {
         rule {
             element = "BUNDLE"
@@ -134,7 +148,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.80".toBigDecimal() // Branch: 80%以上を目標（Phase 1初期段階）
+                minimum = "0.90".toBigDecimal() // Branch: 90%以上を目標
             }
         }
         rule {
