@@ -109,6 +109,8 @@ tasks.jacocoTestReport {
                     exclude(
                         // Exclude generated code if any
                         "**/BuildConfig.*",
+                        // Exclude CLI entry point (not testable in unit tests)
+                        "**/cli/MainKt.*",
                     )
                 }
             },
