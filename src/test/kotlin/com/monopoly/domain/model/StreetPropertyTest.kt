@@ -1,10 +1,11 @@
 package com.monopoly.domain.model
 
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.model.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
-class PropertyTest : StringSpec({
+class StreetPropertyTest : StringSpec({
     // Helper function to create test PropertyRent
     @Suppress("LongParameterList")
     fun createTestRent(
@@ -30,8 +31,8 @@ class PropertyTest : StringSpec({
     // Then: フィールドが正しく設定され、ownershipがUnowned
     "property should be initialized with correct fields and unowned status" {
         val rent: PropertyRent = createTestRent()
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -57,8 +58,8 @@ class PropertyTest : StringSpec({
     // When: 所有者をPlayerに設定
     // Then: ownershipがOwnedByPlayerになる
     "should set owner correctly" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Park Place",
                 position = 37,
                 price = 350,
@@ -79,8 +80,8 @@ class PropertyTest : StringSpec({
     // When: isOwned()
     // Then: false
     "should return false when property is not owned" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Boardwalk",
                 position = 39,
                 price = 400,
@@ -98,8 +99,8 @@ class PropertyTest : StringSpec({
     // When: isOwned()
     // Then: true
     "should return true when property is owned" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Boardwalk",
                 position = 39,
                 price = 400,
@@ -117,8 +118,8 @@ class PropertyTest : StringSpec({
 
     // TC-014: 所有者解除
     "should remove owner correctly" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Park Place",
                 position = 37,
                 price = 350,
@@ -138,8 +139,8 @@ class PropertyTest : StringSpec({
 
     // TC-015: positionValueアクセサー
     "should expose position as BoardPosition value object" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -154,8 +155,8 @@ class PropertyTest : StringSpec({
 
     // TC-016: priceValueアクセサー
     "should expose price as Money value object" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -170,8 +171,8 @@ class PropertyTest : StringSpec({
 
     // TC-017: rentValueアクセサー（建物なしの基本家賃）
     "should expose rent as Money value object" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -186,8 +187,8 @@ class PropertyTest : StringSpec({
 
     // TC-018: rentValue（家1つ）
     "should calculate rent with 1 house" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -203,8 +204,8 @@ class PropertyTest : StringSpec({
 
     // TC-019: rentValue（家2つ）
     "should calculate rent with 2 houses" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -220,8 +221,8 @@ class PropertyTest : StringSpec({
 
     // TC-020: rentValue（家3つ）
     "should calculate rent with 3 houses" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -237,8 +238,8 @@ class PropertyTest : StringSpec({
 
     // TC-021: rentValue（家4つ）
     "should calculate rent with 4 houses" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -254,8 +255,8 @@ class PropertyTest : StringSpec({
 
     // TC-022: rentValue（ホテル）
     "should calculate rent with hotel" {
-        val property: Property =
-            Property(
+        val property: StreetProperty =
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,

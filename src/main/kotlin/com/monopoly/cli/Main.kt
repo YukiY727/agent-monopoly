@@ -2,6 +2,7 @@ package com.monopoly.cli
 
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.Dice
+import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.service.GameService
@@ -29,7 +30,7 @@ fun main() {
             players = listOf(player1, player2),
             board = board,
         )
-    val dice = Dice()
+    val dice = StandardDice()
     val gameService = GameService()
 
     println("Starting game...")

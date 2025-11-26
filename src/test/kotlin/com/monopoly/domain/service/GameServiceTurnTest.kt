@@ -3,6 +3,7 @@ package com.monopoly.domain.service
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
+import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
@@ -30,7 +31,7 @@ class GameServiceTurnTest : StringSpec({
 
         val initialTurnNumber = gameState.turnNumber
         val initialPosition = player1.position
-        val dice = Dice(Random(42)) // 固定シードで再現性を確保
+        val dice = StandardDice(Random(42)) // 固定シードで再現性を確保
 
         gameService.executeTurn(gameState, dice)
 
@@ -56,7 +57,7 @@ class GameServiceTurnTest : StringSpec({
         val initialPlayer = gameState.currentPlayer
         initialPlayer shouldBe player1
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         gameService.executeTurn(gameState, dice)
 
         gameState.currentPlayer shouldBe player2
@@ -75,7 +76,7 @@ class GameServiceTurnTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         val initialEventCount: Int = gameState.events.size
 
         gameService.executeTurn(gameState, dice)
@@ -113,7 +114,7 @@ class GameServiceTurnTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42)) // 固定シードで再現性を確保
+        val dice = StandardDice(Random(42)) // 固定シードで再現性を確保
         gameService.executeTurn(gameState, dice)
 
         // DiceRolledイベントが記録されている
@@ -145,7 +146,7 @@ class GameServiceTurnTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         gameService.runGame(gameState, dice, maxTurns = 10)
 
         // GameStartedイベントが最初に記録されている
@@ -173,7 +174,7 @@ class GameServiceTurnTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 100)
 
         // GameEndedイベントを取得

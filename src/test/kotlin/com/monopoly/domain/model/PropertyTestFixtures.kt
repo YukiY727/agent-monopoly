@@ -1,5 +1,7 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.StreetProperty
+
 /**
  * テスト用のProperty作成ヘルパー関数
  */
@@ -39,8 +41,8 @@ object PropertyTestFixtures {
         colorGroup: ColorGroup = ColorGroup.BROWN,
         ownership: PropertyOwnership = PropertyOwnership.Unowned,
         buildings: PropertyBuildings = PropertyBuildings(),
-    ): Property =
-        Property(
+    ): StreetProperty =
+        StreetProperty(
             name = name,
             position = position,
             price = price,

@@ -3,6 +3,7 @@ package com.monopoly.domain.service
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
+import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
@@ -23,7 +24,7 @@ class GameServiceDoublesTest : StringSpec({
                     until: Int,
                 ): Int = 3
             }
-        val dice = Dice(doublesRandom)
+        val dice = StandardDice(doublesRandom)
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val player2 = Player("Player 2", AlwaysBuyStrategy())
@@ -52,7 +53,7 @@ class GameServiceDoublesTest : StringSpec({
                     until: Int,
                 ): Int = 4
             }
-        val dice = Dice(doublesRandom)
+        val dice = StandardDice(doublesRandom)
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
@@ -83,7 +84,7 @@ class GameServiceDoublesTest : StringSpec({
                     return if (callCount == 1) 3 else 5
                 }
             }
-        val dice = Dice(nonDoublesRandom)
+        val dice = StandardDice(nonDoublesRandom)
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
@@ -109,7 +110,7 @@ class GameServiceDoublesTest : StringSpec({
                     until: Int,
                 ): Int = 5
             }
-        val dice = Dice(doublesRandom)
+        val dice = StandardDice(doublesRandom)
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
@@ -138,7 +139,7 @@ class GameServiceDoublesTest : StringSpec({
                     until: Int,
                 ): Int = 6
             }
-        val dice = Dice(doublesRandom)
+        val dice = StandardDice(doublesRandom)
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
@@ -174,7 +175,7 @@ class GameServiceDoublesTest : StringSpec({
                     }
                 }
             }
-        val dice = Dice(mixedRandom)
+        val dice = StandardDice(mixedRandom)
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())

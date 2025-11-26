@@ -2,6 +2,7 @@ package com.monopoly.integration
 
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.Dice
+import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.service.GameService
@@ -29,7 +30,7 @@ class GameIntegrationTest : StringSpec({
                 board = board,
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         val winner = gameService.runGame(gameState, dice, maxTurns = 10000)
 
         // ゲームが終了している
@@ -53,7 +54,7 @@ class GameIntegrationTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(123))
+        val dice = StandardDice(Random(123))
         val winner = gameService.runGame(gameState, dice, maxTurns = 10000)
 
         // 勝者は破産していない
@@ -82,7 +83,7 @@ class GameIntegrationTest : StringSpec({
                     board = BoardFixtures.createStandardBoard(),
                 )
 
-            val dice = Dice(Random(seed))
+            val dice = StandardDice(Random(seed))
             val winner = gameService.runGame(gameState, dice, maxTurns = 10000)
             winners.add(winner.name)
         }
