@@ -6,12 +6,20 @@ data class PlayerState(
     val isBankrupt: Boolean = false,
     val ownedProperties: PropertyCollection = PropertyCollection.EMPTY,
     val consecutiveDoubles: Int = 0,
+    val jailStatus: JailStatus = JailStatus.Free,
+    val turnsInJail: Int = 0,
 ) {
     fun withMoney(newMoney: Money): PlayerState = copy(money = newMoney)
 
     fun withPosition(newPosition: BoardPosition): PlayerState = copy(position = newPosition)
 
-    fun withBankruptcy(): PlayerState = copy(isBankrupt = true, ownedProperties = PropertyCollection.EMPTY, consecutiveDoubles = 0)
+    fun withBankruptcy(): PlayerState =
+        copy(
+            isBankrupt = true,
+            ownedProperties = PropertyCollection.EMPTY,
+            consecutiveDoubles = 0,
+        )
+
 
     fun withProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.add(property))
 

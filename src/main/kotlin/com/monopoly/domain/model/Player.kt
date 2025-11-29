@@ -93,4 +93,19 @@ class Player(
     }
 
     fun getTotalAssets(): Int = calculateTotalAssets().amount
+
+    fun sendToJail() {
+        state = state.copy(
+            jailStatus = JailStatus.Jailed,
+            turnsInJail = 0,
+        )
+    }
+
+    fun escapeJailByPayment() {
+        pay(Money(50))
+        state = state.copy(
+            jailStatus = JailStatus.Free,
+            turnsInJail = 0,
+        )
+    }
 }
