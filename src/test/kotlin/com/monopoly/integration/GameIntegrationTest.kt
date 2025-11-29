@@ -1,11 +1,12 @@
 package com.monopoly.integration
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.Dice
-import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.impl.StandardDice
+import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
+import com.monopoly.domain.service.MonopolyCheckerService
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -14,7 +15,7 @@ import io.kotest.matchers.shouldBe
 import kotlin.random.Random
 
 class GameIntegrationTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-300: 2プレイヤーでゲーム完走
     // Given: 2人のPlayer、Board、GameState

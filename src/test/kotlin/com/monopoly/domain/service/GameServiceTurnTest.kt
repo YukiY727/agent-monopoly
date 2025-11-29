@@ -14,7 +14,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 
 class GameServiceTurnTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-160: 1ターンの流れ
     // Given: GameState

@@ -18,7 +18,7 @@ class GameServiceMoveTest : StringSpec({
     "should move player to new position normally" {
         // Given
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.movePlayer(player, 7)
@@ -35,7 +35,7 @@ class GameServiceMoveTest : StringSpec({
         // Given
         val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         player.setPosition(38)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val initialMoney = player.money
 
         // When
@@ -54,7 +54,7 @@ class GameServiceMoveTest : StringSpec({
         // Given
         val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
         player.setPosition(39)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.movePlayer(player, 1)
@@ -74,7 +74,7 @@ class GameServiceMoveTest : StringSpec({
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player), board)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.movePlayer(player, 7, gameState)
@@ -99,7 +99,7 @@ class GameServiceMoveTest : StringSpec({
         player.setPosition(38)
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player), board)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.movePlayer(player, 5, gameState)

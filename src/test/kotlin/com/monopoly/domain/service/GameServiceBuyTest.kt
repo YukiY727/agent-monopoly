@@ -29,7 +29,7 @@ class GameServiceBuyTest : StringSpec({
                 baseRent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         val updatedProperty: Property = gameService.buyProperty(player, property)
@@ -55,7 +55,7 @@ class GameServiceBuyTest : StringSpec({
                 baseRent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         val updatedProperty: Property = gameService.buyProperty(player, property)
@@ -79,7 +79,7 @@ class GameServiceBuyTest : StringSpec({
                 baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.buyProperty(player, property)
@@ -108,7 +108,7 @@ class GameServiceBuyTest : StringSpec({
             )
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player), board)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.buyProperty(player, property, gameState)

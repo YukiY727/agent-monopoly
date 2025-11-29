@@ -13,7 +13,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // GOマスに止まるケース
     // Given: PlayerがGOマスに止まっている
@@ -66,6 +66,16 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
             object : BuyStrategy {
                 override fun shouldBuy(
                     property: Property,
+                    currentMoney: Int,
+                ): Boolean = false
+
+                override fun shouldBuildHouse(
+                    property: com.monopoly.domain.model.StreetProperty,
+                    currentMoney: Int,
+                ): Boolean = false
+
+                override fun shouldBuildHotel(
+                    property: com.monopoly.domain.model.StreetProperty,
                     currentMoney: Int,
                 ): Boolean = false
             }

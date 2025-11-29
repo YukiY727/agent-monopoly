@@ -15,7 +15,7 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 100)
@@ -34,7 +34,7 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Carol", strategy = AlwaysBuyStrategy())
         payer.subtractMoney(1450) // Set payer's money to $50
         val receiver = Player(name = "Dave", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 100)
@@ -53,7 +53,7 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Eve", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Frank", strategy = AlwaysBuyStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 50)
@@ -70,7 +70,7 @@ class GameServicePayRentTest : StringSpec({
         // Given
         val payer = Player(name = "George", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Helen", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 0)
@@ -89,7 +89,7 @@ class GameServicePayRentTest : StringSpec({
         // Given
         val payer = Player(name = "Ian", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Jane", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 5000)
@@ -108,7 +108,7 @@ class GameServicePayRentTest : StringSpec({
         // Given
         val payer = Player(name = "Kevin", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Laura", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 1500)
@@ -127,7 +127,7 @@ class GameServicePayRentTest : StringSpec({
         // Given
         val payer = Player(name = "Mike", strategy = AlwaysBuyStrategy())
         val receiver = Player(name = "Nancy", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 1501)
@@ -148,7 +148,7 @@ class GameServicePayRentTest : StringSpec({
         val receiver1 = Player(name = "Patricia", strategy = AlwaysBuyStrategy())
         val receiver2 = Player(name = "Quinn", strategy = AlwaysBuyStrategy())
         val receiver3 = Player(name = "Rachel", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When & Then
         gameService.payRent(payer, receiver1, 600)
@@ -176,7 +176,7 @@ class GameServicePayRentTest : StringSpec({
         val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
         val gameState = com.monopoly.domain.model.GameState(listOf(payer, receiver), board)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 100, "Park Place", gameState)

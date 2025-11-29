@@ -10,7 +10,9 @@ import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.Space
 
 @Suppress("TooManyFunctions") // Phase 1の範囲内では許容
-class GameService {
+class GameService(
+    private val buildingService: BuildingService,
+) {
     fun checkGameEnd(gameState: GameState): Boolean {
         val activePlayerCount: Int = gameState.getActivePlayerCount()
         return activePlayerCount <= 1
@@ -101,6 +103,9 @@ class GameService {
 
         movePlayer(player, diceRoll.total, gameState)
         processSpace(player, gameState)
+
+        // 建物建設フェーズ（Phase 2）
+        tryBuildBuildings(player, gameState)
 
         // TurnEndedイベントを記録
         gameState.events.add(
@@ -363,7 +368,62 @@ class GameService {
     ) {
         properties.forEach { property ->
             val releasedProperty: Property = property.withoutOwner()
-            gameState.releaseProperty(releasedProperty)
+            gameState.board.updateProperty(releasedProperty)
         }
+    }
+
+    /**
+     * プレイヤーの所有プロパティに建物を建設する（Phase 2）
+     * 
+     * 各プロパティに対して:
+     * 1. ホテル建設を試みる（家が4つある場合）
+     * 2. ホテルが建たなければ家の建設を試みる
+     */
+    private fun tryBuildBuildings(
+        player: Player,
+        gameState: GameState,
+    ) {
+        player.ownedProperties
+            .filterIsInstance<com.monopoly.domain.model.StreetProperty>()
+            .forEach { property ->
+                // ホテル建設を試みる
+                if (player.strategy.shouldBuildHotel(property, player.money)) {
+                    val built = buildingService.buildHotel(player, property)
+                    if (built) {
+                        gameState.events.add(
+                            GameEvent.HotelBuilt(
+                                turnNumber = gameState.turnNumber,
+                                timestamp = System.currentTimeMillis(),
+                                playerName = player.name,
+                                propertyName = property.name,
+                                cost = property.hotelCost,
+                            ),
+                        )
+                        return@forEach // ホテルを建てたら次のプロパティへ
+                    }
+                }
+
+                // 家の建設を試みる
+                if (player.strategy.shouldBuildHouse(property, player.money)) {
+                    val built = buildingService.buildHouse(player, property)
+                    if (built) {
+                        // 更新後のプロパティを取得
+                        val updatedProperty =
+                            player.ownedProperties
+                                .filterIsInstance<com.monopoly.domain.model.StreetProperty>()
+                                .first { it.name == property.name }
+                        gameState.events.add(
+                            GameEvent.HouseBuilt(
+                                turnNumber = gameState.turnNumber,
+                                timestamp = System.currentTimeMillis(),
+                                playerName = player.name,
+                                propertyName = property.name,
+                                houseCount = updatedProperty.buildings.houseCount,
+                                cost = property.houseCost,
+                            ),
+                        )
+                    }
+                }
+            }
     }
 }

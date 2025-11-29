@@ -10,7 +10,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 class GameServiceGameEndTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-150: ゲーム終了（1人残り）
     // Given: GameStateで3人中2人が破産

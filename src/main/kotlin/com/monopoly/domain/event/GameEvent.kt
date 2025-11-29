@@ -146,4 +146,34 @@ sealed class GameEvent {
         override val timestamp: Long,
         val playerName: String,
     ) : GameEvent()
+
+    /**
+     * 家建設イベント（Phase 2）
+     * @property playerName 建設したプレイヤー名
+     * @property propertyName 建設したプロパティ名
+     * @property houseCount 建設後の家の総数
+     * @property cost 建設コスト
+     */
+    data class HouseBuilt(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val houseCount: Int,
+        val cost: Int,
+    ) : GameEvent()
+
+    /**
+     * ホテル建設イベント（Phase 2）
+     * @property playerName 建設したプレイヤー名
+     * @property propertyName 建設したプロパティ名
+     * @property cost 建設コスト
+     */
+    data class HotelBuilt(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val cost: Int,
+    ) : GameEvent()
 }

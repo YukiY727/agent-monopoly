@@ -17,7 +17,7 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: processSpace(player, gameState)（playerが該当Propertyの位置）
     // Then: プロパティが購入される
     "should buy unowned property when landing on it" {
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
@@ -44,7 +44,7 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: processSpace(playerA, gameState)
     // Then: Player Aの所持金が$1450、Player Bの所持金が増加
     "should pay rent when landing on other player's property" {
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val playerA = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val playerB = Player(name = "Bob", strategy = AlwaysBuyStrategy())
         val property: Property =
@@ -77,7 +77,7 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: processSpace(playerA, gameState)
     // Then: 何も変化しない
     "should do nothing when landing on own property" {
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val playerA = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
@@ -111,7 +111,7 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: Player Aが Player Bのプロパティに止まる
     // Then: Player Aが破産し、Player Aが所有していたプロパティがボード上で解放される
     "should release player properties on board when player goes bankrupt after paying rent" {
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val playerA = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val playerB = Player(name = "Bob", strategy = AlwaysBuyStrategy())
 

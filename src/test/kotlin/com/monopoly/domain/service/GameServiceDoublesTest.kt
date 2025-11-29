@@ -29,7 +29,7 @@ class GameServiceDoublesTest : StringSpec({
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val player2 = Player("Player 2", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1, player2), BoardFixtures.createStandardBoard())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // Act
         gameService.executeTurn(gameState, dice)
@@ -57,7 +57,7 @@ class GameServiceDoublesTest : StringSpec({
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // Act
         gameService.executeTurn(gameState, dice)
@@ -88,7 +88,7 @@ class GameServiceDoublesTest : StringSpec({
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // Act
         gameService.executeTurn(gameState, dice)
@@ -114,7 +114,7 @@ class GameServiceDoublesTest : StringSpec({
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // Act: 3回連続でターンを実行
         gameService.executeTurn(gameState, dice) // 1回目
@@ -143,7 +143,7 @@ class GameServiceDoublesTest : StringSpec({
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // Act: 3回連続でターンを実行
         gameService.executeTurn(gameState, dice) // 1回目
@@ -179,7 +179,7 @@ class GameServiceDoublesTest : StringSpec({
 
         val player1 = Player("Player 1", AlwaysBuyStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // Act
         gameService.executeTurn(gameState, dice) // 1回目: ゾロ目
