@@ -108,4 +108,10 @@ class Player(
             turnsInJail = 0,
         )
     }
+
+    fun incrementJailTurn() {
+        state = state.copy(
+            turnsInJail = state.turnsInJail + 1,
+        )
+    }
 }

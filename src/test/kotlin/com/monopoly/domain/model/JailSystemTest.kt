@@ -33,4 +33,21 @@ class JailSystemTest : StringSpec({
         player.state.turnsInJail shouldBe 0
         player.money shouldBe initialMoney - 50
     }
+
+    // TC-JAIL-003: 刑務所でのターン数をカウント
+    // Given: 刑務所に収監されているPlayer
+    // When: incrementJailTurn()を呼ぶ
+    // Then: turnsInJailが1増える
+    "should increment turns in jail" {
+        val player = Player("Alice", AlwaysBuyStrategy())
+        player.sendToJail()
+        
+        player.incrementJailTurn()
+        
+        player.state.jailStatus shouldBe JailStatus.Jailed
+        player.state.turnsInJail shouldBe 1
+        
+        player.incrementJailTurn()
+        player.state.turnsInJail shouldBe 2
+    }
 })
