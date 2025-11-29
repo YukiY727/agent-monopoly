@@ -164,8 +164,8 @@ class ColorGroupTest : StringSpec({
                 colorGroup = ColorGroup.GREEN,
             )
 
-        brownProperty.colorGroup shouldBe ColorGroup.BROWN
-        blueProperty.colorGroup shouldBe ColorGroup.DARK_BLUE
-        greenProperty.colorGroup shouldBe ColorGroup.GREEN
+        (brownProperty as StreetProperty).colorGroup shouldBe ColorGroup.BROWN
+        (blueProperty as StreetProperty).colorGroup shouldBe ColorGroup.DARK_BLUE
+        (greenProperty as StreetProperty).colorGroup shouldBe ColorGroup.GREEN
     }
 })

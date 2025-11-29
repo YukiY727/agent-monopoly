@@ -10,7 +10,9 @@ import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.Space
 
 @Suppress("TooManyFunctions") // Phase 1の範囲内では許容
-class GameService {
+class GameService(
+    private val buildingService: BuildingService,
+) {
     fun checkGameEnd(gameState: GameState): Boolean {
         val activePlayerCount: Int = gameState.getActivePlayerCount()
         return activePlayerCount <= 1
@@ -38,8 +40,7 @@ class GameService {
             ),
         )
 
-        val roll: Int = dice.roll()
-        val lastRoll: Pair<Int, Int> = dice.getLastRoll()
+        val diceRoll: com.monopoly.domain.model.DiceRoll = dice.roll()
 
         // DiceRolledイベントを記録
         gameState.events.add(
@@ -47,14 +48,64 @@ class GameService {
                 turnNumber = gameState.turnNumber,
                 timestamp = System.currentTimeMillis(),
                 playerName = player.name,
-                die1 = lastRoll.first,
-                die2 = lastRoll.second,
-                total = roll,
+                die1 = diceRoll.die1,
+                die2 = diceRoll.die2,
+                total = diceRoll.total,
             ),
         )
 
-        movePlayer(player, roll, gameState)
+        // ゾロ目の処理
+        if (diceRoll.isDoubles) {
+            val newConsecutiveDoubles = player.state.consecutiveDoubles + 1
+            player.state = player.state.withConsecutiveDoubles(newConsecutiveDoubles)
+
+            // DoublesRolledイベントを記録
+            gameState.events.add(
+                GameEvent.DoublesRolled(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    doublesCount = newConsecutiveDoubles,
+                ),
+            )
+
+            // 3回連続ゾロ目の場合
+            if (newConsecutiveDoubles >= 3) {
+                // ThreeConsecutiveDoublesイベントを記録
+                gameState.events.add(
+                    GameEvent.ThreeConsecutiveDoubles(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                    ),
+                )
+
+                // 連続ゾロ目カウントをリセット
+                player.state = player.state.resetConsecutiveDoubles()
+
+                // TurnEndedイベントを記録（刑務所行きのため移動なし）
+                gameState.events.add(
+                    GameEvent.TurnEnded(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                    ),
+                )
+
+                // 次のプレイヤーへ（追加ターンなし）
+                gameState.nextPlayer()
+                return
+            }
+        } else {
+            // ゾロ目でない場合は連続ゾロ目カウントをリセット
+            player.state = player.state.resetConsecutiveDoubles()
+        }
+
+        movePlayer(player, diceRoll.total, gameState)
         processSpace(player, gameState)
+
+        // 建物建設フェーズ（Phase 2）
+        tryBuildBuildings(player, gameState)
 
         // TurnEndedイベントを記録
         gameState.events.add(
@@ -65,7 +116,11 @@ class GameService {
             ),
         )
 
-        gameState.nextPlayer()
+        // ゾロ目の場合は追加ターンを与える（3回連続でない場合のみ）
+        if (!diceRoll.isDoubles) {
+            gameState.nextPlayer()
+        }
+        // ゾロ目の場合は同じプレイヤーが続けてプレイ（nextPlayerを呼ばない）
     }
 
     fun runGame(
@@ -313,7 +368,62 @@ class GameService {
     ) {
         properties.forEach { property ->
             val releasedProperty: Property = property.withoutOwner()
-            gameState.releaseProperty(releasedProperty)
+            gameState.board.updateProperty(releasedProperty)
         }
+    }
+
+    /**
+     * プレイヤーの所有プロパティに建物を建設する（Phase 2）
+     * 
+     * 各プロパティに対して:
+     * 1. ホテル建設を試みる（家が4つある場合）
+     * 2. ホテルが建たなければ家の建設を試みる
+     */
+    private fun tryBuildBuildings(
+        player: Player,
+        gameState: GameState,
+    ) {
+        player.ownedProperties
+            .filterIsInstance<com.monopoly.domain.model.StreetProperty>()
+            .forEach { property ->
+                // ホテル建設を試みる
+                if (player.strategy.shouldBuildHotel(property, player.money)) {
+                    val built = buildingService.buildHotel(player, property)
+                    if (built) {
+                        gameState.events.add(
+                            GameEvent.HotelBuilt(
+                                turnNumber = gameState.turnNumber,
+                                timestamp = System.currentTimeMillis(),
+                                playerName = player.name,
+                                propertyName = property.name,
+                                cost = property.hotelCost,
+                            ),
+                        )
+                        return@forEach // ホテルを建てたら次のプロパティへ
+                    }
+                }
+
+                // 家の建設を試みる
+                if (player.strategy.shouldBuildHouse(property, player.money)) {
+                    val built = buildingService.buildHouse(player, property)
+                    if (built) {
+                        // 更新後のプロパティを取得
+                        val updatedProperty =
+                            player.ownedProperties
+                                .filterIsInstance<com.monopoly.domain.model.StreetProperty>()
+                                .first { it.name == property.name }
+                        gameState.events.add(
+                            GameEvent.HouseBuilt(
+                                turnNumber = gameState.turnNumber,
+                                timestamp = System.currentTimeMillis(),
+                                playerName = player.name,
+                                propertyName = property.name,
+                                houseCount = updatedProperty.buildings.houseCount,
+                                cost = property.houseCost,
+                            ),
+                        )
+                    }
+                }
+            }
     }
 }

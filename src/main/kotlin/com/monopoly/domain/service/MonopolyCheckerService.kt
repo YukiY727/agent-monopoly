@@ -2,6 +2,7 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.StreetProperty
 
 /**
  * モノポリー（特定の色グループ全てを所有している状態）をチェックするサービス
@@ -37,6 +38,7 @@ class MonopolyCheckerService {
 
         val ownedInGroupCount: Int =
             player.ownedProperties
+                .filterIsInstance<StreetProperty>()
                 .count { property -> property.colorGroup == colorGroup }
 
         return ownedInGroupCount == requiredCount

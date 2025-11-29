@@ -116,4 +116,60 @@ class PlayerStateTest : StringSpec({
 
         totalAssets shouldBe Money.INITIAL_AMOUNT
     }
+
+    // Phase 2: Consecutive doubles tracking tests
+
+    "should initialize with zero consecutive doubles" {
+        val state = PlayerState.initial()
+
+        state.consecutiveDoubles shouldBe 0
+    }
+
+    "should increment consecutive doubles" {
+        val state = PlayerState.initial()
+
+        val newState = state.withConsecutiveDoubles(1)
+
+        newState.consecutiveDoubles shouldBe 1
+        newState.money shouldBe state.money
+        newState.position shouldBe state.position
+    }
+
+    "should track multiple consecutive doubles" {
+        val state = PlayerState.initial()
+
+        val state1 = state.withConsecutiveDoubles(1)
+        val state2 = state1.withConsecutiveDoubles(2)
+        val state3 = state2.withConsecutiveDoubles(3)
+
+        state3.consecutiveDoubles shouldBe 3
+    }
+
+    "should reset consecutive doubles to zero" {
+        val state = PlayerState.initial().withConsecutiveDoubles(2)
+
+        val newState = state.resetConsecutiveDoubles()
+
+        newState.consecutiveDoubles shouldBe 0
+        newState.money shouldBe state.money
+        newState.position shouldBe state.position
+    }
+
+    "should preserve consecutive doubles when updating other fields" {
+        val state = PlayerState.initial().withConsecutiveDoubles(2)
+
+        val newState = state.withMoney(Money(2000))
+
+        newState.consecutiveDoubles shouldBe 2
+        newState.money shouldBe Money(2000)
+    }
+
+    "should reset consecutive doubles when going bankrupt" {
+        val state = PlayerState.initial().withConsecutiveDoubles(2)
+
+        val bankruptState = state.withBankruptcy()
+
+        bankruptState.consecutiveDoubles shouldBe 0
+        bankruptState.isBankrupt shouldBe true
+    }
 })

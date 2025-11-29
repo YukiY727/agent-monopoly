@@ -101,10 +101,23 @@ class ArchitectureTest : StringSpec({
     }
 
     // Strategyインターフェースは戦略パターンに従う
+    // Phase 2: BuyStrategyをdomain.modelに移動（結合度削減のため）
+    "BuyStrategy interface should reside in domain model package" {
+        classes()
+            .that()
+            .haveSimpleName("BuyStrategy")
+            .should()
+            .resideInAPackage("..domain.model..")
+            .check(classes)
+    }
+
+    // Strategy実装クラスはstrategyパッケージに配置
     "classes implementing BuyStrategy should reside in strategy package" {
         classes()
             .that()
-            .implement("com.monopoly.domain.strategy.BuyStrategy")
+            .implement("com.monopoly.domain.model.BuyStrategy")
+            .and()
+            .areNotInterfaces()
             .should()
             .resideInAPackage("..domain.strategy..")
             .check(classes)

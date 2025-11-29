@@ -1,13 +1,13 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.strategy.BuyStrategy
-
 @Suppress("TooManyFunctions") // Compatibility methods for existing tests will be removed
 class Player(
     val name: String,
     val strategy: BuyStrategy,
 ) {
-    private var state: PlayerState = PlayerState.initial()
+    // GameService needs to update player state (e.g. for consecutive doubles tracking)
+    // This should be restricted to the domain service layer
+    internal var state: PlayerState = PlayerState.initial()
 
     // Expose primitive Int for backward compatibility with existing tests
     val money: Int

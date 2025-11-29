@@ -2,9 +2,12 @@ package com.monopoly.cli
 
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.Dice
+import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
+import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
+import com.monopoly.domain.service.MonopolyCheckerService
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 
 @Suppress("MagicNumber")
@@ -29,8 +32,8 @@ fun main() {
             players = listOf(player1, player2),
             board = board,
         )
-    val dice = Dice()
-    val gameService = GameService()
+    val dice = StandardDice()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     println("Starting game...")
     println()

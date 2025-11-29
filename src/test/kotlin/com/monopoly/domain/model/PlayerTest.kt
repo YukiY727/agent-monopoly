@@ -1,5 +1,6 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.StreetProperty
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -48,7 +49,7 @@ class PlayerTest : StringSpec({
     "should add property to owned properties" {
         val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val property: Property =
-            Property(
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -81,7 +82,7 @@ class PlayerTest : StringSpec({
         player.subtractMoney(500) // 1500 - 500 = 1000
 
         val property1: Property =
-            Property(
+            StreetProperty(
                 name = "Prop1",
                 position = 1,
                 price = 200,
@@ -91,7 +92,7 @@ class PlayerTest : StringSpec({
                 colorGroup = ColorGroup.BROWN,
             )
         val property2: Property =
-            Property(
+            StreetProperty(
                 name = "Prop2",
                 position = 3,
                 price = 200,
@@ -197,7 +198,7 @@ class PlayerTest : StringSpec({
     "should acquire property using value object method" {
         val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val property: Property =
-            Property(
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -217,7 +218,7 @@ class PlayerTest : StringSpec({
     "should go bankrupt and clear properties" {
         val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val property: Property =
-            Property(
+            StreetProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
                 price = 60,
@@ -248,7 +249,7 @@ class PlayerTest : StringSpec({
     "should calculate total assets using Money value object" {
         val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         val property: Property =
-            Property(
+            StreetProperty(
                 name = "Prop1",
                 position = 1,
                 price = 200,

@@ -2,6 +2,7 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
+import com.monopoly.domain.model.StreetProperty
 import com.monopoly.domain.model.PropertyBuildings
 
 /**
@@ -30,7 +31,7 @@ class BuildingService(
      */
     fun buildHouse(
         player: Player,
-        property: Property,
+        property: StreetProperty,
     ): Boolean {
         // 建設可能チェック
         val canBuild: Boolean =
@@ -42,7 +43,7 @@ class BuildingService(
 
         // 建設実行: プロパティの建物状態を更新
         val newBuildings: PropertyBuildings = property.buildings.copy(houseCount = property.buildings.houseCount + 1)
-        val updatedProperty: Property = property.copy(buildings = newBuildings)
+        val updatedProperty: StreetProperty = property.copy(buildings = newBuildings)
 
         // プレイヤーの所有プロパティリストを更新
         player.removeProperty(property)
@@ -56,7 +57,7 @@ class BuildingService(
 
     private fun canBuildHouseImpl(
         player: Player,
-        property: Property,
+        property: StreetProperty,
     ): Boolean =
         monopolyChecker.hasMonopoly(player, property.colorGroup) &&
             property.buildings.canBuildHouse() &&
@@ -77,7 +78,7 @@ class BuildingService(
      */
     fun buildHotel(
         player: Player,
-        property: Property,
+        property: StreetProperty,
     ): Boolean {
         // 建設可能チェック
         val canBuild: Boolean =
@@ -89,7 +90,7 @@ class BuildingService(
 
         // 建設実行: 家4つをホテル1つに置き換え
         val newBuildings: PropertyBuildings = PropertyBuildings(houseCount = 0, hasHotel = true)
-        val updatedProperty: Property = property.copy(buildings = newBuildings)
+        val updatedProperty: StreetProperty = property.copy(buildings = newBuildings)
 
         // プレイヤーの所有プロパティリストを更新
         player.removeProperty(property)
@@ -103,7 +104,7 @@ class BuildingService(
 
     private fun canBuildHotelImpl(
         player: Player,
-        property: Property,
+        property: StreetProperty,
     ): Boolean =
         monopolyChecker.hasMonopoly(player, property.colorGroup) &&
             property.buildings.canBuildHotel() &&
@@ -121,17 +122,20 @@ class BuildingService(
      */
     private fun canBuildHouseEvenly(
         player: Player,
-        targetProperty: Property,
+        targetProperty: StreetProperty,
     ): Boolean {
         // 同じ色グループの全プロパティを取得
-        val sameColorProperties: List<Property> =
-            player.ownedProperties.filter { property ->
-                property.colorGroup == targetProperty.colorGroup
-            }
+        val sameColorProperties: List<StreetProperty> =
+            player.ownedProperties
+                .filterIsInstance<StreetProperty>()
+                .filter { property ->
+                    property.colorGroup == targetProperty.colorGroup
+                }
 
         // 他のプロパティの最小家数を取得
         val minHouseCount: Int =
             sameColorProperties
+                .filterIsInstance<StreetProperty>()
                 .filter { property -> property != targetProperty }
                 .minOfOrNull { property -> property.buildings.houseCount }
                 ?: 0

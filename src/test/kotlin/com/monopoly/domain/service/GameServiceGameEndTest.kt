@@ -1,14 +1,16 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
+import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 class GameServiceGameEndTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-150: ゲーム終了（1人残り）
     // Given: GameStateで3人中2人が破産
@@ -72,7 +74,7 @@ class GameServiceGameEndTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = com.monopoly.domain.model.Dice()
+        val dice = com.monopoly.domain.model.impl.StandardDice()
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 1)
 
         // Player2の方が資産が多いので勝者となる
@@ -94,7 +96,7 @@ class GameServiceGameEndTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = com.monopoly.domain.model.Dice()
+        val dice = com.monopoly.domain.model.impl.StandardDice()
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 10)
 
         winner shouldBe player1

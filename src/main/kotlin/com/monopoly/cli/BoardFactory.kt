@@ -3,6 +3,7 @@ package com.monopoly.cli
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.Property
+import com.monopoly.domain.model.StreetProperty
 import com.monopoly.domain.model.PropertyRent
 import com.monopoly.domain.model.Space
 import com.monopoly.domain.model.SpaceType
@@ -39,7 +40,7 @@ private fun createBrownProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 1,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Mediterranean Avenue",
                         position = 1,
                         price = 60,
@@ -53,7 +54,7 @@ private fun createBrownProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 3,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Baltic Avenue",
                         position = 3,
                         price = 60,
@@ -72,7 +73,7 @@ private fun createLightBlueProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 6,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Oriental Avenue",
                         position = 6,
                         price = 100,
@@ -86,7 +87,7 @@ private fun createLightBlueProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 8,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Vermont Avenue",
                         position = 8,
                         price = 100,
@@ -100,7 +101,7 @@ private fun createLightBlueProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 9,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Connecticut Avenue",
                         position = 9,
                         price = 120,
@@ -119,7 +120,7 @@ private fun createPinkProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 11,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "St. Charles Place",
                         position = 11,
                         price = 140,
@@ -133,7 +134,7 @@ private fun createPinkProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 13,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "States Avenue",
                         position = 13,
                         price = 140,
@@ -147,7 +148,7 @@ private fun createPinkProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 14,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Virginia Avenue",
                         position = 14,
                         price = 160,
@@ -166,7 +167,7 @@ private fun createOrangeProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 16,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "St. James Place",
                         position = 16,
                         price = 180,
@@ -180,7 +181,7 @@ private fun createOrangeProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 18,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Tennessee Avenue",
                         position = 18,
                         price = 180,
@@ -194,7 +195,7 @@ private fun createOrangeProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 19,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "New York Avenue",
                         position = 19,
                         price = 200,
@@ -213,7 +214,7 @@ private fun createRedProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 21,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Kentucky Avenue",
                         position = 21,
                         price = 220,
@@ -227,7 +228,7 @@ private fun createRedProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 23,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Indiana Avenue",
                         position = 23,
                         price = 220,
@@ -241,7 +242,7 @@ private fun createRedProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 24,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Illinois Avenue",
                         position = 24,
                         price = 240,
@@ -260,7 +261,7 @@ private fun createYellowProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 26,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Atlantic Avenue",
                         position = 26,
                         price = 260,
@@ -274,7 +275,7 @@ private fun createYellowProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 27,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Ventnor Avenue",
                         position = 27,
                         price = 260,
@@ -288,7 +289,7 @@ private fun createYellowProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 29,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Marvin Gardens",
                         position = 29,
                         price = 280,
@@ -307,7 +308,7 @@ private fun createGreenProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 31,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Pacific Avenue",
                         position = 31,
                         price = 300,
@@ -321,7 +322,7 @@ private fun createGreenProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 32,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "North Carolina Avenue",
                         position = 32,
                         price = 300,
@@ -335,7 +336,7 @@ private fun createGreenProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 34,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Pennsylvania Avenue",
                         position = 34,
                         price = 320,
@@ -354,7 +355,7 @@ private fun createDarkBlueProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 37,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Park Place",
                         position = 37,
                         price = 350,
@@ -368,7 +369,7 @@ private fun createDarkBlueProperty(position: Int): Space.PropertySpace =
             Space.PropertySpace(
                 position = 39,
                 property =
-                    Property(
+                    StreetProperty(
                         name = "Boardwalk",
                         position = 39,
                         price = 400,

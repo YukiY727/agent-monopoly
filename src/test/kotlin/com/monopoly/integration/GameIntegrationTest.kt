@@ -1,10 +1,12 @@
 package com.monopoly.integration
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.impl.StandardDice
+import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
+import com.monopoly.domain.service.MonopolyCheckerService
 import com.monopoly.domain.strategy.AlwaysBuyStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
@@ -13,7 +15,7 @@ import io.kotest.matchers.shouldBe
 import kotlin.random.Random
 
 class GameIntegrationTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-300: 2プレイヤーでゲーム完走
     // Given: 2人のPlayer、Board、GameState
@@ -29,7 +31,7 @@ class GameIntegrationTest : StringSpec({
                 board = board,
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         val winner = gameService.runGame(gameState, dice, maxTurns = 10000)
 
         // ゲームが終了している
@@ -53,7 +55,7 @@ class GameIntegrationTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(123))
+        val dice = StandardDice(Random(123))
         val winner = gameService.runGame(gameState, dice, maxTurns = 10000)
 
         // 勝者は破産していない
@@ -66,14 +68,14 @@ class GameIntegrationTest : StringSpec({
 
     // TC-302: 複数回実行でランダム性確認
     // Given: 同じ初期条件のGameState
-    // When: runGame()を3回実行（異なるシード）
+    // When: runGame()を複数回実行（異なるシード）
     // Then: 勝者が異なる場合がある（ランダム性が機能）
     "should produce different outcomes with different random seeds" {
         val winners = mutableListOf<String>()
 
         // 異なるシードで複数回実行
-        // 3回で十分：2プレイヤーで50%の確率とすると、3回全て同じ結果になる確率は12.5%未満
-        for (seed in listOf(1L, 2L, 3L)) {
+        // Phase 2: ゾロ目ロジック追加により、より多様なシードで確認
+        for (seed in listOf(1L, 2L, 3L, 42L, 123L, 999L)) {
             val player1 = Player("Alice", AlwaysBuyStrategy())
             val player2 = Player("Bob", AlwaysBuyStrategy())
             val gameState =
@@ -82,13 +84,13 @@ class GameIntegrationTest : StringSpec({
                     board = BoardFixtures.createStandardBoard(),
                 )
 
-            val dice = Dice(Random(seed))
+            val dice = StandardDice(Random(seed))
             val winner = gameService.runGame(gameState, dice, maxTurns = 10000)
             winners.add(winner.name)
         }
 
         // すべて同じ勝者だとランダム性が機能していない
-        // 3回実行して全部同じ結果になる確率は統計的に非常に低い
+        // 6回実行して全部同じ結果になる確率は統計的に非常に低い
         val allSame = winners.all { it == winners[0] }
         allSame.shouldBeFalse()
     }

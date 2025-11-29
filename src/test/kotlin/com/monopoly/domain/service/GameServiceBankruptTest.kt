@@ -15,7 +15,7 @@ class GameServiceBankruptTest : StringSpec({
     // When: bankruptPlayer(player)
     // Then: player.isBankrupt()がtrue
     "should set bankrupt flag when player goes bankrupt" {
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
 
         gameService.bankruptPlayer(player)
@@ -28,7 +28,7 @@ class GameServiceBankruptTest : StringSpec({
     // When: bankruptPlayer(player)
     // Then: 各プロパティのownershipがUnowned、プレイヤーの所有プロパティリストが空
     "should release all properties when player goes bankrupt" {
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
 
         val property1: Property =
@@ -73,7 +73,7 @@ class GameServiceBankruptTest : StringSpec({
     // Then: gameState.eventsにPlayerBankruptedイベントが追加されている、playerNameが正しい
     "should record PlayerBankrupted event when player goes bankrupt" {
         // Given
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
         player.subtractMoney(1450) // Set player's money to $50
         val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
