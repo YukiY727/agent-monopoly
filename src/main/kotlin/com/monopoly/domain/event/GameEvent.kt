@@ -1,5 +1,8 @@
 package com.monopoly.domain.event
 
+import com.monopoly.domain.model.JailEscapeMethod
+import com.monopoly.domain.model.JailReason
+
 /**
  * ゲーム内で発生するすべてのイベントを表すsealed class
  * すべてのイベントはturnNumber（ターン番号）とtimestamp（発生時刻）を持つ
@@ -175,5 +178,41 @@ sealed class GameEvent {
         val playerName: String,
         val propertyName: String,
         val cost: Int,
+    ) : GameEvent()
+
+    // Phase 3: 刑務所関連イベント
+
+    /**
+     * プレイヤーが刑務所に送られたイベント
+     * @property playerName プレイヤー名
+     * @property reason 理由
+     */
+    data class PlayerSentToJail(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val reason: JailReason,
+    ) : GameEvent()
+
+    /**
+     * 刑務所から脱出したイベント
+     * @property playerName プレイヤー名
+     * @property method 脱出方法
+     */
+    data class JailEscaped(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val method: JailEscapeMethod,
+    ) : GameEvent()
+
+    /**
+     * 刑務所脱出に失敗したイベント
+     * @property playerName プレイヤー名
+     */
+    data class JailTurnFailed(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
     ) : GameEvent()
 }

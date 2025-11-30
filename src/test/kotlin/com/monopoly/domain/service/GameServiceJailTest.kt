@@ -6,6 +6,7 @@ import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.DiceRoll
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.JailStatus
+import com.monopoly.domain.model.JailReason
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.PlayerStrategy
 import com.monopoly.domain.model.Property
@@ -15,6 +16,7 @@ import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class GameServiceJailTest : StringSpec({
@@ -60,9 +62,10 @@ class GameServiceJailTest : StringSpec({
         player.state.turnsInJail shouldBe 1
         
         // Verify events
-        // Should have TurnStarted, DiceRolled, (maybe JailTurnFailed?), TurnEnded
+        // Should have TurnStarted, DiceRolled, JailTurnFailed, TurnEnded
         // Should NOT have PlayerMoved
         gameState.events.any { it is GameEvent.PlayerMoved } shouldBe false
+        gameState.events.any { it is GameEvent.JailTurnFailed } shouldBe true
     }
 
     // TC-JAIL-INTEG-002: 3回連続ゾロ目で刑務所送り
@@ -99,5 +102,10 @@ class GameServiceJailTest : StringSpec({
         
         // Verify ThreeConsecutiveDoubles event
         gameState.events.any { it is GameEvent.ThreeConsecutiveDoubles } shouldBe true
+        
+        // Verify PlayerSentToJail event
+        val jailEvent = gameState.events.filterIsInstance<GameEvent.PlayerSentToJail>().firstOrNull()
+        jailEvent shouldNotBe null
+        jailEvent?.reason shouldBe JailReason.THREE_CONSECUTIVE_DOUBLES
     }
 })

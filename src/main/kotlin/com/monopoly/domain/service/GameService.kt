@@ -3,6 +3,9 @@ package com.monopoly.domain.service
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.GameState
+import com.monopoly.domain.model.JailEscapeMethod
+import com.monopoly.domain.model.JailReason
+import com.monopoly.domain.model.JailStatus
 import com.monopoly.domain.model.Money
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
@@ -88,6 +91,16 @@ class GameService(
 
                 // Phase 3: 刑務所に送る
                 player.sendToJail()
+                gameState.events.add(
+                    GameEvent.PlayerSentToJail(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        reason = JailReason.THREE_CONSECUTIVE_DOUBLES,
+                    ),
+                )
+
+
                 
                 // 連続ゾロ目カウントをリセット
                 player.state = player.state.resetConsecutiveDoubles()
@@ -453,7 +466,14 @@ class GameService(
         // 3ターン経過 → 強制脱出
         if (turnsInJail >= 3) {
             player.forceEscapeJail()
-            // TODO: Add JailEscaped event
+            gameState.events.add(
+                GameEvent.JailEscaped(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    method = JailEscapeMethod.FORCED,
+                ),
+            )
             gameState.events.add(
                 GameEvent.TurnEnded(
                     turnNumber = gameState.turnNumber,
@@ -468,7 +488,14 @@ class GameService(
         // $50支払いで脱出を試みる
         if (player.strategy.shouldPayToEscapeJail(player.money)) {
             player.escapeJailByPayment()
-            // TODO: Add JailEscaped event
+            gameState.events.add(
+                GameEvent.JailEscaped(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    method = JailEscapeMethod.PAYMENT,
+                ),
+            )
             gameState.events.add(
                 GameEvent.TurnEnded(
                     turnNumber = gameState.turnNumber,
@@ -496,7 +523,14 @@ class GameService(
         if (diceRoll.isDoubles) {
             // ゾロ目で脱出成功
             player.escapeJailByDoubles()
-            // TODO: Add JailEscaped event
+            gameState.events.add(
+                GameEvent.JailEscaped(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    method = JailEscapeMethod.DOUBLES,
+                ),
+            )
             // Note: Standard Monopoly rules say "you do not take another turn" when escaping via doubles
             // So we don't give an extra turn here
             gameState.events.add(
@@ -510,7 +544,13 @@ class GameService(
         } else {
             // 脱出失敗 → ターン数を増やして終了
             player.incrementJailTurn()
-            // TODO: Add JailTurnFailed event
+            gameState.events.add(
+                GameEvent.JailTurnFailed(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
             gameState.events.add(
                 GameEvent.TurnEnded(
                     turnNumber = gameState.turnNumber,
