@@ -3,10 +3,14 @@ package com.monopoly.domain.service
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.Board
 import com.monopoly.domain.model.GameState
+import com.monopoly.domain.model.Card
+import com.monopoly.domain.model.CardDeck
+import com.monopoly.domain.model.CardType
 import com.monopoly.domain.model.JailEscapeMethod
 import com.monopoly.domain.model.JailReason
 import com.monopoly.domain.model.JailStatus
 import com.monopoly.domain.model.Money
+import com.monopoly.domain.model.SpaceType
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
@@ -125,6 +129,19 @@ class GameService(
 
         movePlayer(player, diceRoll.total, gameState)
         processSpace(player, gameState)
+
+        // Phase 3: 刑務所に送られた場合はターン終了（建設などは行わない）
+        if (player.state.jailStatus == JailStatus.Jailed) {
+            gameState.events.add(
+                GameEvent.TurnEnded(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.nextPlayer()
+            return
+        }
 
         // 建物建設フェーズ（Phase 2）
         tryBuildBuildings(player, gameState)
@@ -327,9 +344,76 @@ class GameService(
                 // GO: Phase 1では何もしない（GOボーナスはadvanceで処理済み）
             }
             is Space.Other -> {
-                // その他のマス: Phase 1では何もしない
+                when (space.spaceType) {
+                    SpaceType.CHANCE -> processCard(player, gameState, gameState.chanceDeck)
+                    SpaceType.COMMUNITY_CHEST -> processCard(player, gameState, gameState.communityChestDeck)
+                    SpaceType.GO_TO_JAIL -> processGoToJail(player, gameState)
+                    else -> { /* 何もしない */ }
+                }
             }
         }
+    }
+
+    private fun processCard(
+        player: Player,
+        gameState: GameState,
+        deck: CardDeck,
+    ) {
+        if (deck.size == 0) return
+
+        val card = deck.draw()
+        // TODO: Add CardDrawn event
+        
+        applyCardEffect(player, gameState, card)
+        
+        if (card !is Card.GetOutOfJailFree) {
+            deck.returnCard(card)
+        }
+    }
+
+    private fun applyCardEffect(
+        player: Player,
+        gameState: GameState,
+        card: Card,
+    ) {
+        when (card) {
+            is Card.MoveTo -> {
+                // TODO: Implement move logic (advance to position)
+                // Need to handle passing GO if targetPosition < currentPosition
+                // Or use specific logic for nearest railroad/utility
+            }
+            is Card.PayMoney -> {
+                player.pay(Money(card.amount))
+                // TODO: Add MoneyPaid event?
+            }
+            is Card.ReceiveMoney -> {
+                player.receiveMoney(Money(card.amount))
+                // TODO: Add MoneyReceived event?
+            }
+            is Card.GoToJail -> {
+                processGoToJail(player, gameState, JailReason.CARD_EFFECT)
+            }
+            is Card.GetOutOfJailFree -> {
+                player.addCard(card)
+            }
+        }
+    }
+
+    private fun processGoToJail(
+        player: Player,
+        gameState: GameState,
+        reason: JailReason = JailReason.GO_TO_JAIL_SPACE,
+    ) {
+        player.sendToJail()
+        gameState.events.add(
+            GameEvent.PlayerSentToJail(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                reason = reason,
+            ),
+        )
+        // Note: Turn ending logic is handled in executeTurn or by the fact that jail status is checked
     }
 
     private fun processPropertySpace(

@@ -129,4 +129,24 @@ class Player(
             turnsInJail = 0,
         )
     }
+
+    fun addCard(card: Card) {
+        state = state.copy(heldCards = state.heldCards + card)
+    }
+
+    fun removeCard(card: Card) {
+        state = state.copy(heldCards = state.heldCards - card)
+    }
+
+    fun hasGetOutOfJailFreeCard(): Boolean {
+        return state.heldCards.any { it is Card.GetOutOfJailFree }
+    }
+
+    fun useGetOutOfJailFreeCard(): Card.GetOutOfJailFree? {
+        val card = state.heldCards.find { it is Card.GetOutOfJailFree } as? Card.GetOutOfJailFree
+        if (card != null) {
+            removeCard(card)
+        }
+        return card
+    }
 }

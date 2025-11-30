@@ -8,6 +8,7 @@ data class PlayerState(
     val consecutiveDoubles: Int = 0,
     val jailStatus: JailStatus = JailStatus.Free,
     val turnsInJail: Int = 0,
+    val heldCards: List<Card> = emptyList(),
 ) {
     fun withMoney(newMoney: Money): PlayerState = copy(money = newMoney)
 

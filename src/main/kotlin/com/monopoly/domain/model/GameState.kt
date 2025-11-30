@@ -6,6 +6,8 @@ class GameState(
     val players: List<Player>,
     val board: Board,
     val events: MutableList<GameEvent> = mutableListOf(),
+    val chanceDeck: CardDeck = CardDeck(emptyList()),
+    val communityChestDeck: CardDeck = CardDeck(emptyList()),
 ) {
     private var currentPlayerIndex: Int = 0
     private var gameOver: Boolean = false
