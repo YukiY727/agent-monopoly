@@ -6,9 +6,9 @@ import com.monopoly.domain.model.PropertyTestFixtures
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
-class AlwaysBuyStrategyTest : StringSpec({
+class AlwaysPlayerStrategyTest : StringSpec({
     "should return true when player has enough money" {
-        val strategy = AlwaysBuyStrategy()
+        val strategy = AlwaysPlayerStrategy()
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -25,7 +25,7 @@ class AlwaysBuyStrategyTest : StringSpec({
     }
 
     "should return false when player does not have enough money" {
-        val strategy = AlwaysBuyStrategy()
+        val strategy = AlwaysPlayerStrategy()
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -42,7 +42,7 @@ class AlwaysBuyStrategyTest : StringSpec({
     }
 
     "should return true when player has exactly enough money" {
-        val strategy = AlwaysBuyStrategy()
+        val strategy = AlwaysPlayerStrategy()
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",

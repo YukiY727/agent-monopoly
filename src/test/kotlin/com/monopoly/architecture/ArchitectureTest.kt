@@ -101,21 +101,21 @@ class ArchitectureTest : StringSpec({
     }
 
     // Strategyインターフェースは戦略パターンに従う
-    // Phase 2: BuyStrategyをdomain.modelに移動（結合度削減のため）
-    "BuyStrategy interface should reside in domain model package" {
+    // Phase 2: PlayerStrategyをdomain.modelに移動（結合度削減のため）
+    "PlayerStrategy interface should reside in domain model package" {
         classes()
             .that()
-            .haveSimpleName("BuyStrategy")
+            .haveSimpleName("PlayerStrategy")
             .should()
             .resideInAPackage("..domain.model..")
             .check(classes)
     }
 
     // Strategy実装クラスはstrategyパッケージに配置
-    "classes implementing BuyStrategy should reside in strategy package" {
+    "classes implementing PlayerStrategy should reside in strategy package" {
         classes()
             .that()
-            .implement("com.monopoly.domain.model.BuyStrategy")
+            .implement("com.monopoly.domain.model.PlayerStrategy")
             .and()
             .areNotInterfaces()
             .should()

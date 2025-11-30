@@ -4,7 +4,7 @@ import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -17,7 +17,7 @@ class GameServiceMoveTest : StringSpec({
     // Then: プレイヤーの位置が7
     "should move player to new position normally" {
         // Given
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
@@ -33,7 +33,7 @@ class GameServiceMoveTest : StringSpec({
     // Then: 位置が3、所持金が$1700
     "should pass GO and receive $200" {
         // Given
-        val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         player.setPosition(38)
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
         val initialMoney = player.money
@@ -52,7 +52,7 @@ class GameServiceMoveTest : StringSpec({
     // Then: 位置が0
     "should wrap around board when reaching position 40" {
         // Given
-        val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Carol", strategy = AlwaysPlayerStrategy())
         player.setPosition(39)
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
@@ -71,7 +71,7 @@ class GameServiceMoveTest : StringSpec({
     // Then: gameState.eventsにPlayerMovedイベントが追加されている、fromPositionが0、toPositionが7
     "should record PlayerMoved event when moving player" {
         // Given
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player), board)
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
@@ -95,7 +95,7 @@ class GameServiceMoveTest : StringSpec({
     // Then: PlayerMovedイベントのpassedGoがtrue
     "should record PlayerMoved event with passedGo=true when passing GO" {
         // Given
-        val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         player.setPosition(38)
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player), board)

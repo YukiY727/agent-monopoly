@@ -7,8 +7,8 @@ import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
-import com.monopoly.domain.model.BuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
+import com.monopoly.domain.model.PlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -20,7 +20,7 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
     // When: processSpace(player, gameState)
     // Then: 何も起こらない（GOボーナスはadvanceで処理済み）
     "should do nothing when landing on GO space" {
-        val player = Player("Alice", AlwaysBuyStrategy())
+        val player = Player("Alice", AlwaysPlayerStrategy())
         player.moveTo(BoardPosition.GO)
         val gameState =
             GameState(
@@ -40,7 +40,7 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
     // When: processSpace(player, gameState)
     // Then: 何も起こらない（Phase 1では未実装）
     "should do nothing when landing on Other space like CHANCE" {
-        val player = Player("Bob", AlwaysBuyStrategy())
+        val player = Player("Bob", AlwaysPlayerStrategy())
         // 位置2はCHANCEマス（BoardFixtures参照）
         player.moveTo(BoardPosition(2))
         val gameState =
@@ -62,8 +62,8 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
     // Then: プロパティは購入されない
     "should not buy property when player does not have enough money" {
         // 所持金が不足する戦略
-        val neverBuyStrategy =
-            object : BuyStrategy {
+        val neverPlayerStrategy =
+            object : PlayerStrategy {
                 override fun shouldBuy(
                     property: Property,
                     currentMoney: Int,
@@ -78,9 +78,11 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
                     property: com.monopoly.domain.model.StreetProperty,
                     currentMoney: Int,
                 ): Boolean = false
+
+                override fun shouldPayToEscapeJail(currentMoney: Int): Boolean = false
             }
 
-        val player = Player("Charlie", neverBuyStrategy)
+        val player = Player("Charlie", neverPlayerStrategy)
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",

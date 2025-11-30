@@ -7,7 +7,7 @@ import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
 import com.monopoly.domain.service.MonopolyCheckerService
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldContain
@@ -22,8 +22,8 @@ class GameIntegrationTest : StringSpec({
     // When: runGame(gameState)
     // Then: ゲームが最後まで実行され、勝者が決定される
     "should run complete game with 2 players and determine winner" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState =
             GameState(
@@ -47,8 +47,8 @@ class GameIntegrationTest : StringSpec({
     // When: runGame(gameState)
     // Then: 勝者は破産しておらず、アクティブプレイヤーの1人
     "should return valid winner who is not bankrupt and is an active player" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -76,8 +76,8 @@ class GameIntegrationTest : StringSpec({
         // 異なるシードで複数回実行
         // Phase 2: ゾロ目ロジック追加により、より多様なシードで確認
         for (seed in listOf(1L, 2L, 3L, 42L, 123L, 999L)) {
-            val player1 = Player("Alice", AlwaysBuyStrategy())
-            val player2 = Player("Bob", AlwaysBuyStrategy())
+            val player1 = Player("Alice", AlwaysPlayerStrategy())
+            val player2 = Player("Bob", AlwaysPlayerStrategy())
             val gameState =
                 GameState(
                     players = listOf(player1, player2),

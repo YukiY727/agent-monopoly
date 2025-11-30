@@ -8,7 +8,7 @@ import com.monopoly.domain.model.Player
 import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
 import com.monopoly.domain.service.MonopolyCheckerService
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 
 @Suppress("MagicNumber")
 fun main() {
@@ -18,11 +18,11 @@ fun main() {
     println()
 
     // プレイヤーの作成
-    val player1: Player = Player("Alice", AlwaysBuyStrategy())
-    val player2: Player = Player("Bob", AlwaysBuyStrategy())
+    val player1: Player = Player("Alice", AlwaysPlayerStrategy())
+    val player2: Player = Player("Bob", AlwaysPlayerStrategy())
     println("Players:")
-    println("  - ${player1.name} (AlwaysBuyStrategy)")
-    println("  - ${player2.name} (AlwaysBuyStrategy)")
+    println("  - ${player1.name} (AlwaysPlayerStrategy)")
+    println("  - ${player2.name} (AlwaysPlayerStrategy)")
     println()
 
     // ゲームの初期化

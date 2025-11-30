@@ -1,7 +1,7 @@
 package com.monopoly.domain.model
 
 import com.monopoly.domain.event.GameEvent
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -11,8 +11,8 @@ class GameStateTest : StringSpec({
     // When: 新しいGameStateを作成
     // Then: プレイヤーが登録され、currentPlayerIndexが0、gameOverがfalse
     "game state should be initialized correctly" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
 
         val gameState = GameState(listOf(player1, player2), board)
@@ -27,8 +27,8 @@ class GameStateTest : StringSpec({
     // When: getCurrentPlayer()
     // Then: プレイヤー2を返す
     "should return current player" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -43,9 +43,9 @@ class GameStateTest : StringSpec({
     // When: nextPlayer()
     // Then: currentPlayerがplayer2
     "should move to next player" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
+        val player3 = Player(name = "Charlie", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
@@ -59,9 +59,9 @@ class GameStateTest : StringSpec({
     // When: nextPlayer()
     // Then: currentPlayerがplayer3
     "should skip bankrupt player" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
+        val player3 = Player(name = "Charlie", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
@@ -78,9 +78,9 @@ class GameStateTest : StringSpec({
     // When: getActivePlayerCount()
     // Then: 2
     "should count active players correctly" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
+        val player3 = Player(name = "Charlie", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
@@ -92,8 +92,8 @@ class GameStateTest : StringSpec({
 
     // TC-035: ゲームオーバーフラグの設定
     "should set game over flag" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -104,8 +104,8 @@ class GameStateTest : StringSpec({
 
     // TC-036: ターン番号の取得
     "should get turn number" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -114,8 +114,8 @@ class GameStateTest : StringSpec({
 
     // TC-037: ターン番号の増加
     "should increment turn number" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -127,8 +127,8 @@ class GameStateTest : StringSpec({
 
     // TC-038: プレイヤーが1周する
     "should cycle through all players" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -140,8 +140,8 @@ class GameStateTest : StringSpec({
 
     // TC-039: 最後の1人が残った場合
     "should handle when only one player is active" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -152,9 +152,9 @@ class GameStateTest : StringSpec({
 
     // TC-040: 全プレイヤーが破産していない状態でのアクティブプレイヤー数
     "should count all players as active when no one is bankrupt" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
-        val player3 = Player(name = "Charlie", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
+        val player3 = Player(name = "Charlie", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2, player3), board)
 
@@ -168,8 +168,8 @@ class GameStateTest : StringSpec({
     // When: GameStateを作成（デフォルト引数）
     // Then: events.size()が0、eventsがMutableList
     "events field should be initialized as empty mutable list" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
 
         val gameState = GameState(listOf(player1, player2), board)
@@ -183,8 +183,8 @@ class GameStateTest : StringSpec({
     // When: events.add(GameStarted(...))
     // Then: events.size()が1、eventsにGameStartedが含まれる
     "should be able to add event" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -205,8 +205,8 @@ class GameStateTest : StringSpec({
     // When: events.add(GameStarted(...))、events.add(TurnStarted(...))、events.add(DiceRolled(...))
     // Then: events[0]がGameStarted、events[1]がTurnStarted、events[2]がDiceRolled
     "events should be recorded in order" {
-        val player1 = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player1, player2), board)
 
@@ -247,7 +247,7 @@ class GameStateTest : StringSpec({
     // When: releaseProperty(property)
     // Then: ボード上のプロパティが未所有になる
     "should release property on board" {
-        val player1: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player1: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -277,7 +277,7 @@ class GameStateTest : StringSpec({
     // When: updateProperty(ownedProperty)
     // Then: ボード上のプロパティが所有状態になる
     "should update property on board" {
-        val player1: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player1: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",

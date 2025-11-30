@@ -3,7 +3,7 @@ package com.monopoly.domain.model
 @Suppress("TooManyFunctions") // Compatibility methods for existing tests will be removed
 class Player(
     val name: String,
-    val strategy: BuyStrategy,
+    val strategy: PlayerStrategy,
 ) {
     // GameService needs to update player state (e.g. for consecutive doubles tracking)
     // This should be restricted to the domain service layer
@@ -112,6 +112,21 @@ class Player(
     fun incrementJailTurn() {
         state = state.copy(
             turnsInJail = state.turnsInJail + 1,
+        )
+    }
+
+    fun escapeJailByDoubles() {
+        state = state.copy(
+            jailStatus = JailStatus.Free,
+            turnsInJail = 0,
+        )
+    }
+
+    fun forceEscapeJail() {
+        pay(Money(50))
+        state = state.copy(
+            jailStatus = JailStatus.Free,
+            turnsInJail = 0,
         )
     }
 }

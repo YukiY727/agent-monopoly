@@ -6,7 +6,7 @@ import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -21,8 +21,8 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState)
     // Then: サイコロが振られ、プレイヤーが移動し、マス目処理が実行され、ターン番号が増加
     "should execute one turn with dice roll, movement, space processing, and turn increment" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -46,8 +46,8 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState)
     // Then: currentPlayerIndexが1
     "should switch to next player after turn execution" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -68,8 +68,8 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState, dice)
     // Then: gameState.eventsにTurnStarted, TurnEndedイベントが追加されている
     "should record TurnStarted and TurnEnded events when executing turn" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -106,8 +106,8 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState, dice)
     // Then: DiceRolledイベントのdie1, die2, totalが正しい値
     "should record DiceRolled event with correct dice values" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -138,8 +138,8 @@ class GameServiceTurnTest : StringSpec({
     // When: runGame(gameState, dice, maxTurns)
     // Then: gameState.eventsの最初がGameStarted、最後がGameEnded
     "should record GameStarted and GameEnded events when running game" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -166,8 +166,8 @@ class GameServiceTurnTest : StringSpec({
     // When: runGame(gameState, dice, maxTurns)
     // Then: GameEndedイベントのwinnerが破産していないプレイヤー、totalTurnsが正しい
     "should record correct winner and total turns in GameEnded event" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),

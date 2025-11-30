@@ -1,7 +1,7 @@
 package com.monopoly.domain.model
 
 import com.monopoly.domain.model.StreetProperty
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -11,7 +11,7 @@ class PlayerTest : StringSpec({
     // When: 新しいPlayerを作成
     // Then: 初期所持金が$1500、位置が0、破産フラグがfalse
     "player should be initialized with \$1500, position 0, and not bankrupt" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.money shouldBe 1500
         player.position shouldBe 0
@@ -23,7 +23,7 @@ class PlayerTest : StringSpec({
     // When: $200を追加
     // Then: 所持金が$1700
     "should increase money when adding money" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.addMoney(200)
 
@@ -35,7 +35,7 @@ class PlayerTest : StringSpec({
     // When: $100を減らす
     // Then: 所持金が$1400
     "should decrease money when subtracting money" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.subtractMoney(100)
 
@@ -47,7 +47,7 @@ class PlayerTest : StringSpec({
     // When: Propertyを追加
     // Then: 所有プロパティリストに含まれる
     "should add property to owned properties" {
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             StreetProperty(
                 name = "Mediterranean Avenue",
@@ -78,7 +78,7 @@ class PlayerTest : StringSpec({
     // When: getTotalAssets()
     // Then: $1400を返す
     "should calculate total assets with properties" {
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         player.subtractMoney(500) // 1500 - 500 = 1000
 
         val property1: Property =
@@ -112,7 +112,7 @@ class PlayerTest : StringSpec({
     // When: getTotalAssets()
     // Then: $1500を返す
     "should calculate total assets without properties" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.getTotalAssets() shouldBe 1500
     }
@@ -122,7 +122,7 @@ class PlayerTest : StringSpec({
     // When: 破産フラグを設定
     // Then: isBankrupt()がtrue
     "should mark player as bankrupt when flag is set" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         // 破産処理(GameServiceが呼ぶ想定)
         player.markAsBankrupt()
@@ -132,21 +132,21 @@ class PlayerTest : StringSpec({
 
     // TC-008: Value objectアクセサー - moneyValue
     "should expose money as Money value object" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.moneyValue shouldBe Money.INITIAL_AMOUNT
     }
 
     // TC-009: Value objectアクセサー - positionValue
     "should expose position as BoardPosition value object" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.positionValue shouldBe BoardPosition.GO
     }
 
     // TC-010: receiveMoney
     "should receive money using Money value object" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.receiveMoney(Money(300))
 
@@ -155,7 +155,7 @@ class PlayerTest : StringSpec({
 
     // TC-011: pay
     "should pay money using Money value object" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.pay(Money(500))
 
@@ -164,7 +164,7 @@ class PlayerTest : StringSpec({
 
     // TC-012: moveTo
     "should move to specific position using BoardPosition" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.moveTo(BoardPosition(10))
 
@@ -173,7 +173,7 @@ class PlayerTest : StringSpec({
 
     // TC-013: advance
     "should advance position and receive GO bonus when passing GO" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         player.setPosition(35)
 
         val passedGo = player.advance(10)
@@ -185,7 +185,7 @@ class PlayerTest : StringSpec({
 
     // TC-014: advance without passing GO
     "should advance position without GO bonus when not passing GO" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         val passedGo = player.advance(5)
 
@@ -196,7 +196,7 @@ class PlayerTest : StringSpec({
 
     // TC-015: acquireProperty
     "should acquire property using value object method" {
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             StreetProperty(
                 name = "Mediterranean Avenue",
@@ -216,7 +216,7 @@ class PlayerTest : StringSpec({
 
     // TC-016: goBankrupt
     "should go bankrupt and clear properties" {
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             StreetProperty(
                 name = "Mediterranean Avenue",
@@ -237,7 +237,7 @@ class PlayerTest : StringSpec({
 
     // TC-017: pay causing bankruptcy
     "should automatically go bankrupt when payment causes negative balance" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.pay(Money(2000))
 
@@ -247,7 +247,7 @@ class PlayerTest : StringSpec({
 
     // TC-018: calculateTotalAssets
     "should calculate total assets using Money value object" {
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             StreetProperty(
                 name = "Prop1",
@@ -270,7 +270,7 @@ class PlayerTest : StringSpec({
     // When: 複数回の支払いで資金が徐々に減り、最終的に破産
     // Then: 破産フラグがtrueになる
     "should go bankrupt after multiple payments exceeding available money" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.pay(Money(800)) // 1500 - 800 = 700
         player.isBankrupt shouldBe false
@@ -290,7 +290,7 @@ class PlayerTest : StringSpec({
     // When: calculateTotalAssets()
     // Then: 所持金とすべてのプロパティ価値の合計が返される
     "should calculate total assets correctly with multiple properties" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         player.pay(Money(300)) // 1500 - 300 = 1200
 
         val property1: Property =
@@ -340,7 +340,7 @@ class PlayerTest : StringSpec({
     // When: 複数回お金を受け取る
     // Then: 所持金が累積される
     "should accumulate money when receiving multiple times" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         player.receiveMoney(Money(100))
         player.money shouldBe 1600
@@ -357,7 +357,7 @@ class PlayerTest : StringSpec({
     // When: 1マス前進
     // Then: 位置0（GO）に戻り、GOボーナスを受け取る
     "should wrap position to 0 and receive GO bonus when advancing from position 39" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         player.setPosition(39)
 
         val passedGo = player.advance(1)
@@ -372,7 +372,7 @@ class PlayerTest : StringSpec({
     // When: 80マス前進（2周）
     // Then: 位置0に戻り、GOボーナスを受け取る
     "should receive GO bonus when advancing multiple laps" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         val passedGo = player.advance(80) // 2 full laps
 
@@ -386,7 +386,7 @@ class PlayerTest : StringSpec({
     // When: 破産する
     // Then: すべてのプロパティが失われる
     "should lose all properties when going bankrupt" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property1: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Prop1",

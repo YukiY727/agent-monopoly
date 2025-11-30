@@ -1,6 +1,6 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import com.monopoly.domain.model.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -68,7 +68,7 @@ class StreetPropertyTest : StringSpec({
                 hotelCost = 200,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         val ownedProperty: Property = property.withOwner(player)
 
@@ -109,7 +109,7 @@ class StreetPropertyTest : StringSpec({
                 hotelCost = 200,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val player: Player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
 
         val ownedProperty: Property = property.withOwner(player)
 
@@ -128,7 +128,7 @@ class StreetPropertyTest : StringSpec({
                 hotelCost = 200,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val player: Player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player: Player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val ownedProperty: Property = property.withOwner(player)
 
         val unownedProperty: Property = ownedProperty.withoutOwner()

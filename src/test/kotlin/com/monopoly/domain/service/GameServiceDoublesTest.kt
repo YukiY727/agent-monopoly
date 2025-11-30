@@ -6,7 +6,7 @@ import com.monopoly.domain.model.Dice
 import com.monopoly.domain.model.impl.StandardDice
 import com.monopoly.domain.model.GameState
 import com.monopoly.domain.model.Player
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
@@ -26,8 +26,8 @@ class GameServiceDoublesTest : StringSpec({
             }
         val dice = StandardDice(doublesRandom)
 
-        val player1 = Player("Player 1", AlwaysBuyStrategy())
-        val player2 = Player("Player 2", AlwaysBuyStrategy())
+        val player1 = Player("Player 1", AlwaysPlayerStrategy())
+        val player2 = Player("Player 2", AlwaysPlayerStrategy())
         val gameState = GameState(listOf(player1, player2), BoardFixtures.createStandardBoard())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
@@ -55,7 +55,7 @@ class GameServiceDoublesTest : StringSpec({
             }
         val dice = StandardDice(doublesRandom)
 
-        val player1 = Player("Player 1", AlwaysBuyStrategy())
+        val player1 = Player("Player 1", AlwaysPlayerStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
@@ -86,7 +86,7 @@ class GameServiceDoublesTest : StringSpec({
             }
         val dice = StandardDice(nonDoublesRandom)
 
-        val player1 = Player("Player 1", AlwaysBuyStrategy())
+        val player1 = Player("Player 1", AlwaysPlayerStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
@@ -112,7 +112,7 @@ class GameServiceDoublesTest : StringSpec({
             }
         val dice = StandardDice(doublesRandom)
 
-        val player1 = Player("Player 1", AlwaysBuyStrategy())
+        val player1 = Player("Player 1", AlwaysPlayerStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
@@ -141,7 +141,7 @@ class GameServiceDoublesTest : StringSpec({
             }
         val dice = StandardDice(doublesRandom)
 
-        val player1 = Player("Player 1", AlwaysBuyStrategy())
+        val player1 = Player("Player 1", AlwaysPlayerStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
@@ -177,7 +177,7 @@ class GameServiceDoublesTest : StringSpec({
             }
         val dice = StandardDice(mixedRandom)
 
-        val player1 = Player("Player 1", AlwaysBuyStrategy())
+        val player1 = Player("Player 1", AlwaysPlayerStrategy())
         val gameState = GameState(listOf(player1), BoardFixtures.createStandardBoard())
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 

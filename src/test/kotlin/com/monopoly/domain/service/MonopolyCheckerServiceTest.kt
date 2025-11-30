@@ -3,7 +3,7 @@ package com.monopoly.domain.service
 import com.monopoly.domain.model.ColorGroup
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -13,7 +13,7 @@ class MonopolyCheckerServiceTest : StringSpec({
     // When: hasMonopoly(player, ColorGroup.BROWN)
     // Then: trueを返す
     "should return true when player owns all properties in BROWN group" {
-        val player = Player("Alice", AlwaysBuyStrategy())
+        val player = Player("Alice", AlwaysPlayerStrategy())
         val property1 =
             PropertyTestFixtures
                 .createTestProperty(
@@ -46,7 +46,7 @@ class MonopolyCheckerServiceTest : StringSpec({
     // When: hasMonopoly(player, ColorGroup.BROWN)
     // Then: falseを返す
     "should return false when player owns only one property in BROWN group" {
-        val player = Player("Bob", AlwaysBuyStrategy())
+        val player = Player("Bob", AlwaysPlayerStrategy())
         val property1 =
             PropertyTestFixtures
                 .createTestProperty(
@@ -69,7 +69,7 @@ class MonopolyCheckerServiceTest : StringSpec({
     // When: hasMonopoly(player, ColorGroup.BROWN)
     // Then: falseを返す
     "should return false when player owns no properties" {
-        val player = Player("Carol", AlwaysBuyStrategy())
+        val player = Player("Carol", AlwaysPlayerStrategy())
 
         val checker = MonopolyCheckerService()
 
@@ -81,7 +81,7 @@ class MonopolyCheckerServiceTest : StringSpec({
     // When: hasMonopoly(player, ColorGroup.LIGHT_BLUE)
     // Then: trueを返す
     "should return true when player owns all three properties in LIGHT_BLUE group" {
-        val player = Player("Dave", AlwaysBuyStrategy())
+        val player = Player("Dave", AlwaysPlayerStrategy())
         val property1 =
             PropertyTestFixtures
                 .createTestProperty(
@@ -124,7 +124,7 @@ class MonopolyCheckerServiceTest : StringSpec({
     // When: hasMonopoly(player, ColorGroup.LIGHT_BLUE)
     // Then: falseを返す
     "should return false when player owns only two of three properties in LIGHT_BLUE group" {
-        val player = Player("Eve", AlwaysBuyStrategy())
+        val player = Player("Eve", AlwaysPlayerStrategy())
         val property1 =
             PropertyTestFixtures
                 .createTestProperty(
@@ -157,7 +157,7 @@ class MonopolyCheckerServiceTest : StringSpec({
     // When: hasMonopoly(player, ColorGroup.LIGHT_BLUE)
     // Then: falseを返す
     "should return false when checking LIGHT_BLUE monopoly but player only has BROWN monopoly" {
-        val player = Player("Frank", AlwaysBuyStrategy())
+        val player = Player("Frank", AlwaysPlayerStrategy())
         val brownProperty1 =
             PropertyTestFixtures
                 .createTestProperty(

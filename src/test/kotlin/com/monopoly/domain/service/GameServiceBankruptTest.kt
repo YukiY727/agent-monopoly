@@ -5,7 +5,7 @@ import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -16,7 +16,7 @@ class GameServiceBankruptTest : StringSpec({
     // Then: player.isBankrupt()がtrue
     "should set bankrupt flag when player goes bankrupt" {
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         gameService.bankruptPlayer(player)
 
@@ -29,7 +29,7 @@ class GameServiceBankruptTest : StringSpec({
     // Then: 各プロパティのownershipがUnowned、プレイヤーの所有プロパティリストが空
     "should release all properties when player goes bankrupt" {
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
 
         val property1: Property =
             PropertyTestFixtures
@@ -74,7 +74,7 @@ class GameServiceBankruptTest : StringSpec({
     "should record PlayerBankrupted event when player goes bankrupt" {
         // Given
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         player.subtractMoney(1450) // Set player's money to $50
         val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
         val gameState = com.monopoly.domain.model.GameState(listOf(player), board)

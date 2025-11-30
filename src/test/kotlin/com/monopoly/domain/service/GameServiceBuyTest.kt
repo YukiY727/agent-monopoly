@@ -8,7 +8,7 @@ import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -20,7 +20,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: プレイヤーの所持金が$1300、propertyのownerがplayer、プレイヤーの所有プロパティに追加
     "should successfully buy property when player has enough money" {
         // Given
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -46,7 +46,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: property.ownership is OwnedByPlayer(player)
     "should set owner correctly after purchase" {
         // Given
-        val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Park Place",
@@ -70,7 +70,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: player.ownedProperties.size が1
     "should add property to player's owned properties list" {
         // Given
-        val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Carol", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Boardwalk",
@@ -97,7 +97,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: gameState.eventsにPropertyPurchasedイベントが追加されている、priceが200
     "should record PropertyPurchased event when buying property" {
         // Given
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",

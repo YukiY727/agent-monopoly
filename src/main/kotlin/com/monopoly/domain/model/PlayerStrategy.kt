@@ -1,6 +1,6 @@
 package com.monopoly.domain.model
 
-interface BuyStrategy {
+interface PlayerStrategy {
     fun shouldBuy(
         property: Property,
         currentMoney: Int,
@@ -15,4 +15,7 @@ interface BuyStrategy {
         property: StreetProperty,
         currentMoney: Int,
     ): Boolean
+
+    // Phase 3: 刑務所関連
+    fun shouldPayToEscapeJail(currentMoney: Int): Boolean
 }
