@@ -9,6 +9,7 @@ import com.monopoly.domain.model.JailStatus
 import com.monopoly.domain.model.Player
 import com.monopoly.domain.model.PlayerStrategy
 import com.monopoly.domain.model.Property
+import com.monopoly.domain.model.Space
 import com.monopoly.domain.model.StreetProperty
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
@@ -40,7 +41,9 @@ class GameServiceJailTest : StringSpec({
         player.sendToJail() // JailStatus.Jailed, turnsInJail = 0
         
         val players = listOf(player)
-        val board = Board(emptyList()) // Empty board for simplicity
+        // Create a valid board with 40 spaces (all Other for simplicity)
+        val spaces = List(40) { Space.Other(it, com.monopoly.domain.model.SpaceType.FREE_PARKING) }
+        val board = Board(spaces)
         val gameState = GameState(players, board)
         
         // Mock dice: Not doubles (2, 3)
