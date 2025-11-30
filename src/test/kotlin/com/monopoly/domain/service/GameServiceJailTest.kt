@@ -64,4 +64,40 @@ class GameServiceJailTest : StringSpec({
         // Should NOT have PlayerMoved
         gameState.events.any { it is GameEvent.PlayerMoved } shouldBe false
     }
+
+    // TC-JAIL-INTEG-002: 3回連続ゾロ目で刑務所送り
+    "player rolling 3 consecutive doubles goes to jail" {
+        // Setup
+        val player = Player("Unlucky", AlwaysPlayerStrategy())
+        
+        val players = listOf(player)
+        val spaces = List(40) { Space.Other(it, com.monopoly.domain.model.SpaceType.FREE_PARKING) }
+        val board = Board(spaces)
+        val gameState = GameState(players, board)
+        
+        // Mock dice: Always doubles (3, 3)
+        val dice = MockDice(listOf(DiceRoll(3, 3)))
+        
+        val buildingService = BuildingService(MonopolyCheckerService())
+        val gameService = GameService(buildingService)
+
+        // Execute 3 turns with doubles
+        gameService.executeTurn(gameState, dice) // 1st doubles
+        player.state.consecutiveDoubles shouldBe 1
+        player.state.jailStatus shouldBe com.monopoly.domain.model.JailStatus.Free
+        
+        gameService.executeTurn(gameState, dice) // 2nd doubles
+        player.state.consecutiveDoubles shouldBe 2
+        player.state.jailStatus shouldBe com.monopoly.domain.model.JailStatus.Free
+        
+        gameService.executeTurn(gameState, dice) // 3rd doubles -> jail
+        
+        // Verify
+        player.state.jailStatus shouldBe com.monopoly.domain.model.JailStatus.Jailed
+        player.state.turnsInJail shouldBe 0
+        player.state.consecutiveDoubles shouldBe 0 // Reset
+        
+        // Verify ThreeConsecutiveDoubles event
+        gameState.events.any { it is GameEvent.ThreeConsecutiveDoubles } shouldBe true
+    }
 })

@@ -86,6 +86,9 @@ class GameService(
                     ),
                 )
 
+                // Phase 3: 刑務所に送る
+                player.sendToJail()
+                
                 // 連続ゾロ目カウントをリセット
                 player.state = player.state.resetConsecutiveDoubles()
 
