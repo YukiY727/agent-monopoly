@@ -82,12 +82,18 @@ class Player(
     /**
      * Calculate rent for a property owned by this player
      * Handles special cases for railroads and utilities
+     * Returns 0 if property is mortgaged
      *
      * @param property The property to calculate rent for
      * @param diceRoll The dice roll (used for utility rent calculation)
      * @return The rent amount to be paid
      */
     fun calculateRentFor(property: Property, diceRoll: Int = 0): Int {
+        // Mortgaged properties have no rent
+        if (property.isMortgaged()) {
+            return 0
+        }
+
         return when (property) {
             is RailroadProperty -> {
                 val railroadCount: Int = ownedProperties.filterIsInstance<RailroadProperty>().count()

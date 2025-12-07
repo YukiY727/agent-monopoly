@@ -28,6 +28,25 @@ data class UtilityProperty(
 
     override fun isOwned(): Boolean = ownership is PropertyOwnership.OwnedByPlayer
 
+    override fun mortgage(): UtilityProperty {
+        require(ownership is PropertyOwnership.OwnedByPlayer) { "Cannot mortgage unowned property" }
+        require(!isMortgaged()) { "Property is already mortgaged" }
+
+        val ownerPlayer: PropertyOwnership.OwnedByPlayer = ownership
+        return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = true))
+    }
+
+    override fun unmortgage(): UtilityProperty {
+        require(ownership is PropertyOwnership.OwnedByPlayer) { "Cannot unmortgage unowned property" }
+        require(isMortgaged()) { "Property is not mortgaged" }
+
+        val ownerPlayer: PropertyOwnership.OwnedByPlayer = ownership
+        return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = false))
+    }
+
+    override fun isMortgaged(): Boolean =
+        ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
+
     /**
      * 所有する公共施設の数とサイコロの目に基づいて家賃を計算
      * @param utilityCount 同じプレイヤーが所有する公共施設の総数

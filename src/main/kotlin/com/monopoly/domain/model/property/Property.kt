@@ -14,4 +14,15 @@ interface Property {
     fun withOwner(newOwner: Player): Property
     fun withoutOwner(): Property
     fun isOwned(): Boolean
+
+    // Mortgage functionality
+    val mortgageValue: Money
+        get() = Money(price / 2)
+
+    val unmortgageValue: Money
+        get() = Money((price / 2.0 * 1.1).toInt())
+
+    fun mortgage(): Property
+    fun unmortgage(): Property
+    fun isMortgaged(): Boolean
 }

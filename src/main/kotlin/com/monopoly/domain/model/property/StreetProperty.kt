@@ -31,6 +31,26 @@ data class StreetProperty(
 
     override fun isOwned(): Boolean = ownership is PropertyOwnership.OwnedByPlayer
 
+    override fun mortgage(): StreetProperty {
+        require(ownership is PropertyOwnership.OwnedByPlayer) { "Cannot mortgage unowned property" }
+        require(!isMortgaged()) { "Property is already mortgaged" }
+        require(buildings.houseCount == 0 && !buildings.hasHotel) { "Cannot mortgage property with buildings" }
+
+        val ownerPlayer: PropertyOwnership.OwnedByPlayer = ownership
+        return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = true))
+    }
+
+    override fun unmortgage(): StreetProperty {
+        require(ownership is PropertyOwnership.OwnedByPlayer) { "Cannot unmortgage unowned property" }
+        require(isMortgaged()) { "Property is not mortgaged" }
+
+        val ownerPlayer: PropertyOwnership.OwnedByPlayer = ownership
+        return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = false))
+    }
+
+    override fun isMortgaged(): Boolean =
+        ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
+
     /**
      * 現在の建物状態に基づいて家賃を計算
      * @return 適用される家賃額

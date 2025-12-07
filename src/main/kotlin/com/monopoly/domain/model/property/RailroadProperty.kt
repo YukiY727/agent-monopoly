@@ -30,6 +30,25 @@ data class RailroadProperty(
 
     override fun isOwned(): Boolean = ownership is PropertyOwnership.OwnedByPlayer
 
+    override fun mortgage(): RailroadProperty {
+        require(ownership is PropertyOwnership.OwnedByPlayer) { "Cannot mortgage unowned property" }
+        require(!isMortgaged()) { "Property is already mortgaged" }
+
+        val ownerPlayer: PropertyOwnership.OwnedByPlayer = ownership
+        return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = true))
+    }
+
+    override fun unmortgage(): RailroadProperty {
+        require(ownership is PropertyOwnership.OwnedByPlayer) { "Cannot unmortgage unowned property" }
+        require(isMortgaged()) { "Property is not mortgaged" }
+
+        val ownerPlayer: PropertyOwnership.OwnedByPlayer = ownership
+        return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = false))
+    }
+
+    override fun isMortgaged(): Boolean =
+        ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
+
     /**
      * 所有する鉄道の数に基づいて家賃を計算
      * @param railroadCount 同じプレイヤーが所有する鉄道の総数
