@@ -1,7 +1,7 @@
 package com.monopoly.domain.strategy
 
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.Property
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.PropertyTestFixtures
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

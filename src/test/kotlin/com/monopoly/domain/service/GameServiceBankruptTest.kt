@@ -1,10 +1,11 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.PropertyTestFixtures
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyOwnership
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -77,7 +78,7 @@ class GameServiceBankruptTest : StringSpec({
         val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         player.subtractMoney(1450) // Set player's money to $50
         val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
-        val gameState = com.monopoly.domain.model.GameState(listOf(player), board)
+        val gameState = GameState(listOf(player), board)
 
         // When
         gameService.bankruptPlayer(player, gameState)

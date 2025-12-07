@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.property
 
 /**
  * プロパティの家賃構造を表現するデータクラス

@@ -1,5 +1,7 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.PropertyOwnership
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

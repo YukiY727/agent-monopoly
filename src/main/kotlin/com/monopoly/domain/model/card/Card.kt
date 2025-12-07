@@ -1,4 +1,6 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.card
+
+import com.monopoly.domain.model.game.SpaceType
 
 enum class CardType {
     CHANCE,

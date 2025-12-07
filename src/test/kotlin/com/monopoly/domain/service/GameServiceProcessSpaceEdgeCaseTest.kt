@@ -1,14 +1,15 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.BoardPosition
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyTestFixtures
+import com.monopoly.domain.model.core.BoardPosition
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.player.PlayerStrategy
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
-import com.monopoly.domain.model.PlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -70,12 +71,12 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
                 ): Boolean = false
 
                 override fun shouldBuildHouse(
-                    property: com.monopoly.domain.model.StreetProperty,
+                    property: StreetProperty,
                     currentMoney: Int,
                 ): Boolean = false
 
                 override fun shouldBuildHotel(
-                    property: com.monopoly.domain.model.StreetProperty,
+                    property: StreetProperty,
                     currentMoney: Int,
                 ): Boolean = false
 

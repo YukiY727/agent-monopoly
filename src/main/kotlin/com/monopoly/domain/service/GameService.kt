@@ -1,20 +1,24 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.event.GameEvent
-import com.monopoly.domain.model.Board
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Card
-import com.monopoly.domain.model.CardDeck
-import com.monopoly.domain.model.CardType
-import com.monopoly.domain.model.JailEscapeMethod
-import com.monopoly.domain.model.JailReason
-import com.monopoly.domain.model.JailStatus
-import com.monopoly.domain.model.Money
-import com.monopoly.domain.model.SpaceType
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyOwnership
-import com.monopoly.domain.model.Space
+import com.monopoly.domain.model.game.Board
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.card.Card
+import com.monopoly.domain.model.card.CardDeck
+import com.monopoly.domain.model.card.CardType
+import com.monopoly.domain.model.jail.JailEscapeMethod
+import com.monopoly.domain.model.jail.JailReason
+import com.monopoly.domain.model.jail.JailStatus
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.game.SpaceType
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyOwnership
+import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.model.game.Space
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.DiceRoll
+import com.monopoly.domain.model.core.BoardPosition
 
 @Suppress("TooManyFunctions") // Phase 1の範囲内では許容
 class GameService(
@@ -27,7 +31,7 @@ class GameService(
 
     fun executeTurn(
         gameState: GameState,
-        dice: com.monopoly.domain.model.Dice,
+        dice: Dice,
     ) {
         val player: Player = gameState.currentPlayer
 
@@ -48,12 +52,12 @@ class GameService(
         )
 
         // Phase 3: 刑務所チェック
-        if (player.state.jailStatus == com.monopoly.domain.model.JailStatus.Jailed) {
+        if (player.state.jailStatus == JailStatus.Jailed) {
             handleJailTurn(player, gameState, dice)
             return
         }
 
-        val diceRoll: com.monopoly.domain.model.DiceRoll = dice.roll()
+        val diceRoll: DiceRoll = dice.roll()
 
         // DiceRolledイベントを記録
         gameState.events.add(
@@ -164,7 +168,7 @@ class GameService(
 
     fun runGame(
         gameState: GameState,
-        dice: com.monopoly.domain.model.Dice,
+        dice: Dice,
         maxTurns: Int = Int.MAX_VALUE,
     ): Player {
         // GameStartedイベントを記録
@@ -348,9 +352,44 @@ class GameService(
                     SpaceType.CHANCE -> processCard(player, gameState, gameState.chanceDeck)
                     SpaceType.COMMUNITY_CHEST -> processCard(player, gameState, gameState.communityChestDeck)
                     SpaceType.GO_TO_JAIL -> processGoToJail(player, gameState)
+                    SpaceType.TAX -> processTaxSpace(player, gameState, space.position)
                     else -> { /* 何もしない */ }
                 }
             }
+        }
+    }
+
+    private fun processTaxSpace(
+        player: Player,
+        gameState: GameState,
+        position: Int,
+    ) {
+        // Determine tax amount based on position
+        // Standard Monopoly: Income Tax at position 4 ($200), Luxury Tax at position 38 ($100)
+        val (taxAmount, taxName) = when (position) {
+            4 -> Pair(200, "Income Tax")
+            38 -> Pair(100, "Luxury Tax")
+            else -> return // Not a tax space
+        }
+
+        // Pay tax
+        player.pay(Money(taxAmount))
+
+        // Record tax payment event
+        gameState.events.add(
+            GameEvent.MoneyPaid(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                amount = taxAmount,
+                reason = taxName,
+            ),
+        )
+
+        // Check if player went bankrupt
+        if (player.isBankrupt) {
+            val releasedProperties = bankruptPlayer(player, gameState)
+            releasePlayerPropertiesOnBoard(releasedProperties, gameState)
         }
     }
 
@@ -362,7 +401,16 @@ class GameService(
         if (deck.size == 0) return
 
         val card = deck.draw()
-        // TODO: Add CardDrawn event
+        
+        gameState.events.add(
+            GameEvent.CardDrawn(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                cardText = card.text,
+                cardType = card.type,
+            ),
+        )
         
         applyCardEffect(player, gameState, card)
         
@@ -371,6 +419,7 @@ class GameService(
         }
     }
 
+
     private fun applyCardEffect(
         player: Player,
         gameState: GameState,
@@ -378,26 +427,81 @@ class GameService(
     ) {
         when (card) {
             is Card.MoveTo -> {
-                // TODO: Implement move logic (advance to position)
-                // Need to handle passing GO if targetPosition < currentPosition
-                // Or use specific logic for nearest railroad/utility
+                val currentPosition: Int = player.position
+                val targetPosition: Int = card.targetPosition ?: run {
+                    // Handle targetSpaceType (e.g., nearest railroad/utility)
+                    // For now, we'll implement basic targetPosition logic
+                    // TODO: Implement nearest railroad/utility logic
+                    return
+                }
+                
+                // Check if passing GO
+                val passedGo: Boolean = targetPosition < currentPosition
+                
+                // Move player
+                player.moveTo(BoardPosition(targetPosition))
+                
+                // Collect GO bonus if applicable
+                if (passedGo && card.collectGoMoney) {
+                    player.receiveMoney(Money.GO_BONUS)
+                }
+                
+                // Record movement event
+                gameState.events.add(
+                    GameEvent.PlayerMoved(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        fromPosition = currentPosition,
+                        toPosition = targetPosition,
+                        passedGo = passedGo && card.collectGoMoney,
+                    ),
+                )
+                
+                // Process the space player landed on
+                processSpace(player, gameState)
             }
             is Card.PayMoney -> {
                 player.pay(Money(card.amount))
-                // TODO: Add MoneyPaid event?
+                gameState.events.add(
+                    GameEvent.MoneyPaid(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        amount = card.amount,
+                        reason = "Card: ${card.text}",
+                    ),
+                )
             }
             is Card.ReceiveMoney -> {
                 player.receiveMoney(Money(card.amount))
-                // TODO: Add MoneyReceived event?
+                gameState.events.add(
+                    GameEvent.MoneyReceived(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        amount = card.amount,
+                        reason = "Card: ${card.text}",
+                    ),
+                )
             }
             is Card.GoToJail -> {
                 processGoToJail(player, gameState, JailReason.CARD_EFFECT)
             }
             is Card.GetOutOfJailFree -> {
                 player.addCard(card)
+                gameState.events.add(
+                    GameEvent.CardHeld(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        cardText = card.text,
+                    ),
+                )
             }
         }
     }
+
 
     private fun processGoToJail(
         player: Player,
@@ -490,7 +594,7 @@ class GameService(
         gameState: GameState,
     ) {
         player.ownedProperties
-            .filterIsInstance<com.monopoly.domain.model.StreetProperty>()
+            .filterIsInstance<StreetProperty>()
             .forEach { property ->
                 // ホテル建設を試みる
                 if (player.strategy.shouldBuildHotel(property, player.money)) {
@@ -516,7 +620,7 @@ class GameService(
                         // 更新後のプロパティを取得
                         val updatedProperty =
                             player.ownedProperties
-                                .filterIsInstance<com.monopoly.domain.model.StreetProperty>()
+                                .filterIsInstance<StreetProperty>()
                                 .first { it.name == property.name }
                         gameState.events.add(
                             GameEvent.HouseBuilt(
@@ -543,7 +647,7 @@ class GameService(
     private fun handleJailTurn(
         player: Player,
         gameState: GameState,
-        dice: com.monopoly.domain.model.Dice,
+        dice: Dice,
     ) {
         val turnsInJail = player.state.turnsInJail
 

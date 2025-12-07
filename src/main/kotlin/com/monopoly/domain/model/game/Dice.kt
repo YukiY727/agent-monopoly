@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.game
 
 import kotlin.random.Random
 

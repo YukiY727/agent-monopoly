@@ -1,5 +1,9 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyCollection
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 

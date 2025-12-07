@@ -1,4 +1,8 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.property
+
+import com.monopoly.domain.model.core.BoardPosition
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.player.Player
 
 data class StreetProperty(
     override val name: String,

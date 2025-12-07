@@ -1,4 +1,7 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.player
+
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
 
 interface PlayerStrategy {
     fun shouldBuy(

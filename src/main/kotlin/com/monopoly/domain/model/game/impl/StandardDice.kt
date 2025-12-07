@@ -1,7 +1,7 @@
-package com.monopoly.domain.model.impl
+package com.monopoly.domain.model.game.impl
 
-import com.monopoly.domain.model.Dice
-import com.monopoly.domain.model.DiceRoll
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.DiceRoll
 import kotlin.random.Random
 
 class StandardDice(private val random: Random = Random.Default) : Dice {

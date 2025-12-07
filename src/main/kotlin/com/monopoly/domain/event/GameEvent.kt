@@ -1,7 +1,8 @@
 package com.monopoly.domain.event
 
-import com.monopoly.domain.model.JailEscapeMethod
-import com.monopoly.domain.model.JailReason
+import com.monopoly.domain.model.jail.JailEscapeMethod
+import com.monopoly.domain.model.jail.JailReason
+import com.monopoly.domain.model.card.CardType
 
 /**
  * ゲーム内で発生するすべてのイベントを表すsealed class
@@ -214,5 +215,61 @@ sealed class GameEvent {
         override val turnNumber: Int,
         override val timestamp: Long,
         val playerName: String,
+    ) : GameEvent()
+
+    // Phase 3: カード関連イベント
+
+    /**
+     * カードを引いたイベント
+     * @property playerName プレイヤー名
+     * @property cardText カードのテキスト
+     * @property cardType カードの種類（CHANCE or COMMUNITY_CHEST）
+     */
+    data class CardDrawn(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val cardText: String,
+        val cardType: CardType,
+    ) : GameEvent()
+
+    /**
+     * カードを保持したイベント（Get Out of Jail Free）
+     * @property playerName プレイヤー名
+     * @property cardText カードのテキスト
+     */
+    data class CardHeld(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val cardText: String,
+    ) : GameEvent()
+
+    /**
+     * お金を支払ったイベント（カードや税金など）
+     * @property playerName プレイヤー名
+     * @property amount 金額
+     * @property reason 理由
+     */
+    data class MoneyPaid(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val amount: Int,
+        val reason: String,
+    ) : GameEvent()
+
+    /**
+     * お金を受け取ったイベント（カードなど）
+     * @property playerName プレイヤー名
+     * @property amount 金額
+     * @property reason 理由
+     */
+    data class MoneyReceived(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val amount: Int,
+        val reason: String,
     ) : GameEvent()
 }

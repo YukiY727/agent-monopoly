@@ -1,7 +1,15 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.core.BoardPosition
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyBuildings
+import com.monopoly.domain.model.property.PropertyOwnership
+import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.property.StreetProperty
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
-import com.monopoly.domain.model.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 

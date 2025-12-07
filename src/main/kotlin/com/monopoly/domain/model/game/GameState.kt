@@ -1,6 +1,9 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.game
 
 import com.monopoly.domain.event.GameEvent
+import com.monopoly.domain.model.card.CardDeck
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.Property
 
 class GameState(
     val players: List<Player>,

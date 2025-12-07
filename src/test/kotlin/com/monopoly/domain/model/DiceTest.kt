@@ -1,6 +1,6 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.model.impl.StandardDice
+import com.monopoly.domain.model.game.impl.StandardDice
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeInRange
 import io.kotest.matchers.shouldBe

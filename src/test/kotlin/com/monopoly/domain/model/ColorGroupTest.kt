@@ -1,5 +1,8 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize

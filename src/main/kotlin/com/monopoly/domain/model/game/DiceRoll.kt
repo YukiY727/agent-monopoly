@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.game
 
 /**
  * サイコロを振った結果を表すデータクラス

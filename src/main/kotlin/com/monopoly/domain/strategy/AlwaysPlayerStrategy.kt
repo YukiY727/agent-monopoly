@@ -1,8 +1,8 @@
 package com.monopoly.domain.strategy
 
-import com.monopoly.domain.model.PlayerStrategy
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.StreetProperty
+import com.monopoly.domain.model.player.PlayerStrategy
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
 
 class AlwaysPlayerStrategy : PlayerStrategy {
     override fun shouldBuy(

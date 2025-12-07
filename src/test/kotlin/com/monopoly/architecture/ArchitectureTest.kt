@@ -115,7 +115,7 @@ class ArchitectureTest : StringSpec({
     "classes implementing PlayerStrategy should reside in strategy package" {
         classes()
             .that()
-            .implement("com.monopoly.domain.model.PlayerStrategy")
+            .implement("com.monopoly.domain.model.player.PlayerStrategy")
             .and()
             .areNotInterfaces()
             .should()

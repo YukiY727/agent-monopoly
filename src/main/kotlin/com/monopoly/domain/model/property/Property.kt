@@ -1,4 +1,7 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.property
+
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.player.Player
 
 interface Property {
     val name: String

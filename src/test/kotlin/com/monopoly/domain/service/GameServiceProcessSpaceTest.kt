@@ -1,12 +1,13 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.PropertyTestFixtures
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyOwnership
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -200,7 +201,7 @@ class GameServiceProcessSpaceTest : StringSpec({
         player.ownedProperties.size shouldBe 1
 
         // レント支払い（破産）
-        player.pay(com.monopoly.domain.model.Money(150))
+        player.pay(Money(150))
 
         // pay後、プレイヤーは破産し、プロパティを失っている
         player.isBankrupt shouldBe true

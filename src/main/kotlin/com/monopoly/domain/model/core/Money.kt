@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.core
 
 @JvmInline
 value class Money(val amount: Int) {

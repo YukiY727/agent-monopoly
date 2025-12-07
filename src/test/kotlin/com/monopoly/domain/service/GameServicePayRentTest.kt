@@ -1,6 +1,7 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -175,7 +176,7 @@ class GameServicePayRentTest : StringSpec({
         val payer = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val receiver = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
-        val gameState = com.monopoly.domain.model.GameState(listOf(payer, receiver), board)
+        val gameState = GameState(listOf(payer, receiver), board)
         val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When

@@ -1,10 +1,11 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.Dice
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.impl.StandardDice
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.game.impl.StandardDice
+import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -66,7 +67,7 @@ class GameServiceGameEndTest : StringSpec({
         val player2 = Player("Bob", AlwaysPlayerStrategy())
 
         // Player2により多くの所持金を与える
-        player2.receiveMoney(com.monopoly.domain.model.Money(1000))
+        player2.receiveMoney(Money(1000))
 
         val gameState =
             GameState(
@@ -74,7 +75,7 @@ class GameServiceGameEndTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = com.monopoly.domain.model.impl.StandardDice()
+        val dice = StandardDice()
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 1)
 
         // Player2の方が資産が多いので勝者となる
@@ -96,7 +97,7 @@ class GameServiceGameEndTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = com.monopoly.domain.model.impl.StandardDice()
+        val dice = StandardDice()
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 10)
 
         winner shouldBe player1

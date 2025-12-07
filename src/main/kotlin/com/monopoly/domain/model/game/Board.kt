@@ -1,4 +1,6 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.game
+
+import com.monopoly.domain.model.property.Property
 
 class Board(
     spaces: List<Space>,

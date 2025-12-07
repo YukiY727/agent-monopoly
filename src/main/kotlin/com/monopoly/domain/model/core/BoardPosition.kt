@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.core
 
 @JvmInline
 value class BoardPosition(val value: Int) {

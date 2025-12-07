@@ -2,10 +2,10 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.Dice
-import com.monopoly.domain.model.impl.StandardDice
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.impl.StandardDice
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan

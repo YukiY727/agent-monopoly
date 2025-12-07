@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.jail
 
 /**
  * 刑務所に送られる理由

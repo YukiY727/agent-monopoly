@@ -1,12 +1,12 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.model.Board
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyRent
-import com.monopoly.domain.model.Space
-import com.monopoly.domain.model.SpaceType
-import com.monopoly.domain.model.StreetProperty
+import com.monopoly.domain.model.game.Board
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.game.Space
+import com.monopoly.domain.model.game.SpaceType
+import com.monopoly.domain.model.property.StreetProperty
 
 @Suppress("MagicNumber")
 object BoardFixtures {

@@ -1,6 +1,10 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.model.StreetProperty
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.PropertyBuildings
+import com.monopoly.domain.model.property.PropertyOwnership
+import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.property.StreetProperty
 
 /**
  * テスト用のProperty作成ヘルパー関数

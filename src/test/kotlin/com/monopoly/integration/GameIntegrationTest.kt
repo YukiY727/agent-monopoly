@@ -1,9 +1,9 @@
 package com.monopoly.integration
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.impl.StandardDice
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.game.impl.StandardDice
 import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
 import com.monopoly.domain.service.MonopolyCheckerService

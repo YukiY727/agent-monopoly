@@ -1,4 +1,10 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.player
+
+import com.monopoly.domain.model.card.Card
+import com.monopoly.domain.model.core.BoardPosition
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.jail.JailStatus
+import com.monopoly.domain.model.property.Property
 
 @Suppress("TooManyFunctions") // Compatibility methods for existing tests will be removed
 class Player(
