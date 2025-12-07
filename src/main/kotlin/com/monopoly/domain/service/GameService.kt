@@ -508,6 +508,8 @@ class GameService(
         gameState: GameState,
         reason: JailReason = JailReason.GO_TO_JAIL_SPACE,
     ) {
+        // Move player to jail position (10)
+        player.moveTo(BoardPosition(10))
         player.sendToJail()
         gameState.events.add(
             GameEvent.PlayerSentToJail(
