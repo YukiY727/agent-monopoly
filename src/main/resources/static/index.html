@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoly Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .game-info {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .game-info h2 {
+            margin-bottom: 10px;
+        }
+        .board {
+            background-color: #c8e6c9;
+            border: 4px solid #2e7d32;
+            border-radius: 8px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+            gap: 2px;
+            aspect-ratio: 1;
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+        .space {
+            background-color: white;
+            border: 1px solid #333;
+            padding: 8px;
+            font-size: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 60px;
+        }
+        .space-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .space-info {
+            font-size: 9px;
+            color: #666;
+        }
+        .players {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .player-token {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 1px solid #000;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .player-alice { background-color: #ff6b6b; }
+        .player-bob { background-color: #4ecdc4; }
+        .player-status {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .player-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 200px;
+        }
+        .player-card h3 {
+            margin-bottom: 10px;
+        }
+        .player-card.bankrupt {
+            opacity: 0.5;
+            background-color: #f5f5f5;
+        }
+        .properties-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .property-item {
+            padding: 4px 8px;
+            margin: 4px 0;
+            background-color: #f9f9f9;
+            border-left: 3px solid #4CAF50;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+        .property-item.mortgaged {
+            opacity: 0.6;
+            border-left-color: #999;
+            background-color: #e0e0e0;
+        }
+        .property-name {
+            font-weight: bold;
+        }
+        .property-details {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .color-group {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            margin-right: 5px;
+        }
+        .events {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .event {
+            padding: 8px;
+            margin: 4px 0;
+            border-left: 3px solid #4CAF50;
+            background-color: #f9f9f9;
+        }
+        .event-new {
+            background-color: #fff9c4;
+            border-left-color: #ffd54f;
+        }
+        /* ボードの配置 */
+        .space:nth-child(1) { grid-column: 11; grid-row: 11; } /* GO */
+        .space:nth-child(2) { grid-column: 10; grid-row: 11; }
+        .space:nth-child(3) { grid-column: 9; grid-row: 11; }
+        .space:nth-child(4) { grid-column: 8; grid-row: 11; }
+        .space:nth-child(5) { grid-column: 7; grid-row: 11; }
+        .space:nth-child(6) { grid-column: 6; grid-row: 11; }
+        .space:nth-child(7) { grid-column: 5; grid-row: 11; }
+        .space:nth-child(8) { grid-column: 4; grid-row: 11; }
+        .space:nth-child(9) { grid-column: 3; grid-row: 11; }
+        .space:nth-child(10) { grid-column: 2; grid-row: 11; }
+        .space:nth-child(11) { grid-column: 1; grid-row: 11; } /* Jail */
+        .space:nth-child(12) { grid-column: 1; grid-row: 10; }
+        .space:nth-child(13) { grid-column: 1; grid-row: 9; }
+        .space:nth-child(14) { grid-column: 1; grid-row: 8; }
+        .space:nth-child(15) { grid-column: 1; grid-row: 7; }
+        .space:nth-child(16) { grid-column: 1; grid-row: 6; }
+        .space:nth-child(17) { grid-column: 1; grid-row: 5; }
+        .space:nth-child(18) { grid-column: 1; grid-row: 4; }
+        .space:nth-child(19) { grid-column: 1; grid-row: 3; }
+        .space:nth-child(20) { grid-column: 1; grid-row: 2; }
+        .space:nth-child(21) { grid-column: 1; grid-row: 1; } /* Free Parking */
+        .space:nth-child(22) { grid-column: 2; grid-row: 1; }
+        .space:nth-child(23) { grid-column: 3; grid-row: 1; }
+        .space:nth-child(24) { grid-column: 4; grid-row: 1; }
+        .space:nth-child(25) { grid-column: 5; grid-row: 1; }
+        .space:nth-child(26) { grid-column: 6; grid-row: 1; }
+        .space:nth-child(27) { grid-column: 7; grid-row: 1; }
+        .space:nth-child(28) { grid-column: 8; grid-row: 1; }
+        .space:nth-child(29) { grid-column: 9; grid-row: 1; }
+        .space:nth-child(30) { grid-column: 10; grid-row: 1; }
+        .space:nth-child(31) { grid-column: 11; grid-row: 1; } /* Go To Jail */
+        .space:nth-child(32) { grid-column: 11; grid-row: 2; }
+        .space:nth-child(33) { grid-column: 11; grid-row: 3; }
+        .space:nth-child(34) { grid-column: 11; grid-row: 4; }
+        .space:nth-child(35) { grid-column: 11; grid-row: 5; }
+        .space:nth-child(36) { grid-column: 11; grid-row: 6; }
+        .space:nth-child(37) { grid-column: 11; grid-row: 7; }
+        .space:nth-child(38) { grid-column: 11; grid-row: 8; }
+        .space:nth-child(39) { grid-column: 11; grid-row: 9; }
+        .space:nth-child(40) { grid-column: 11; grid-row: 10; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 Monopoly Game</h1>
+
+        <div class="controls">
+            <button id="newGameBtn" onclick="startNewGame()">New Game</button>
+            <button id="nextTurnBtn" onclick="nextTurn()" disabled>Next Turn</button>
+        </div>
+
+        <div class="game-info">
+            <h2>Game Status</h2>
+            <div id="gameStatus">Click "New Game" to start</div>
+            <div id="diceRoll" style="margin-top: 15px; font-size: 18px;"></div>
+        </div>
+
+        <div class="player-status" id="playerStatus"></div>
+
+        <div class="board" id="board"></div>
+
+        <div class="events">
+            <h3>Recent Events</h3>
+            <div id="events"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentEventCount = 0;
+
+        async function startNewGame() {
+            try {
+                const response = await fetch('http://localhost:8080/api/game/new', {
+                    method: 'POST'
+                });
+                const state = await response.json();
+
+                currentEventCount = 0;
+                updateGameState(state);
+
+                document.getElementById('nextTurnBtn').disabled = false;
+                document.getElementById('newGameBtn').disabled = true;
+            } catch (error) {
+                alert('Error starting game: ' + error.message);
+            }
+        }
+
+        async function nextTurn() {
+            try {
+                const response = await fetch('http://localhost:8080/api/game/turn', {
+                    method: 'POST'
+                });
+                const state = await response.json();
+
+                updateGameState(state);
+
+                if (state.isGameOver) {
+                    document.getElementById('nextTurnBtn').disabled = true;
+                    document.getElementById('newGameBtn').disabled = false;
+                }
+            } catch (error) {
+                alert('Error executing turn: ' + error.message);
+            }
+        }
+
+        function updateGameState(state) {
+            // Update game status
+            const statusDiv = document.getElementById('gameStatus');
+            if (state.isGameOver) {
+                const winner = state.players.find(p => !p.isBankrupt);
+                statusDiv.innerHTML = `<strong>Game Over!</strong> Winner: ${winner ? winner.name : 'None'} | Turn: ${state.turnNumber}`;
+            } else {
+                const currentPlayer = state.players[state.currentPlayerIndex];
+                statusDiv.innerHTML = `Turn ${state.turnNumber} | Current Player: ${currentPlayer.name}`;
+            }
+
+            // Update dice roll display
+            const diceDiv = document.getElementById('diceRoll');
+            if (state.lastDiceRoll) {
+                const dice = state.lastDiceRoll;
+                const doublesText = dice.isDoubles ? ' 🎲 <strong style="color: #ff6b6b;">DOUBLES!</strong>' : '';
+                diceDiv.innerHTML = `🎲 Dice: ${dice.die1} + ${dice.die2} = ${dice.total}${doublesText}`;
+            } else {
+                diceDiv.innerHTML = '';
+            }
+
+            // Update player status
+            updatePlayerStatus(state.players);
+
+            // Update board
+            updateBoard(state.players);
+        }
+
+        function updatePlayerStatus(players) {
+            const container = document.getElementById('playerStatus');
+            container.innerHTML = players.map(player => {
+                const propertiesHtml = player.ownedProperties.length > 0 ? `
+                    <div class="properties-list">
+                        ${player.ownedProperties.map(prop => {
+                            const buildings = prop.hasHotel ? '🏨' : '🏠'.repeat(prop.houseCount);
+                            const mortgage = prop.isMortgaged ? '🔒 Mortgaged' : '';
+                            const colorGroup = prop.colorGroup ? `<span class="color-group">${prop.colorGroup}</span>` : '';
+                            return `
+                                <div class="property-item ${prop.isMortgaged ? 'mortgaged' : ''}">
+                                    <div class="property-name">${prop.name} ${buildings}</div>
+                                    <div class="property-details">
+                                        ${colorGroup}
+                                        $${prop.price}
+                                        ${mortgage}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : '<p style="font-size: 12px; color: #999; margin-top: 10px;">No properties</p>';
+
+                return `
+                    <div class="player-card ${player.isBankrupt ? 'bankrupt' : ''}">
+                        <h3>${player.name} ${player.isBankrupt ? '(Bankrupt)' : ''}</h3>
+                        <p>💰 Money: $${player.money}</p>
+                        <p>📍 Position: ${player.position}</p>
+                        <p>🏠 Properties: ${player.ownedProperties.length}</p>
+                        ${player.isInJail ? '<p>🔒 In Jail</p>' : ''}
+                        ${propertiesHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateBoard(players) {
+            const boardDiv = document.getElementById('board');
+
+            // Create 40 spaces
+            if (boardDiv.children.length === 0) {
+                for (let i = 0; i < 40; i++) {
+                    const space = document.createElement('div');
+                    space.className = 'space';
+                    space.id = `space-${i}`;
+                    boardDiv.appendChild(space);
+                }
+            }
+
+            // Clear all player tokens
+            document.querySelectorAll('.players').forEach(el => el.remove());
+
+            // Add player tokens to their current positions
+            players.forEach(player => {
+                const spaceDiv = document.getElementById(`space-${player.position}`);
+                if (spaceDiv) {
+                    let playersDiv = spaceDiv.querySelector('.players');
+                    if (!playersDiv) {
+                        playersDiv = document.createElement('div');
+                        playersDiv.className = 'players';
+                        spaceDiv.appendChild(playersDiv);
+                    }
+
+                    const token = document.createElement('div');
+                    token.className = `player-token player-${player.name.toLowerCase()}`;
+                    token.textContent = player.name[0];
+                    token.title = player.name;
+                    playersDiv.appendChild(token);
+                }
+            });
+
+            // Update space names (simplified)
+            const spaceNames = [
+                'GO', 'Mediterranean', 'Chest', 'Baltic', 'Tax', 'Reading RR', 'Oriental', 'Chance', 'Vermont', 'Connecticut',
+                'Jail', 'St. Charles', 'Electric', 'States', 'Virginia', 'Penn. RR', 'St. James', 'Chest', 'Tennessee', 'New York',
+                'Free Parking', 'Kentucky', 'Chance', 'Indiana', 'Illinois', 'B&O RR', 'Atlantic', 'Ventnor', 'Water', 'Marvin Gardens',
+                'Go To Jail', 'Pacific', 'N. Carolina', 'Chest', 'Pennsylvania', 'Short Line', 'Chance', 'Park Place', 'Tax', 'Boardwalk'
+            ];
+
+            spaceNames.forEach((name, i) => {
+                const space = document.getElementById(`space-${i}`);
+                if (space && !space.querySelector('.space-name')) {
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'space-name';
+                    nameDiv.textContent = name;
+                    space.insertBefore(nameDiv, space.firstChild);
+                }
+            });
+        }
+
+        // Initialize board on page load
+        updateBoard([]);
+    </script>
+</body>
+</html>

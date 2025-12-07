@@ -7,6 +7,6 @@ sealed class PropertyOwnership {
 
     data class OwnedByPlayer(
         val player: Player,
-        val isMortgaged: Boolean = false
+        val isMortgaged: Boolean = false,
     ) : PropertyOwnership()
 }

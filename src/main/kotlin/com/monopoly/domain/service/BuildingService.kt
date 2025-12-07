@@ -1,9 +1,8 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.player.Player
-import com.monopoly.domain.model.property.Property
-import com.monopoly.domain.model.property.StreetProperty
 import com.monopoly.domain.model.property.PropertyBuildings
+import com.monopoly.domain.model.property.StreetProperty
 
 /**
  * 建物（家・ホテル）の建設を管理するサービス

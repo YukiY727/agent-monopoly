@@ -2,7 +2,6 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
 import com.monopoly.domain.model.core.Money
-import com.monopoly.domain.model.game.Dice
 import com.monopoly.domain.model.game.GameState
 import com.monopoly.domain.model.game.impl.StandardDice
 import com.monopoly.domain.model.player.Player

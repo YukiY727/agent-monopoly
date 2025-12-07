@@ -88,7 +88,10 @@ class Player(
      * @param diceRoll The dice roll (used for utility rent calculation)
      * @return The rent amount to be paid
      */
-    fun calculateRentFor(property: Property, diceRoll: Int = 0): Int {
+    fun calculateRentFor(
+        property: Property,
+        diceRoll: Int = 0,
+    ): Int {
         // Mortgaged properties have no rent
         if (property.isMortgaged()) {
             return 0
@@ -131,39 +134,44 @@ class Player(
     fun getTotalAssets(): Int = calculateTotalAssets().amount
 
     fun sendToJail() {
-        state = state.copy(
-            jailStatus = JailStatus.Jailed,
-            turnsInJail = 0,
-        )
+        state =
+            state.copy(
+                jailStatus = JailStatus.Jailed,
+                turnsInJail = 0,
+            )
     }
 
     fun escapeJailByPayment() {
         pay(Money(50))
-        state = state.copy(
-            jailStatus = JailStatus.Free,
-            turnsInJail = 0,
-        )
+        state =
+            state.copy(
+                jailStatus = JailStatus.Free,
+                turnsInJail = 0,
+            )
     }
 
     fun incrementJailTurn() {
-        state = state.copy(
-            turnsInJail = state.turnsInJail + 1,
-        )
+        state =
+            state.copy(
+                turnsInJail = state.turnsInJail + 1,
+            )
     }
 
     fun escapeJailByDoubles() {
-        state = state.copy(
-            jailStatus = JailStatus.Free,
-            turnsInJail = 0,
-        )
+        state =
+            state.copy(
+                jailStatus = JailStatus.Free,
+                turnsInJail = 0,
+            )
     }
 
     fun forceEscapeJail() {
         pay(Money(50))
-        state = state.copy(
-            jailStatus = JailStatus.Free,
-            turnsInJail = 0,
-        )
+        state =
+            state.copy(
+                jailStatus = JailStatus.Free,
+                turnsInJail = 0,
+            )
     }
 
     fun addCard(card: Card) {

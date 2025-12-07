@@ -4,7 +4,7 @@ import com.monopoly.domain.model.game.SpaceType
 
 enum class CardType {
     CHANCE,
-    COMMUNITY_CHEST
+    COMMUNITY_CHEST,
 }
 
 /**
@@ -13,7 +13,7 @@ enum class CardType {
 sealed class Card(
     open val id: String,
     open val text: String,
-    open val type: CardType
+    open val type: CardType,
 ) {
     /**
      * 特定のマスへ移動するカード
@@ -25,7 +25,8 @@ sealed class Card(
         override val type: CardType,
         val targetPosition: Int? = null,
         val targetSpaceType: SpaceType? = null,
-        val collectGoMoney: Boolean = true // GOを通ったら$200もらえるか
+        // GOを通ったら$200もらえるか
+        val collectGoMoney: Boolean = true,
     ) : Card(id, text, type)
 
     /**
@@ -35,7 +36,7 @@ sealed class Card(
         override val id: String,
         override val text: String,
         override val type: CardType,
-        val amount: Int
+        val amount: Int,
     ) : Card(id, text, type)
 
     /**
@@ -45,7 +46,7 @@ sealed class Card(
         override val id: String,
         override val text: String,
         override val type: CardType,
-        val amount: Int
+        val amount: Int,
     ) : Card(id, text, type)
 
     /**
@@ -54,7 +55,7 @@ sealed class Card(
     data class GoToJail(
         override val id: String,
         override val text: String,
-        override val type: CardType
+        override val type: CardType,
     ) : Card(id, text, type)
 
     /**
@@ -63,8 +64,8 @@ sealed class Card(
     data class GetOutOfJailFree(
         override val id: String,
         override val text: String,
-        override val type: CardType
+        override val type: CardType,
     ) : Card(id, text, type)
-    
+
     // 修理費やプレイヤー間のお金のやり取りは後回し
 }
