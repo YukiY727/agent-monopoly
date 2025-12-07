@@ -546,6 +546,9 @@ class GameService(
         if (player.strategy.shouldBuy(property, player.money)) {
             val ownedProperty: Property = buyProperty(player, property, gameState)
             gameState.updateProperty(ownedProperty)
+        } else {
+            // Phase 7: プレイヤーが購入しない場合、オークションを開始
+            runAuction(property, gameState)
         }
     }
 
@@ -755,6 +758,124 @@ class GameService(
                 ),
             )
             gameState.nextPlayer()
+        }
+    }
+
+    /**
+     * オークションを実行する（Phase 7）
+     *
+     * @param property オークション対象のプロパティ
+     * @param gameState ゲーム状態
+     */
+    private fun runAuction(
+        property: Property,
+        gameState: GameState,
+    ) {
+        val players: List<Player> = gameState.players.filter { !it.isBankrupt }
+
+        // オークションには最低2人のプレイヤーが必要
+        if (players.size < 2) {
+            return
+        }
+
+        // オークション開始イベント
+        gameState.events.add(
+            GameEvent.AuctionStarted(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                propertyName = property.name,
+                eligiblePlayers = players.map { it.name },
+            ),
+        )
+
+        var auction: com.monopoly.domain.model.game.Auction =
+            com.monopoly.domain.model.game.Auction.start(property, players)
+
+        // オークション進行中の間、プレイヤーを順番に回す
+        while (auction is com.monopoly.domain.model.game.Auction.InProgress) {
+            var inProgress: com.monopoly.domain.model.game.Auction.InProgress = auction
+
+            // パスしていないプレイヤーを順番に処理
+            val activePlayers: List<Player> =
+                inProgress.eligiblePlayers.filter { it !in inProgress.passedPlayers }
+
+            if (activePlayers.isEmpty()) {
+                break
+            }
+
+            var auctionContinues: Boolean = true
+            for (player in activePlayers) {
+                // 最新のオークション状態を取得
+                if (auction is com.monopoly.domain.model.game.Auction.InProgress) {
+                    inProgress = auction
+                }
+
+                val currentBidAmount: Int? = inProgress.currentBid?.amount
+                val bidAmount: Int? = player.strategy.decideAuctionBid(
+                    property = property,
+                    currentBid = currentBidAmount,
+                    currentMoney = player.money,
+                )
+
+                auction = if (bidAmount != null) {
+                    // 入札
+                    gameState.events.add(
+                        GameEvent.PlayerBidInAuction(
+                            turnNumber = gameState.turnNumber,
+                            timestamp = System.currentTimeMillis(),
+                            playerName = player.name,
+                            propertyName = property.name,
+                            bidAmount = bidAmount,
+                        ),
+                    )
+                    auction.placeBid(player, bidAmount)
+                } else {
+                    // パス
+                    gameState.events.add(
+                        GameEvent.PlayerPassedInAuction(
+                            turnNumber = gameState.turnNumber,
+                            timestamp = System.currentTimeMillis(),
+                            playerName = player.name,
+                            propertyName = property.name,
+                        ),
+                    )
+                    auction.pass(player)
+                }
+
+                // オークションが完了したらループ終了
+                if (auction is com.monopoly.domain.model.game.Auction.Completed) {
+                    auctionContinues = false
+                    break
+                }
+            }
+
+            if (!auctionContinues) {
+                break
+            }
+        }
+
+        // オークション完了処理
+        if (auction is com.monopoly.domain.model.game.Auction.Completed) {
+            val completed: com.monopoly.domain.model.game.Auction.Completed = auction
+
+            gameState.events.add(
+                GameEvent.AuctionCompleted(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    propertyName = property.name,
+                    winnerName = completed.winner?.name,
+                    winningBid = completed.winningBid,
+                ),
+            )
+
+            // 落札者がいる場合、プロパティを譲渡
+            if (completed.winner != null) {
+                val winner: Player = completed.winner
+                winner.pay(Money(completed.winningBid))
+                val ownedProperty: Property = property.withOwner(winner)
+                winner.acquireProperty(ownedProperty)
+                gameState.updateProperty(ownedProperty)
+            }
         }
     }
 }

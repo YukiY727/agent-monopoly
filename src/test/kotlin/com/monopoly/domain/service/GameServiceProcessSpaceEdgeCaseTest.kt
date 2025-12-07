@@ -81,6 +81,12 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
                 ): Boolean = false
 
                 override fun shouldPayToEscapeJail(currentMoney: Int): Boolean = false
+
+                override fun decideAuctionBid(
+                    property: Property,
+                    currentBid: Int?,
+                    currentMoney: Int,
+                ): Int? = null
             }
 
         val player = Player("Charlie", neverPlayerStrategy)

@@ -302,4 +302,58 @@ sealed class GameEvent {
         val propertyName: String,
         val unmortgageValue: Int,
     ) : GameEvent()
+
+    // Phase 7: オークション関連イベント
+
+    /**
+     * オークション開始イベント
+     * @property propertyName オークション対象のプロパティ名
+     * @property eligiblePlayers オークションに参加できるプレイヤー名のリスト
+     */
+    data class AuctionStarted(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val propertyName: String,
+        val eligiblePlayers: List<String>,
+    ) : GameEvent()
+
+    /**
+     * オークションで入札したイベント
+     * @property playerName 入札したプレイヤー名
+     * @property propertyName オークション対象のプロパティ名
+     * @property bidAmount 入札額
+     */
+    data class PlayerBidInAuction(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val bidAmount: Int,
+    ) : GameEvent()
+
+    /**
+     * オークションでパスしたイベント
+     * @property playerName パスしたプレイヤー名
+     * @property propertyName オークション対象のプロパティ名
+     */
+    data class PlayerPassedInAuction(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+    ) : GameEvent()
+
+    /**
+     * オークション完了イベント
+     * @property propertyName オークション対象のプロパティ名
+     * @property winnerName 落札者名（null = オークション不成立）
+     * @property winningBid 落札額
+     */
+    data class AuctionCompleted(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val propertyName: String,
+        val winnerName: String?,
+        val winningBid: Int,
+    ) : GameEvent()
 }

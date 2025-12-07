@@ -152,6 +152,10 @@ class ArchitectureTest : StringSpec({
             .resideInAPackage("..domain.strategy..")
             .and()
             .areNotInterfaces()
+            .and()
+            .areNotMemberClasses()  // Exclude companion objects and inner classes
+            .and()
+            .haveSimpleNameNotEndingWith("Test")
             .should()
             .haveSimpleNameEndingWith("Strategy")
             .check(classes)
