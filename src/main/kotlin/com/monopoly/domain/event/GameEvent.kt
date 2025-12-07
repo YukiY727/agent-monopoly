@@ -272,4 +272,34 @@ sealed class GameEvent {
         val amount: Int,
         val reason: String,
     ) : GameEvent()
+
+    // Phase 6: 抵当関連イベント
+
+    /**
+     * プロパティを抵当に入れたイベント
+     * @property playerName プレイヤー名
+     * @property propertyName プロパティ名
+     * @property mortgageValue 抵当額（受け取った金額）
+     */
+    data class PropertyMortgaged(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val mortgageValue: Int,
+    ) : GameEvent()
+
+    /**
+     * プロパティの抵当を解除したイベント
+     * @property playerName プレイヤー名
+     * @property propertyName プロパティ名
+     * @property unmortgageValue 抵当解除額（支払った金額）
+     */
+    data class PropertyUnmortgaged(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val unmortgageValue: Int,
+    ) : GameEvent()
 }
