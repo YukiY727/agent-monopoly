@@ -59,6 +59,9 @@ class GameService(
 
         val diceRoll: DiceRoll = dice.roll()
 
+        // Store dice roll for utility rent calculation
+        gameState.lastDiceRoll = diceRoll.total
+
         // DiceRolledイベントを記録
         gameState.events.add(
             GameEvent.DiceRolled(
@@ -565,7 +568,10 @@ class GameService(
             // レント支払い前にプロパティリストを保存（pay()内でgoBankrupt()が呼ばれると空になるため）
             val propertiesBeforePayment: List<Property> = player.ownedProperties.toList()
 
-            payRent(player, owner, property.rentValue.amount, property.name, gameState)
+            // Calculate rent - delegate to the owner
+            val rentAmount: Int = owner.calculateRentFor(property, gameState.lastDiceRoll)
+
+            payRent(player, owner, rentAmount, property.name, gameState)
 
             // レント支払い後にプレイヤーが破産したかチェック
             if (player.isBankrupt) {

@@ -16,6 +16,7 @@ class GameState(
     private var gameOver: Boolean = false
     var turnNumber: Int = 0
         private set
+    var lastDiceRoll: Int = 0 // Store the last dice roll for utility rent calculation
 
     val currentPlayer: Player
         get() = players[currentPlayerIndex]

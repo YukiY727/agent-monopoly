@@ -5,6 +5,8 @@ import com.monopoly.domain.model.core.BoardPosition
 import com.monopoly.domain.model.core.Money
 import com.monopoly.domain.model.jail.JailStatus
 import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.RailroadProperty
+import com.monopoly.domain.model.property.UtilityProperty
 
 @Suppress("TooManyFunctions") // Compatibility methods for existing tests will be removed
 class Player(
@@ -76,6 +78,28 @@ class Player(
     }
 
     fun calculateTotalAssets(): Money = state.calculateTotalAssets()
+
+    /**
+     * Calculate rent for a property owned by this player
+     * Handles special cases for railroads and utilities
+     *
+     * @param property The property to calculate rent for
+     * @param diceRoll The dice roll (used for utility rent calculation)
+     * @return The rent amount to be paid
+     */
+    fun calculateRentFor(property: Property, diceRoll: Int = 0): Int {
+        return when (property) {
+            is RailroadProperty -> {
+                val railroadCount: Int = ownedProperties.filterIsInstance<RailroadProperty>().count()
+                property.calculateRentWithCount(railroadCount)
+            }
+            is UtilityProperty -> {
+                val utilityCount: Int = ownedProperties.filterIsInstance<UtilityProperty>().count()
+                property.calculateRentWithDice(utilityCount, diceRoll)
+            }
+            else -> property.rentValue.amount
+        }
+    }
 
     // Compatibility methods for existing tests
     fun addMoney(amount: Int) {
