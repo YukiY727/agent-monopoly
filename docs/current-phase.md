@@ -217,31 +217,279 @@ Average Final Assets:
 
 ---
 
-## Phase 9以降の計画
+## Phase 9以降の計画（ゲーム理論・行動経済学研究）
 
-### Phase 9: HTMLレポートと可視化
+### Phase 9: 戦略の支配関係分析（ゲーム理論）
 
-- HTMLレポート生成（ゲーム進行、統計グラフ）
-- 戦略別勝率の棒グラフ
-- ターン数分布のヒストグラム
+**研究テーマ**: 異なる戦略間の対戦成績から支配戦略とNash均衡を探索
 
-### Phase 10: 詳細統計と分析
+**実装内容**:
 
-- プロパティ別収益性分析
-- ターンごとの資産推移グラフ
-- 破産タイミング分析
+1. **複数の基本戦略を実装**
 
-### Phase 11: 並列実行とパフォーマンス最適化
+   ```kotlin
+   - AlwaysPlayerStrategy (既存): 常に購入・建設
+   - ConservativeStrategy: 保守的（資金温存、リスク回避）
+   - AggressiveStrategy: 積極的（早期投資、高リスク）
+   - BalancedStrategy: バランス型（状況判断）
+   ```
 
-- マルチスレッド/コルーチンによる並列実行
-- 目標: 10,000ゲーム/分以上
+2. **戦略対戦マトリックス生成**
 
-### Phase 12: 複数戦略の実装
+   ```kotlin
+   StrategyComparisonExperiment(
+       strategies = listOf(Always, Conservative, Aggressive, Balanced),
+       gamesPerPair = 100  // 各組み合わせ100回対戦
+   )
+   // 出力: 4x4対戦成績マトリックス
+   ```
 
-- ランダム戦略
-- 保守的戦略
-- セット重視戦略
-- ROI戦略
+3. **統計的検定**
+
+   - t検定: 戦略間の勝率差の有意性
+   - 信頼区間計算: 95%信頼区間
+   - 効果量: Cohen's d（差の大きさ）
+   - p値調整: Bonferroni補正（多重比較）
+
+4. **Nash均衡の探索**
+
+   - 最適反応戦略の特定
+   - 支配戦略の検出
+   - 混合戦略Nash均衡の計算
+
+5. **研究レポート生成**
+
+   ```markdown
+   # 戦略支配関係分析レポート
+
+   ## 仮説
+   H0: 全ての戦略の勝率は等しい
+   H1: 有意差が存在する
+
+   ## 対戦マトリックス
+   |          | Always | Conservative | Aggressive | Balanced |
+   |----------|--------|--------------|------------|----------|
+   | Always   | 50.0%  | 62.3% **    | 45.1%      | 53.2%    |
+   ...
+   ** p < 0.01
+
+   ## Nash均衡
+   - 純粋戦略均衡: Balanced
+   - 支配戦略: なし
+   ```
+
+**期待される成果**:
+
+- どの戦略が最も強いかの科学的根拠
+- 戦略の相性関係の理解
+- ゲーム理論的な最適戦略の発見
+
+---
+
+### Phase 10: リスク選好の測定（行動経済学）
+
+**研究テーマ**: プレイヤー戦略のリスク選好度を定量化し、リスク-リターンの関係を分析
+
+**実装内容**:
+
+1. **詳細な意思決定ログ**
+
+   ```kotlin
+   data class DecisionLog(
+       val turnNumber: Int,
+       val decision: Decision,
+       val context: DecisionContext,
+       val outcome: Outcome
+   )
+
+   sealed class Decision {
+       data class PropertyPurchase(val property: Property, val accepted: Boolean)
+       data class BuildingInvestment(val property: Property, val type: BuildingType)
+       data class JailEscape(val paidFine: Boolean)
+       data class AuctionBid(val amount: Int?)
+   }
+   ```
+
+2. **リスクパラメータの測定**
+
+   - 期待効用理論に基づくリスク回避係数の推定
+   - プロパティ購入率（手持ち資金比）
+   - 建物投資タイミング（資金余裕度）
+   - 監獄脱出判断（機会費用 vs 確実なコスト）
+
+3. **リスク-リターン分析**
+
+   ```kotlin
+   data class RiskReturnProfile(
+       val expectedReturn: Double,      // 平均最終資産
+       val volatility: Double,           // 標準偏差
+       val sharpeRatio: Double,          // (期待収益 - 無リスク収益) / 標準偏差
+       val maxDrawdown: Double,          // 最大資産減少幅
+       val bankruptcyRate: Double        // 破産率
+   )
+   ```
+
+4. **回帰分析**
+
+   - 独立変数: リスクパラメータ（投資積極性、資金温存率）
+   - 従属変数: 勝率、平均最終資産
+   - モデル: 線形回帰、ロジスティック回帰
+
+5. **可視化**
+
+   - リスク-リターン散布図
+   - 効率的フロンティアの描画
+   - 意思決定ツリーの可視化
+
+**期待される成果**:
+
+- 最適なリスク選好度の発見
+- リスクとリターンのトレードオフの定量化
+- 行動経済学的な洞察（損失回避、確実性効果など）
+
+---
+
+### Phase 11: サンクコスト効果の検証（認知バイアス）
+
+**研究テーマ**: 過去の投資が将来の意思決定に与える影響を測定
+
+**実装内容**:
+
+1. **サンクコストを考慮する戦略**
+
+   ```kotlin
+   class SunkCostStrategy(
+       val sunkCostWeight: Double = 0.5  // 過去投資の重み
+   ) : PlayerStrategy {
+       override fun shouldBuildHouse(...): Boolean {
+           val rationalDecision = expectedROI > threshold
+           val sunkCostBias = pastInvestment * sunkCostWeight
+           return rationalDecision || sunkCostBias > threshold
+       }
+   }
+   ```
+
+2. **測定指標**
+
+   - 損失プロパティへの追加投資率
+   - モノポリー完成までの粘り強さ
+   - 破産寸前での行動変化
+   - 合理的戦略からの乖離度
+
+3. **実験デザイン**
+
+   ```kotlin
+   ExperimentDesign(
+       control = RationalStrategy(),
+       treatment = SunkCostStrategy(sunkCostWeight = 0.3),
+       matchedPairs = true,  // 同じランダムシードで対戦
+       sampleSize = 1000
+   )
+   ```
+
+4. **統計分析**
+
+   - 対応のあるt検定（マッチドペア）
+   - 差分の差分法（DID: Difference-in-Differences）
+   - 傾向スコアマッチング
+
+5. **認知バイアスの影響測定**
+
+   - サンクコスト効果の強度
+   - パフォーマンスへの影響（正負）
+   - バイアスが有利に働くケース
+
+**期待される成果**:
+
+- サンクコスト効果がモノポリーで有害か有益かの判定
+- バイアスの最適な強度の発見
+- 人間的な意思決定の再現と理解
+
+---
+
+### Phase 12: 協調ゲーム理論の応用（複雑な相互作用）
+
+**研究テーマ**: 3人以上のゲームにおける暗黙的協調と裏切りのパターン分析
+
+**実装内容**:
+
+1. **多人数ゲーム対応**
+
+   ```kotlin
+   class MultiPlayerExperiment(
+       val playerCount: Int = 4,
+       val strategies: List<PlayerStrategy>
+   )
+   ```
+
+2. **協調検出アルゴリズム**
+
+   ```kotlin
+   data class Coalition(
+       val members: Set<String>,
+       val duration: Int,  // 協調が続いたターン数
+       val benefit: Map<String, Int>  // 各メンバーの利益
+   )
+
+   // 暗黙的協調の検出
+   - 同じプレイヤーへの連続攻撃回避
+   - オークション入札の自粛パターン
+   - 有利な取引の提供
+   ```
+
+3. **ゲーム理論的分析**
+
+   - Shapley値: 連合への各プレイヤーの貢献度
+   - コア: 安定的な配分の集合
+   - 裏切りの誘因分析
+
+4. **取引・交渉戦略（将来拡張）**
+
+   ```kotlin
+   interface NegotiationStrategy {
+       fun proposeTradeOffer(...): TradeOffer?
+       fun evaluateTradeOffer(...): Boolean
+       fun formAlliance(...): Coalition?
+   }
+   ```
+
+5. **シミュレーション**
+
+   - 繰り返しゲーム（同じプレイヤーで複数回）
+   - 評判システムの影響
+   - しっぺ返し戦略の効果
+
+**期待される成果**:
+
+- 3人以上のゲームでの最適戦略
+- 協調が生まれる条件の理解
+- 裏切りの最適タイミング
+- 取引・交渉システムの設計指針
+
+---
+
+## フェーズ間の依存関係
+
+```text
+Phase 8 (実験管理)
+    ↓ 基盤
+Phase 9 (戦略の支配関係) ← 複数の基本戦略実装
+    ↓ 「なぜ強いか？」の分析
+Phase 10 (リスク選好) ← 意思決定ログの詳細化
+    ↓ 認知バイアスの追加
+Phase 11 (サンクコスト) ← Phase 10の分析手法を応用
+    ↓ 複雑な相互作用へ
+Phase 12 (協調ゲーム) ← これまでの全知見を統合
+```
+
+**段階的な複雑化**:
+
+1. Phase 9: 2人ゲームの基本分析
+2. Phase 10: 意思決定の深掘り
+3. Phase 11: 認知バイアスの追加
+4. Phase 12: 多人数の複雑な相互作用
+
+各フェーズで得られた知見が次のフェーズに活きる設計になっています。
 
 ---
 
