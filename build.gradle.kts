@@ -58,6 +58,22 @@ application {
     mainClass.set("com.monopoly.server.ApplicationKt")
 }
 
+// 実験実行用タスク
+tasks.register<JavaExec>("runExperiment") {
+    group = "application"
+    description = "Run monopoly experiments"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.monopoly.cli.ExperimentMainKt")
+}
+
+// 単一ゲーム実行用タスク（既存のMainをラップ）
+tasks.register<JavaExec>("runGame") {
+    group = "application"
+    description = "Run a single monopoly game"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.monopoly.cli.MainKt")
+}
+
 tasks.test {
     useJUnitPlatform()
 }
@@ -126,6 +142,7 @@ tasks.jacocoTestReport {
                         "**/BuildConfig.*",
                         // Exclude CLI entry point (not testable in unit tests)
                         "**/cli/MainKt.*",
+                        "**/cli/ExperimentMainKt.*",
                         // Exclude server layer (web UI for manual testing)
                         "**/server/**",
                         // Exclude trivial event data classes (no business logic)
@@ -148,6 +165,7 @@ tasks.jacocoTestCoverageVerification {
                         "**/BuildConfig.*",
                         // Exclude CLI entry point (not testable in unit tests)
                         "**/cli/MainKt.*",
+                        "**/cli/ExperimentMainKt.*",
                         // Exclude server layer (web UI for manual testing)
                         "**/server/**",
                         // Exclude trivial event data classes (no business logic)
