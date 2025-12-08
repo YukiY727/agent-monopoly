@@ -3,6 +3,7 @@ package com.monopoly.cli
 import com.monopoly.domain.experiment.AggregatedStatistics
 import com.monopoly.domain.experiment.ExperimentRunner
 import com.monopoly.domain.experiment.GameStatistics
+import com.monopoly.domain.experiment.HtmlReportWriter
 import com.monopoly.domain.experiment.StatisticsDisplay
 import com.monopoly.domain.experiment.StatisticsWriter
 import com.monopoly.domain.model.player.PlayerStrategy
@@ -61,9 +62,14 @@ fun main() {
     val writer = StatisticsWriter()
     val files = writer.write(results, aggregated)
 
+    // HTML レポート生成
+    val htmlWriter = HtmlReportWriter()
+    val htmlPath: String = htmlWriter.write(results, aggregated)
+
     println("Results saved:")
     println("  - JSON: ${files.jsonPath}")
     println("  - CSV:  ${files.csvPath}")
+    println("  - HTML: $htmlPath")
     println()
 }
 
