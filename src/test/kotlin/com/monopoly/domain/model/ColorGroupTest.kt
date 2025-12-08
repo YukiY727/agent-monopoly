@@ -1,5 +1,8 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
@@ -164,8 +167,8 @@ class ColorGroupTest : StringSpec({
                 colorGroup = ColorGroup.GREEN,
             )
 
-        brownProperty.colorGroup shouldBe ColorGroup.BROWN
-        blueProperty.colorGroup shouldBe ColorGroup.DARK_BLUE
-        greenProperty.colorGroup shouldBe ColorGroup.GREEN
+        (brownProperty as StreetProperty).colorGroup shouldBe ColorGroup.BROWN
+        (blueProperty as StreetProperty).colorGroup shouldBe ColorGroup.DARK_BLUE
+        (greenProperty as StreetProperty).colorGroup shouldBe ColorGroup.GREEN
     }
 })

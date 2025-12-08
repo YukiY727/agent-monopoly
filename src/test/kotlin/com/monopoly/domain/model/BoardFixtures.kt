@@ -1,5 +1,13 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.game.Board
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.game.Space
+import com.monopoly.domain.model.game.SpaceType
+import com.monopoly.domain.model.property.StreetProperty
+
 @Suppress("MagicNumber")
 object BoardFixtures {
     fun createStandardBoard(): Board = com.monopoly.cli.createStandardBoard()
@@ -17,7 +25,7 @@ object BoardFixtures {
         for (i in 1..39) {
             val space =
                 if (propertyMap.containsKey(i)) {
-                    Space.PropertySpace(position = i, property = propertyMap[i]!!)
+                    Space.PropertySpace(position = i, property = propertyMap[i]!! as StreetProperty)
                 } else {
                     Space.Other(i, SpaceType.CHANCE)
                 }

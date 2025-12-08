@@ -2,10 +2,11 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.Dice
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.impl.StandardDice
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -13,15 +14,15 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.random.Random
 
 class GameServiceTurnTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-160: 1ターンの流れ
     // Given: GameState
     // When: executeTurn(gameState)
     // Then: サイコロが振られ、プレイヤーが移動し、マス目処理が実行され、ターン番号が増加
     "should execute one turn with dice roll, movement, space processing, and turn increment" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -30,7 +31,7 @@ class GameServiceTurnTest : StringSpec({
 
         val initialTurnNumber = gameState.turnNumber
         val initialPosition = player1.position
-        val dice = Dice(Random(42)) // 固定シードで再現性を確保
+        val dice = StandardDice(Random(42)) // 固定シードで再現性を確保
 
         gameService.executeTurn(gameState, dice)
 
@@ -45,8 +46,8 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState)
     // Then: currentPlayerIndexが1
     "should switch to next player after turn execution" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
@@ -56,7 +57,7 @@ class GameServiceTurnTest : StringSpec({
         val initialPlayer = gameState.currentPlayer
         initialPlayer shouldBe player1
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         gameService.executeTurn(gameState, dice)
 
         gameState.currentPlayer shouldBe player2
@@ -67,15 +68,15 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState, dice)
     // Then: gameState.eventsにTurnStarted, TurnEndedイベントが追加されている
     "should record TurnStarted and TurnEnded events when executing turn" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         val initialEventCount: Int = gameState.events.size
 
         gameService.executeTurn(gameState, dice)
@@ -105,15 +106,15 @@ class GameServiceTurnTest : StringSpec({
     // When: executeTurn(gameState, dice)
     // Then: DiceRolledイベントのdie1, die2, totalが正しい値
     "should record DiceRolled event with correct dice values" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42)) // 固定シードで再現性を確保
+        val dice = StandardDice(Random(42)) // 固定シードで再現性を確保
         gameService.executeTurn(gameState, dice)
 
         // DiceRolledイベントが記録されている
@@ -137,15 +138,15 @@ class GameServiceTurnTest : StringSpec({
     // When: runGame(gameState, dice, maxTurns)
     // Then: gameState.eventsの最初がGameStarted、最後がGameEnded
     "should record GameStarted and GameEnded events when running game" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         gameService.runGame(gameState, dice, maxTurns = 10)
 
         // GameStartedイベントが最初に記録されている
@@ -165,15 +166,15 @@ class GameServiceTurnTest : StringSpec({
     // When: runGame(gameState, dice, maxTurns)
     // Then: GameEndedイベントのwinnerが破産していないプレイヤー、totalTurnsが正しい
     "should record correct winner and total turns in GameEnded event" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         val gameState =
             GameState(
                 players = listOf(player1, player2),
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = Dice(Random(42))
+        val dice = StandardDice(Random(42))
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 100)
 
         // GameEndedイベントを取得

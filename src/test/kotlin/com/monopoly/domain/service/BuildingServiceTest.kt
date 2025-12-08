@@ -1,11 +1,12 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyBuildings
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.model.property.PropertyBuildings
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -15,8 +16,8 @@ class BuildingServiceTest : StringSpec({
     // When: buildHouse()
     // Then: falseを返し、建物は建たない
     "should not allow building house without monopoly" {
-        val player = Player("Alice", AlwaysBuyStrategy())
-        val property: Property =
+        val player = Player("Alice", AlwaysPlayerStrategy())
+        val property: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -40,9 +41,9 @@ class BuildingServiceTest : StringSpec({
     // When: buildHouse()
     // Then: trueを返し、家が1つ建ち、所持金が$1450
     "should allow building house with monopoly and enough money" {
-        val player = Player("Bob", AlwaysBuyStrategy())
+        val player = Player("Bob", AlwaysPlayerStrategy())
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -53,7 +54,7 @@ class BuildingServiceTest : StringSpec({
                     colorGroup = ColorGroup.BROWN,
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -72,7 +73,7 @@ class BuildingServiceTest : StringSpec({
 
         result shouldBe true
         // 更新後のプロパティを取得してチェック
-        val updatedProperty: Property = player.ownedProperties.first { it.name == "Mediterranean Avenue" }
+        val updatedProperty: StreetProperty = player.ownedProperties.first { it.name == "Mediterranean Avenue" } as StreetProperty
         updatedProperty.buildings.houseCount shouldBe 1
         player.money shouldBe 1450 // 1500 - 50
     }
@@ -82,10 +83,10 @@ class BuildingServiceTest : StringSpec({
     // When: buildHouse()
     // Then: falseを返し、家は建たない、所持金は変わらない
     "should not allow building house without enough money" {
-        val player = Player("Carol", AlwaysBuyStrategy())
+        val player = Player("Carol", AlwaysPlayerStrategy())
         player.subtractMoney(1470) // 1500 - 1470 = 30
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -96,7 +97,7 @@ class BuildingServiceTest : StringSpec({
                     colorGroup = ColorGroup.BROWN,
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -123,9 +124,9 @@ class BuildingServiceTest : StringSpec({
     // When: property1にbuildHouse()
     // Then: falseを返し、property1の家は1のまま
     "should enforce even building rule - cannot build second house when other property has zero" {
-        val player = Player("Dave", AlwaysBuyStrategy())
+        val player = Player("Dave", AlwaysPlayerStrategy())
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -137,7 +138,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 1),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -164,9 +165,9 @@ class BuildingServiceTest : StringSpec({
     // When: property1にbuildHouse()
     // Then: trueを返し、property1の家が2
     "should allow building when all properties have equal houses" {
-        val player = Player("Eve", AlwaysBuyStrategy())
+        val player = Player("Eve", AlwaysPlayerStrategy())
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -178,7 +179,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 1),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -198,10 +199,10 @@ class BuildingServiceTest : StringSpec({
 
         result shouldBe true
         // 更新後のプロパティを取得してチェック
-        val updatedProperty1: Property = player.ownedProperties.first { it.name == "Mediterranean Avenue" }
+        val updatedProperty1: StreetProperty = player.ownedProperties.first { it.name == "Mediterranean Avenue" } as StreetProperty
         updatedProperty1.buildings.houseCount shouldBe 2
         // property2は変更されていないので直接チェック可能
-        val updatedProperty2: Property = player.ownedProperties.first { it.name == "Baltic Avenue" }
+        val updatedProperty2: StreetProperty = player.ownedProperties.first { it.name == "Baltic Avenue" } as StreetProperty
         updatedProperty2.buildings.houseCount shouldBe 1
         player.money shouldBe 1450
     }
@@ -211,9 +212,9 @@ class BuildingServiceTest : StringSpec({
     // When: buildHotel()
     // Then: trueを返し、ホテルが建ち、家が0、所持金が$1450
     "should allow building hotel when property has 4 houses" {
-        val player = Player("Frank", AlwaysBuyStrategy())
+        val player = Player("Frank", AlwaysPlayerStrategy())
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -226,7 +227,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 4),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -247,7 +248,7 @@ class BuildingServiceTest : StringSpec({
 
         result shouldBe true
         // 更新後のプロパティを取得してチェック
-        val updatedProperty: Property = player.ownedProperties.first { it.name == "Mediterranean Avenue" }
+        val updatedProperty: StreetProperty = player.ownedProperties.first { it.name == "Mediterranean Avenue" } as StreetProperty
         updatedProperty.buildings.hasHotel shouldBe true
         updatedProperty.buildings.houseCount shouldBe 0
         player.money shouldBe 1450
@@ -258,9 +259,9 @@ class BuildingServiceTest : StringSpec({
     // When: buildHotel()
     // Then: falseを返し、ホテルは建たず、所持金も変わらない
     "should not allow building hotel when property has less than 4 houses" {
-        val player = Player("Grace", AlwaysBuyStrategy())
+        val player = Player("Grace", AlwaysPlayerStrategy())
 
-        val property: Property =
+        val property: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -273,7 +274,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 3),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -303,10 +304,10 @@ class BuildingServiceTest : StringSpec({
     // When: buildHotel()
     // Then: falseを返し、ホテルは建たない
     "should not allow building hotel without enough money" {
-        val player = Player("Henry", AlwaysBuyStrategy())
+        val player = Player("Henry", AlwaysPlayerStrategy())
         player.subtractMoney(1470) // 1500 - 1470 = 30
 
-        val property: Property =
+        val property: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -319,7 +320,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 4),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -348,9 +349,9 @@ class BuildingServiceTest : StringSpec({
     // When: buildHouse()
     // Then: falseを返し、家は増えない
     "should not allow building 5th house when property already has 4 houses" {
-        val player = Player("Ivy", AlwaysBuyStrategy())
+        val player = Player("Ivy", AlwaysPlayerStrategy())
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -362,7 +363,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 4),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",
@@ -389,9 +390,9 @@ class BuildingServiceTest : StringSpec({
     // When: buildHotel()
     // Then: falseを返し、状態は変わらない
     "should not allow building second hotel when property already has hotel" {
-        val player = Player("Jack", AlwaysBuyStrategy())
+        val player = Player("Jack", AlwaysPlayerStrategy())
 
-        val property1: Property =
+        val property1: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Mediterranean Avenue",
@@ -404,7 +405,7 @@ class BuildingServiceTest : StringSpec({
                     buildings = PropertyBuildings(houseCount = 0, hasHotel = true),
                 ).withOwner(player)
 
-        val property2: Property =
+        val property2: StreetProperty =
             PropertyTestFixtures
                 .createTestProperty(
                     name = "Baltic Avenue",

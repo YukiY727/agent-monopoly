@@ -1,24 +1,25 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyOwnership
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyOwnership
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 class GameServiceProcessSpaceTest : StringSpec({
     // TC-140: 未所有プロパティに止まる（購入する）
-    // Given: 所持金$1500のPlayer、価格$200の未所有Property、AlwaysBuyStrategy
+    // Given: 所持金$1500のPlayer、価格$200の未所有Property、AlwaysPlayerStrategy
     // When: processSpace(player, gameState)（playerが該当Propertyの位置）
     // Then: プロパティが購入される
     "should buy unowned property when landing on it" {
-        val gameService = GameService()
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -44,9 +45,9 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: processSpace(playerA, gameState)
     // Then: Player Aの所持金が$1450、Player Bの所持金が増加
     "should pay rent when landing on other player's property" {
-        val gameService = GameService()
-        val playerA = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val playerB = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
+        val playerA = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val playerB = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Park Place",
@@ -77,8 +78,8 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: processSpace(playerA, gameState)
     // Then: 何も変化しない
     "should do nothing when landing on own property" {
-        val gameService = GameService()
-        val playerA = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
+        val playerA = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Boardwalk",
@@ -111,9 +112,9 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: Player Aが Player Bのプロパティに止まる
     // Then: Player Aが破産し、Player Aが所有していたプロパティがボード上で解放される
     "should release player properties on board when player goes bankrupt after paying rent" {
-        val gameService = GameService()
-        val playerA = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val playerB = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
+        val playerA = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val playerB = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
 
         // Player Aが所有するプロパティ
         val propertyOwnedByA: Property =
@@ -179,7 +180,7 @@ class GameServiceProcessSpaceTest : StringSpec({
     // When: Player.pay($150)を呼び出す
     // Then: Playerが破産し、ownedPropertiesが空になる
     "player loses all properties when going bankrupt via pay method" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -200,7 +201,7 @@ class GameServiceProcessSpaceTest : StringSpec({
         player.ownedProperties.size shouldBe 1
 
         // レント支払い（破産）
-        player.pay(com.monopoly.domain.model.Money(150))
+        player.pay(Money(150))
 
         // pay後、プレイヤーは破産し、プロパティを失っている
         player.isBankrupt shouldBe true

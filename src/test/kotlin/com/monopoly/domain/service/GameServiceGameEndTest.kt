@@ -1,23 +1,26 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.game.impl.StandardDice
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 class GameServiceGameEndTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // TC-150: ゲーム終了（1人残り）
     // Given: GameStateで3人中2人が破産
     // When: checkGameEnd(gameState)
     // Then: true
     "should end game when only one player remains" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
-        val player3 = Player("Charlie", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
+        val player3 = Player("Charlie", AlwaysPlayerStrategy())
 
         player2.markAsBankrupt()
         player3.markAsBankrupt()
@@ -38,9 +41,9 @@ class GameServiceGameEndTest : StringSpec({
     // When: checkGameEnd(gameState)
     // Then: false
     "should continue game when multiple players are active" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
-        val player3 = Player("Charlie", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
+        val player3 = Player("Charlie", AlwaysPlayerStrategy())
 
         player2.markAsBankrupt()
 
@@ -60,11 +63,11 @@ class GameServiceGameEndTest : StringSpec({
     // When: runGame(gameState, dice, maxTurns=1)
     // Then: 最も資産の多いプレイヤーが勝者として返される
     "should determine winner by total assets when max turns reached" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
 
         // Player2により多くの所持金を与える
-        player2.receiveMoney(com.monopoly.domain.model.Money(1000))
+        player2.receiveMoney(Money(1000))
 
         val gameState =
             GameState(
@@ -72,7 +75,7 @@ class GameServiceGameEndTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = com.monopoly.domain.model.Dice()
+        val dice = StandardDice()
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 1)
 
         // Player2の方が資産が多いので勝者となる
@@ -84,8 +87,8 @@ class GameServiceGameEndTest : StringSpec({
     // When: runGame(gameState, dice, maxTurns=10)
     // Then: アクティブなプレイヤーが勝者として返される
     "should return the only active player as winner" {
-        val player1 = Player("Alice", AlwaysBuyStrategy())
-        val player2 = Player("Bob", AlwaysBuyStrategy())
+        val player1 = Player("Alice", AlwaysPlayerStrategy())
+        val player2 = Player("Bob", AlwaysPlayerStrategy())
         player2.markAsBankrupt()
 
         val gameState =
@@ -94,7 +97,7 @@ class GameServiceGameEndTest : StringSpec({
                 board = BoardFixtures.createStandardBoard(),
             )
 
-        val dice = com.monopoly.domain.model.Dice()
+        val dice = StandardDice()
         val winner: Player = gameService.runGame(gameState, dice, maxTurns = 10)
 
         winner shouldBe player1

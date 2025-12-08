@@ -2,13 +2,13 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyOwnership
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyOwnership
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -20,7 +20,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: プレイヤーの所持金が$1300、propertyのownerがplayer、プレイヤーの所有プロパティに追加
     "should successfully buy property when player has enough money" {
         // Given
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -29,7 +29,7 @@ class GameServiceBuyTest : StringSpec({
                 baseRent = 10,
                 colorGroup = ColorGroup.BROWN,
             )
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         val updatedProperty: Property = gameService.buyProperty(player, property)
@@ -46,7 +46,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: property.ownership is OwnedByPlayer(player)
     "should set owner correctly after purchase" {
         // Given
-        val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Park Place",
@@ -55,7 +55,7 @@ class GameServiceBuyTest : StringSpec({
                 baseRent = 35,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         val updatedProperty: Property = gameService.buyProperty(player, property)
@@ -70,7 +70,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: player.ownedProperties.size が1
     "should add property to player's owned properties list" {
         // Given
-        val player = Player(name = "Carol", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Carol", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Boardwalk",
@@ -79,7 +79,7 @@ class GameServiceBuyTest : StringSpec({
                 baseRent = 50,
                 colorGroup = ColorGroup.DARK_BLUE,
             )
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.buyProperty(player, property)
@@ -97,7 +97,7 @@ class GameServiceBuyTest : StringSpec({
     // Then: gameState.eventsにPropertyPurchasedイベントが追加されている、priceが200
     "should record PropertyPurchased event when buying property" {
         // Given
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -108,7 +108,7 @@ class GameServiceBuyTest : StringSpec({
             )
         val board = BoardFixtures.createStandardBoard()
         val gameState = GameState(listOf(player), board)
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.buyProperty(player, property, gameState)

@@ -1,5 +1,9 @@
 package com.monopoly.domain.model
 
+import com.monopoly.domain.model.game.Space
+import com.monopoly.domain.model.game.SpaceType
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf

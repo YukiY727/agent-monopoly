@@ -1,26 +1,27 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.BoardPosition
-import com.monopoly.domain.model.ColorGroup
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
 import com.monopoly.domain.model.PropertyTestFixtures
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
-import com.monopoly.domain.strategy.BuyStrategy
+import com.monopoly.domain.model.core.BoardPosition
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.player.PlayerStrategy
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
-    val gameService = GameService()
+    val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
     // GOマスに止まるケース
     // Given: PlayerがGOマスに止まっている
     // When: processSpace(player, gameState)
     // Then: 何も起こらない（GOボーナスはadvanceで処理済み）
     "should do nothing when landing on GO space" {
-        val player = Player("Alice", AlwaysBuyStrategy())
+        val player = Player("Alice", AlwaysPlayerStrategy())
         player.moveTo(BoardPosition.GO)
         val gameState =
             GameState(
@@ -40,7 +41,7 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
     // When: processSpace(player, gameState)
     // Then: 何も起こらない（Phase 1では未実装）
     "should do nothing when landing on Other space like CHANCE" {
-        val player = Player("Bob", AlwaysBuyStrategy())
+        val player = Player("Bob", AlwaysPlayerStrategy())
         // 位置2はCHANCEマス（BoardFixtures参照）
         player.moveTo(BoardPosition(2))
         val gameState =
@@ -62,15 +63,33 @@ class GameServiceProcessSpaceEdgeCaseTest : StringSpec({
     // Then: プロパティは購入されない
     "should not buy property when player does not have enough money" {
         // 所持金が不足する戦略
-        val neverBuyStrategy =
-            object : BuyStrategy {
+        val neverPlayerStrategy =
+            object : PlayerStrategy {
                 override fun shouldBuy(
                     property: Property,
                     currentMoney: Int,
                 ): Boolean = false
+
+                override fun shouldBuildHouse(
+                    property: StreetProperty,
+                    currentMoney: Int,
+                ): Boolean = false
+
+                override fun shouldBuildHotel(
+                    property: StreetProperty,
+                    currentMoney: Int,
+                ): Boolean = false
+
+                override fun shouldPayToEscapeJail(currentMoney: Int): Boolean = false
+
+                override fun decideAuctionBid(
+                    property: Property,
+                    currentBid: Int?,
+                    currentMoney: Int,
+                ): Int? = null
             }
 
-        val player = Player("Charlie", neverBuyStrategy)
+        val player = Player("Charlie", neverPlayerStrategy)
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",

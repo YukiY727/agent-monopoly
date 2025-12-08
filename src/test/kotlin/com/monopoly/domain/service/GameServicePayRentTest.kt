@@ -1,7 +1,8 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -12,10 +13,10 @@ class GameServicePayRentTest : StringSpec({
     // Then: 支払者の所持金が$1400、受取者の所持金が$1100
     "should pay rent normally when payer has enough money" {
         // Given
-        val payer = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val payer = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 100)
@@ -31,10 +32,10 @@ class GameServicePayRentTest : StringSpec({
     // Then: 支払者の所持金が-$50、破産フラグがtrue
     "should mark payer as bankrupt when rent exceeds available money" {
         // Given
-        val payer = Player(name = "Carol", strategy = AlwaysBuyStrategy())
+        val payer = Player(name = "Carol", strategy = AlwaysPlayerStrategy())
         payer.subtractMoney(1450) // Set payer's money to $50
-        val receiver = Player(name = "Dave", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val receiver = Player(name = "Dave", strategy = AlwaysPlayerStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 100)
@@ -50,10 +51,10 @@ class GameServicePayRentTest : StringSpec({
     // Then: 受取者の所持金が$1050
     "should increase receiver's money by rent amount" {
         // Given
-        val payer = Player(name = "Eve", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Frank", strategy = AlwaysBuyStrategy())
+        val payer = Player(name = "Eve", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Frank", strategy = AlwaysPlayerStrategy())
         receiver.subtractMoney(500) // Set receiver's money to $1000
-        val gameService = GameService()
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 50)
@@ -68,9 +69,9 @@ class GameServicePayRentTest : StringSpec({
     // Then: 両者の所持金が変わらず、破産しない
     "should handle zero rent payment correctly" {
         // Given
-        val payer = Player(name = "George", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Helen", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val payer = Player(name = "George", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Helen", strategy = AlwaysPlayerStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 0)
@@ -87,9 +88,9 @@ class GameServicePayRentTest : StringSpec({
     // Then: 支払者が破産し、所持金が-$3500
     "should handle very high rent causing bankruptcy" {
         // Given
-        val payer = Player(name = "Ian", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Jane", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val payer = Player(name = "Ian", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Jane", strategy = AlwaysPlayerStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 5000)
@@ -106,9 +107,9 @@ class GameServicePayRentTest : StringSpec({
     // Then: 支払者の所持金が$0、破産しない
     "should not go bankrupt when rent equals available money" {
         // Given
-        val payer = Player(name = "Kevin", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Laura", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val payer = Player(name = "Kevin", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Laura", strategy = AlwaysPlayerStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 1500)
@@ -125,9 +126,9 @@ class GameServicePayRentTest : StringSpec({
     // Then: 支払者が破産し、所持金が-$1
     "should go bankrupt when rent is one more than available money" {
         // Given
-        val payer = Player(name = "Mike", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Nancy", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val payer = Player(name = "Mike", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Nancy", strategy = AlwaysPlayerStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 1501)
@@ -144,11 +145,11 @@ class GameServicePayRentTest : StringSpec({
     // Then: 最後の支払いで破産フラグがtrue
     "should go bankrupt after multiple rent payments" {
         // Given
-        val payer = Player(name = "Oscar", strategy = AlwaysBuyStrategy())
-        val receiver1 = Player(name = "Patricia", strategy = AlwaysBuyStrategy())
-        val receiver2 = Player(name = "Quinn", strategy = AlwaysBuyStrategy())
-        val receiver3 = Player(name = "Rachel", strategy = AlwaysBuyStrategy())
-        val gameService = GameService()
+        val payer = Player(name = "Oscar", strategy = AlwaysPlayerStrategy())
+        val receiver1 = Player(name = "Patricia", strategy = AlwaysPlayerStrategy())
+        val receiver2 = Player(name = "Quinn", strategy = AlwaysPlayerStrategy())
+        val receiver3 = Player(name = "Rachel", strategy = AlwaysPlayerStrategy())
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When & Then
         gameService.payRent(payer, receiver1, 600)
@@ -172,11 +173,11 @@ class GameServicePayRentTest : StringSpec({
     // Then: gameState.eventsにRentPaidイベントが追加されている、amountが正しい
     "should record RentPaid event when paying rent" {
         // Given
-        val payer = Player(name = "Alice", strategy = AlwaysBuyStrategy())
-        val receiver = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val payer = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+        val receiver = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val board = com.monopoly.domain.model.BoardFixtures.createStandardBoard()
-        val gameState = com.monopoly.domain.model.GameState(listOf(payer, receiver), board)
-        val gameService = GameService()
+        val gameState = GameState(listOf(payer, receiver), board)
+        val gameService = GameService(BuildingService(MonopolyCheckerService()))
 
         // When
         gameService.payRent(payer, receiver, 100, "Park Place", gameState)

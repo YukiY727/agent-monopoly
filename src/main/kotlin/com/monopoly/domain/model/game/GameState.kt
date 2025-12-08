@@ -1,16 +1,22 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.game
 
 import com.monopoly.domain.event.GameEvent
+import com.monopoly.domain.model.card.CardDeck
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.Property
 
 class GameState(
     val players: List<Player>,
     val board: Board,
     val events: MutableList<GameEvent> = mutableListOf(),
+    val chanceDeck: CardDeck = CardDeck(emptyList()),
+    val communityChestDeck: CardDeck = CardDeck(emptyList()),
 ) {
     private var currentPlayerIndex: Int = 0
     private var gameOver: Boolean = false
     var turnNumber: Int = 0
         private set
+    var lastDiceRoll: Int = 0 // Store the last dice roll for utility rent calculation
 
     val currentPlayer: Player
         get() = players[currentPlayerIndex]

@@ -1,5 +1,9 @@
 package com.monopoly.domain.event
 
+import com.monopoly.domain.model.jail.JailEscapeMethod
+import com.monopoly.domain.model.jail.JailReason
+import com.monopoly.domain.model.card.CardType
+
 /**
  * ゲーム内で発生するすべてのイベントを表すsealed class
  * すべてのイベントはturnNumber（ターン番号）とtimestamp（発生時刻）を持つ
@@ -122,5 +126,234 @@ sealed class GameEvent {
         override val timestamp: Long,
         val playerName: String,
         val finalMoney: Int,
+    ) : GameEvent()
+
+    /**
+     * ゾロ目を出したイベント（Phase 2）
+     * @property playerName ゾロ目を出したプレイヤー名
+     * @property doublesCount 連続ゾロ目の回数（1, 2, or 3）
+     */
+    data class DoublesRolled(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val doublesCount: Int,
+    ) : GameEvent()
+
+    /**
+     * 3回連続ゾロ目イベント（Phase 2）
+     * プレイヤーは刑務所に送られる
+     * @property playerName 3回連続ゾロ目を出したプレイヤー名
+     */
+    data class ThreeConsecutiveDoubles(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+    ) : GameEvent()
+
+    /**
+     * 家建設イベント（Phase 2）
+     * @property playerName 建設したプレイヤー名
+     * @property propertyName 建設したプロパティ名
+     * @property houseCount 建設後の家の総数
+     * @property cost 建設コスト
+     */
+    data class HouseBuilt(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val houseCount: Int,
+        val cost: Int,
+    ) : GameEvent()
+
+    /**
+     * ホテル建設イベント（Phase 2）
+     * @property playerName 建設したプレイヤー名
+     * @property propertyName 建設したプロパティ名
+     * @property cost 建設コスト
+     */
+    data class HotelBuilt(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val cost: Int,
+    ) : GameEvent()
+
+    // Phase 3: 刑務所関連イベント
+
+    /**
+     * プレイヤーが刑務所に送られたイベント
+     * @property playerName プレイヤー名
+     * @property reason 理由
+     */
+    data class PlayerSentToJail(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val reason: JailReason,
+    ) : GameEvent()
+
+    /**
+     * 刑務所から脱出したイベント
+     * @property playerName プレイヤー名
+     * @property method 脱出方法
+     */
+    data class JailEscaped(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val method: JailEscapeMethod,
+    ) : GameEvent()
+
+    /**
+     * 刑務所脱出に失敗したイベント
+     * @property playerName プレイヤー名
+     */
+    data class JailTurnFailed(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+    ) : GameEvent()
+
+    // Phase 3: カード関連イベント
+
+    /**
+     * カードを引いたイベント
+     * @property playerName プレイヤー名
+     * @property cardText カードのテキスト
+     * @property cardType カードの種類（CHANCE or COMMUNITY_CHEST）
+     */
+    data class CardDrawn(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val cardText: String,
+        val cardType: CardType,
+    ) : GameEvent()
+
+    /**
+     * カードを保持したイベント（Get Out of Jail Free）
+     * @property playerName プレイヤー名
+     * @property cardText カードのテキスト
+     */
+    data class CardHeld(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val cardText: String,
+    ) : GameEvent()
+
+    /**
+     * お金を支払ったイベント（カードや税金など）
+     * @property playerName プレイヤー名
+     * @property amount 金額
+     * @property reason 理由
+     */
+    data class MoneyPaid(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val amount: Int,
+        val reason: String,
+    ) : GameEvent()
+
+    /**
+     * お金を受け取ったイベント（カードなど）
+     * @property playerName プレイヤー名
+     * @property amount 金額
+     * @property reason 理由
+     */
+    data class MoneyReceived(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val amount: Int,
+        val reason: String,
+    ) : GameEvent()
+
+    // Phase 6: 抵当関連イベント
+
+    /**
+     * プロパティを抵当に入れたイベント
+     * @property playerName プレイヤー名
+     * @property propertyName プロパティ名
+     * @property mortgageValue 抵当額（受け取った金額）
+     */
+    data class PropertyMortgaged(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val mortgageValue: Int,
+    ) : GameEvent()
+
+    /**
+     * プロパティの抵当を解除したイベント
+     * @property playerName プレイヤー名
+     * @property propertyName プロパティ名
+     * @property unmortgageValue 抵当解除額（支払った金額）
+     */
+    data class PropertyUnmortgaged(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val unmortgageValue: Int,
+    ) : GameEvent()
+
+    // Phase 7: オークション関連イベント
+
+    /**
+     * オークション開始イベント
+     * @property propertyName オークション対象のプロパティ名
+     * @property eligiblePlayers オークションに参加できるプレイヤー名のリスト
+     */
+    data class AuctionStarted(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val propertyName: String,
+        val eligiblePlayers: List<String>,
+    ) : GameEvent()
+
+    /**
+     * オークションで入札したイベント
+     * @property playerName 入札したプレイヤー名
+     * @property propertyName オークション対象のプロパティ名
+     * @property bidAmount 入札額
+     */
+    data class PlayerBidInAuction(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+        val bidAmount: Int,
+    ) : GameEvent()
+
+    /**
+     * オークションでパスしたイベント
+     * @property playerName パスしたプレイヤー名
+     * @property propertyName オークション対象のプロパティ名
+     */
+    data class PlayerPassedInAuction(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val playerName: String,
+        val propertyName: String,
+    ) : GameEvent()
+
+    /**
+     * オークション完了イベント
+     * @property propertyName オークション対象のプロパティ名
+     * @property winnerName 落札者名（null = オークション不成立）
+     * @property winningBid 落札額
+     */
+    data class AuctionCompleted(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val propertyName: String,
+        val winnerName: String?,
+        val winningBid: Int,
     ) : GameEvent()
 }

@@ -1,4 +1,4 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.property
 
 /**
  * プロパティの建物（家とホテル）を管理するデータクラス

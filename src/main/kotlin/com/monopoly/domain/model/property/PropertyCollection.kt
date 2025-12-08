@@ -1,4 +1,6 @@
-package com.monopoly.domain.model
+package com.monopoly.domain.model.property
+
+import com.monopoly.domain.model.core.Money
 
 class PropertyCollection(
     private val properties: List<Property> = emptyList(),

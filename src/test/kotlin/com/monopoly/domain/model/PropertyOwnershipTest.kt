@@ -1,6 +1,8 @@
 package com.monopoly.domain.model
 
-import com.monopoly.domain.strategy.AlwaysBuyStrategy
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.PropertyOwnership
+import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -22,7 +24,7 @@ class PropertyOwnershipTest : StringSpec({
     // When: PropertyOwnership.OwnedByPlayerを作成
     // Then: playerフィールドが正しく設定される
     "OwnedByPlayer should be initialized with player" {
-        val player = Player(name = "Alice", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
         val ownership = PropertyOwnership.OwnedByPlayer(player)
 
         ownership.player shouldBe player
@@ -34,11 +36,11 @@ class PropertyOwnershipTest : StringSpec({
     // When: playerフィールドにアクセス
     // Then: 正しいPlayerが返される
     "OwnedByPlayer should allow access to player field" {
-        val player = Player(name = "Bob", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
         val ownership = PropertyOwnership.OwnedByPlayer(player)
 
         ownership.player.name shouldBe "Bob"
-        ownership.player.strategy.shouldBeInstanceOf<AlwaysBuyStrategy>()
+        ownership.player.strategy.shouldBeInstanceOf<AlwaysPlayerStrategy>()
     }
 
     // TC-Ownership-004: Type checking
@@ -49,7 +51,7 @@ class PropertyOwnershipTest : StringSpec({
         val unowned: PropertyOwnership = PropertyOwnership.Unowned
         val owned: PropertyOwnership =
             PropertyOwnership.OwnedByPlayer(
-                Player(name = "Charlie", strategy = AlwaysBuyStrategy()),
+                Player(name = "Charlie", strategy = AlwaysPlayerStrategy()),
             )
 
         unowned.shouldBeInstanceOf<PropertyOwnership.Unowned>()
@@ -73,7 +75,7 @@ class PropertyOwnershipTest : StringSpec({
     // When: 等価性をチェック
     // Then: data classなので内容が同じなら等しい
     "OwnedByPlayer with same player should be equal" {
-        val player = Player(name = "David", strategy = AlwaysBuyStrategy())
+        val player = Player(name = "David", strategy = AlwaysPlayerStrategy())
         val ownership1 = PropertyOwnership.OwnedByPlayer(player)
         val ownership2 = PropertyOwnership.OwnedByPlayer(player)
 
@@ -85,8 +87,8 @@ class PropertyOwnershipTest : StringSpec({
     // When: 等価性をチェック
     // Then: 異なるPlayerなので等しくない
     "OwnedByPlayer with different players should not be equal" {
-        val player1 = Player(name = "Eve", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Frank", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Eve", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Frank", strategy = AlwaysPlayerStrategy())
         val ownership1 = PropertyOwnership.OwnedByPlayer(player1)
         val ownership2 = PropertyOwnership.OwnedByPlayer(player2)
 
@@ -101,7 +103,7 @@ class PropertyOwnershipTest : StringSpec({
         val unowned = PropertyOwnership.Unowned
         val owned =
             PropertyOwnership.OwnedByPlayer(
-                Player(name = "George", strategy = AlwaysBuyStrategy()),
+                Player(name = "George", strategy = AlwaysPlayerStrategy()),
             )
 
         unowned shouldNotBe owned
@@ -112,9 +114,9 @@ class PropertyOwnershipTest : StringSpec({
     // When: それぞれでOwnedByPlayerを作成
     // Then: 各インスタンスは独立している
     "Multiple OwnedByPlayer instances should be independent" {
-        val player1 = Player(name = "Hannah", strategy = AlwaysBuyStrategy())
-        val player2 = Player(name = "Ian", strategy = AlwaysBuyStrategy())
-        val player3 = Player(name = "Jane", strategy = AlwaysBuyStrategy())
+        val player1 = Player(name = "Hannah", strategy = AlwaysPlayerStrategy())
+        val player2 = Player(name = "Ian", strategy = AlwaysPlayerStrategy())
+        val player3 = Player(name = "Jane", strategy = AlwaysPlayerStrategy())
 
         val ownership1 = PropertyOwnership.OwnedByPlayer(player1)
         val ownership2 = PropertyOwnership.OwnedByPlayer(player2)

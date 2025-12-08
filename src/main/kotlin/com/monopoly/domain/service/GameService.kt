@@ -1,16 +1,29 @@
 package com.monopoly.domain.service
 
 import com.monopoly.domain.event.GameEvent
-import com.monopoly.domain.model.Board
-import com.monopoly.domain.model.GameState
-import com.monopoly.domain.model.Money
-import com.monopoly.domain.model.Player
-import com.monopoly.domain.model.Property
-import com.monopoly.domain.model.PropertyOwnership
-import com.monopoly.domain.model.Space
+import com.monopoly.domain.model.game.Board
+import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.card.Card
+import com.monopoly.domain.model.card.CardDeck
+import com.monopoly.domain.model.card.CardType
+import com.monopoly.domain.model.jail.JailEscapeMethod
+import com.monopoly.domain.model.jail.JailReason
+import com.monopoly.domain.model.jail.JailStatus
+import com.monopoly.domain.model.core.Money
+import com.monopoly.domain.model.game.SpaceType
+import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.Property
+import com.monopoly.domain.model.property.PropertyOwnership
+import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.model.game.Space
+import com.monopoly.domain.model.game.Dice
+import com.monopoly.domain.model.game.DiceRoll
+import com.monopoly.domain.model.core.BoardPosition
 
 @Suppress("TooManyFunctions") // Phase 1の範囲内では許容
-class GameService {
+class GameService(
+    private val buildingService: BuildingService,
+) {
     fun checkGameEnd(gameState: GameState): Boolean {
         val activePlayerCount: Int = gameState.getActivePlayerCount()
         return activePlayerCount <= 1
@@ -18,7 +31,7 @@ class GameService {
 
     fun executeTurn(
         gameState: GameState,
-        dice: com.monopoly.domain.model.Dice,
+        dice: Dice,
     ) {
         val player: Player = gameState.currentPlayer
 
@@ -38,8 +51,16 @@ class GameService {
             ),
         )
 
-        val roll: Int = dice.roll()
-        val lastRoll: Pair<Int, Int> = dice.getLastRoll()
+        // Phase 3: 刑務所チェック
+        if (player.state.jailStatus == JailStatus.Jailed) {
+            handleJailTurn(player, gameState, dice)
+            return
+        }
+
+        val diceRoll: DiceRoll = dice.roll()
+
+        // Store dice roll for utility rent calculation
+        gameState.lastDiceRoll = diceRoll.total
 
         // DiceRolledイベントを記録
         gameState.events.add(
@@ -47,14 +68,90 @@ class GameService {
                 turnNumber = gameState.turnNumber,
                 timestamp = System.currentTimeMillis(),
                 playerName = player.name,
-                die1 = lastRoll.first,
-                die2 = lastRoll.second,
-                total = roll,
+                die1 = diceRoll.die1,
+                die2 = diceRoll.die2,
+                total = diceRoll.total,
             ),
         )
 
-        movePlayer(player, roll, gameState)
+        // ゾロ目の処理
+        if (diceRoll.isDoubles) {
+            val newConsecutiveDoubles = player.state.consecutiveDoubles + 1
+            player.state = player.state.withConsecutiveDoubles(newConsecutiveDoubles)
+
+            // DoublesRolledイベントを記録
+            gameState.events.add(
+                GameEvent.DoublesRolled(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    doublesCount = newConsecutiveDoubles,
+                ),
+            )
+
+            // 3回連続ゾロ目の場合
+            if (newConsecutiveDoubles >= 3) {
+                // ThreeConsecutiveDoublesイベントを記録
+                gameState.events.add(
+                    GameEvent.ThreeConsecutiveDoubles(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                    ),
+                )
+
+                // Phase 3: 刑務所に送る
+                player.sendToJail()
+                gameState.events.add(
+                    GameEvent.PlayerSentToJail(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        reason = JailReason.THREE_CONSECUTIVE_DOUBLES,
+                    ),
+                )
+
+
+                
+                // 連続ゾロ目カウントをリセット
+                player.state = player.state.resetConsecutiveDoubles()
+
+                // TurnEndedイベントを記録（刑務所行きのため移動なし）
+                gameState.events.add(
+                    GameEvent.TurnEnded(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                    ),
+                )
+
+                // 次のプレイヤーへ（追加ターンなし）
+                gameState.nextPlayer()
+                return
+            }
+        } else {
+            // ゾロ目でない場合は連続ゾロ目カウントをリセット
+            player.state = player.state.resetConsecutiveDoubles()
+        }
+
+        movePlayer(player, diceRoll.total, gameState)
         processSpace(player, gameState)
+
+        // Phase 3: 刑務所に送られた場合はターン終了（建設などは行わない）
+        if (player.state.jailStatus == JailStatus.Jailed) {
+            gameState.events.add(
+                GameEvent.TurnEnded(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.nextPlayer()
+            return
+        }
+
+        // 建物建設フェーズ（Phase 2）
+        tryBuildBuildings(player, gameState)
 
         // TurnEndedイベントを記録
         gameState.events.add(
@@ -65,12 +162,16 @@ class GameService {
             ),
         )
 
-        gameState.nextPlayer()
+        // ゾロ目の場合は追加ターンを与える（3回連続でない場合のみ）
+        if (!diceRoll.isDoubles) {
+            gameState.nextPlayer()
+        }
+        // ゾロ目の場合は同じプレイヤーが続けてプレイ（nextPlayerを呼ばない）
     }
 
     fun runGame(
         gameState: GameState,
-        dice: com.monopoly.domain.model.Dice,
+        dice: Dice,
         maxTurns: Int = Int.MAX_VALUE,
     ): Player {
         // GameStartedイベントを記録
@@ -250,9 +351,178 @@ class GameService {
                 // GO: Phase 1では何もしない（GOボーナスはadvanceで処理済み）
             }
             is Space.Other -> {
-                // その他のマス: Phase 1では何もしない
+                when (space.spaceType) {
+                    SpaceType.CHANCE -> processCard(player, gameState, gameState.chanceDeck)
+                    SpaceType.COMMUNITY_CHEST -> processCard(player, gameState, gameState.communityChestDeck)
+                    SpaceType.GO_TO_JAIL -> processGoToJail(player, gameState)
+                    SpaceType.TAX -> processTaxSpace(player, gameState, space.position)
+                    else -> { /* 何もしない */ }
+                }
             }
         }
+    }
+
+    private fun processTaxSpace(
+        player: Player,
+        gameState: GameState,
+        position: Int,
+    ) {
+        // Determine tax amount based on position
+        // Standard Monopoly: Income Tax at position 4 ($200), Luxury Tax at position 38 ($100)
+        val (taxAmount, taxName) = when (position) {
+            4 -> Pair(200, "Income Tax")
+            38 -> Pair(100, "Luxury Tax")
+            else -> return // Not a tax space
+        }
+
+        // Pay tax
+        player.pay(Money(taxAmount))
+
+        // Record tax payment event
+        gameState.events.add(
+            GameEvent.MoneyPaid(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                amount = taxAmount,
+                reason = taxName,
+            ),
+        )
+
+        // Check if player went bankrupt
+        if (player.isBankrupt) {
+            val releasedProperties = bankruptPlayer(player, gameState)
+            releasePlayerPropertiesOnBoard(releasedProperties, gameState)
+        }
+    }
+
+    private fun processCard(
+        player: Player,
+        gameState: GameState,
+        deck: CardDeck,
+    ) {
+        if (deck.size == 0) return
+
+        val card = deck.draw()
+        
+        gameState.events.add(
+            GameEvent.CardDrawn(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                cardText = card.text,
+                cardType = card.type,
+            ),
+        )
+        
+        applyCardEffect(player, gameState, card)
+        
+        if (card !is Card.GetOutOfJailFree) {
+            deck.returnCard(card)
+        }
+    }
+
+
+    private fun applyCardEffect(
+        player: Player,
+        gameState: GameState,
+        card: Card,
+    ) {
+        when (card) {
+            is Card.MoveTo -> {
+                val currentPosition: Int = player.position
+                val targetPosition: Int = card.targetPosition ?: run {
+                    // Handle targetSpaceType (e.g., nearest railroad/utility)
+                    // For now, we'll implement basic targetPosition logic
+                    // TODO: Implement nearest railroad/utility logic
+                    return
+                }
+                
+                // Check if passing GO
+                val passedGo: Boolean = targetPosition < currentPosition
+                
+                // Move player
+                player.moveTo(BoardPosition(targetPosition))
+                
+                // Collect GO bonus if applicable
+                if (passedGo && card.collectGoMoney) {
+                    player.receiveMoney(Money.GO_BONUS)
+                }
+                
+                // Record movement event
+                gameState.events.add(
+                    GameEvent.PlayerMoved(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        fromPosition = currentPosition,
+                        toPosition = targetPosition,
+                        passedGo = passedGo && card.collectGoMoney,
+                    ),
+                )
+                
+                // Process the space player landed on
+                processSpace(player, gameState)
+            }
+            is Card.PayMoney -> {
+                player.pay(Money(card.amount))
+                gameState.events.add(
+                    GameEvent.MoneyPaid(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        amount = card.amount,
+                        reason = "Card: ${card.text}",
+                    ),
+                )
+            }
+            is Card.ReceiveMoney -> {
+                player.receiveMoney(Money(card.amount))
+                gameState.events.add(
+                    GameEvent.MoneyReceived(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        amount = card.amount,
+                        reason = "Card: ${card.text}",
+                    ),
+                )
+            }
+            is Card.GoToJail -> {
+                processGoToJail(player, gameState, JailReason.CARD_EFFECT)
+            }
+            is Card.GetOutOfJailFree -> {
+                player.addCard(card)
+                gameState.events.add(
+                    GameEvent.CardHeld(
+                        turnNumber = gameState.turnNumber,
+                        timestamp = System.currentTimeMillis(),
+                        playerName = player.name,
+                        cardText = card.text,
+                    ),
+                )
+            }
+        }
+    }
+
+
+    private fun processGoToJail(
+        player: Player,
+        gameState: GameState,
+        reason: JailReason = JailReason.GO_TO_JAIL_SPACE,
+    ) {
+        // Move player to jail position (10)
+        player.moveTo(BoardPosition(10))
+        player.sendToJail()
+        gameState.events.add(
+            GameEvent.PlayerSentToJail(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                reason = reason,
+            ),
+        )
+        // Note: Turn ending logic is handled in executeTurn or by the fact that jail status is checked
     }
 
     private fun processPropertySpace(
@@ -276,6 +546,9 @@ class GameService {
         if (player.strategy.shouldBuy(property, player.money)) {
             val ownedProperty: Property = buyProperty(player, property, gameState)
             gameState.updateProperty(ownedProperty)
+        } else {
+            // Phase 7: プレイヤーが購入しない場合、オークションを開始
+            runAuction(property, gameState)
         }
     }
 
@@ -298,7 +571,10 @@ class GameService {
             // レント支払い前にプロパティリストを保存（pay()内でgoBankrupt()が呼ばれると空になるため）
             val propertiesBeforePayment: List<Property> = player.ownedProperties.toList()
 
-            payRent(player, owner, property.rentValue.amount, property.name, gameState)
+            // Calculate rent - delegate to the owner
+            val rentAmount: Int = owner.calculateRentFor(property, gameState.lastDiceRoll)
+
+            payRent(player, owner, rentAmount, property.name, gameState)
 
             // レント支払い後にプレイヤーが破産したかチェック
             if (player.isBankrupt) {
@@ -313,7 +589,293 @@ class GameService {
     ) {
         properties.forEach { property ->
             val releasedProperty: Property = property.withoutOwner()
-            gameState.releaseProperty(releasedProperty)
+            gameState.board.updateProperty(releasedProperty)
+        }
+    }
+
+    /**
+     * プレイヤーの所有プロパティに建物を建設する（Phase 2）
+     * 
+     * 各プロパティに対して:
+     * 1. ホテル建設を試みる（家が4つある場合）
+     * 2. ホテルが建たなければ家の建設を試みる
+     */
+    private fun tryBuildBuildings(
+        player: Player,
+        gameState: GameState,
+    ) {
+        player.ownedProperties
+            .filterIsInstance<StreetProperty>()
+            .forEach { property ->
+                // ホテル建設を試みる
+                if (player.strategy.shouldBuildHotel(property, player.money)) {
+                    val built = buildingService.buildHotel(player, property)
+                    if (built) {
+                        gameState.events.add(
+                            GameEvent.HotelBuilt(
+                                turnNumber = gameState.turnNumber,
+                                timestamp = System.currentTimeMillis(),
+                                playerName = player.name,
+                                propertyName = property.name,
+                                cost = property.hotelCost,
+                            ),
+                        )
+                        return@forEach // ホテルを建てたら次のプロパティへ
+                    }
+                }
+
+                // 家の建設を試みる
+                if (player.strategy.shouldBuildHouse(property, player.money)) {
+                    val built = buildingService.buildHouse(player, property)
+                    if (built) {
+                        // 更新後のプロパティを取得
+                        val updatedProperty =
+                            player.ownedProperties
+                                .filterIsInstance<StreetProperty>()
+                                .first { it.name == property.name }
+                        gameState.events.add(
+                            GameEvent.HouseBuilt(
+                                turnNumber = gameState.turnNumber,
+                                timestamp = System.currentTimeMillis(),
+                                playerName = player.name,
+                                propertyName = property.name,
+                                houseCount = updatedProperty.buildings.houseCount,
+                                cost = property.houseCost,
+                            ),
+                        )
+                    }
+                }
+            }
+    }
+
+    /**
+     * 刑務所にいるプレイヤーのターン処理（Phase 3）
+     * 
+     * 1. $50支払いで脱出を試みる（戦略が許可する場合）
+     * 2. ゾロ目で脱出を試みる
+     * 3. 3ターン経過後は強制脱出
+     */
+    private fun handleJailTurn(
+        player: Player,
+        gameState: GameState,
+        dice: Dice,
+    ) {
+        val turnsInJail = player.state.turnsInJail
+
+        // 3ターン経過 → 強制脱出
+        if (turnsInJail >= 3) {
+            player.forceEscapeJail()
+            gameState.events.add(
+                GameEvent.JailEscaped(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    method = JailEscapeMethod.FORCED,
+                ),
+            )
+            gameState.events.add(
+                GameEvent.TurnEnded(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.nextPlayer()
+            return
+        }
+
+        // $50支払いで脱出を試みる
+        if (player.strategy.shouldPayToEscapeJail(player.money)) {
+            player.escapeJailByPayment()
+            gameState.events.add(
+                GameEvent.JailEscaped(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    method = JailEscapeMethod.PAYMENT,
+                ),
+            )
+            gameState.events.add(
+                GameEvent.TurnEnded(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.nextPlayer()
+            return
+        }
+
+        // ゾロ目で脱出を試みる
+        val diceRoll = dice.roll()
+        gameState.events.add(
+            GameEvent.DiceRolled(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                playerName = player.name,
+                die1 = diceRoll.die1,
+                die2 = diceRoll.die2,
+                total = diceRoll.total,
+            ),
+        )
+
+        if (diceRoll.isDoubles) {
+            // ゾロ目で脱出成功
+            player.escapeJailByDoubles()
+            gameState.events.add(
+                GameEvent.JailEscaped(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                    method = JailEscapeMethod.DOUBLES,
+                ),
+            )
+            // Note: Standard Monopoly rules say "you do not take another turn" when escaping via doubles
+            // So we don't give an extra turn here
+            gameState.events.add(
+                GameEvent.TurnEnded(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.nextPlayer()
+        } else {
+            // 脱出失敗 → ターン数を増やして終了
+            player.incrementJailTurn()
+            gameState.events.add(
+                GameEvent.JailTurnFailed(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.events.add(
+                GameEvent.TurnEnded(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    playerName = player.name,
+                ),
+            )
+            gameState.nextPlayer()
+        }
+    }
+
+    /**
+     * オークションを実行する（Phase 7）
+     *
+     * @param property オークション対象のプロパティ
+     * @param gameState ゲーム状態
+     */
+    private fun runAuction(
+        property: Property,
+        gameState: GameState,
+    ) {
+        val players: List<Player> = gameState.players.filter { !it.isBankrupt }
+
+        // オークションには最低2人のプレイヤーが必要
+        if (players.size < 2) {
+            return
+        }
+
+        // オークション開始イベント
+        gameState.events.add(
+            GameEvent.AuctionStarted(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                propertyName = property.name,
+                eligiblePlayers = players.map { it.name },
+            ),
+        )
+
+        var auction: com.monopoly.domain.model.game.Auction =
+            com.monopoly.domain.model.game.Auction.start(property, players)
+
+        // オークション進行中の間、プレイヤーを順番に回す
+        while (auction is com.monopoly.domain.model.game.Auction.InProgress) {
+            var inProgress: com.monopoly.domain.model.game.Auction.InProgress = auction
+
+            // パスしていないプレイヤーを順番に処理
+            val activePlayers: List<Player> =
+                inProgress.eligiblePlayers.filter { it !in inProgress.passedPlayers }
+
+            if (activePlayers.isEmpty()) {
+                break
+            }
+
+            var auctionContinues: Boolean = true
+            for (player in activePlayers) {
+                // 最新のオークション状態を取得
+                if (auction is com.monopoly.domain.model.game.Auction.InProgress) {
+                    inProgress = auction
+                }
+
+                val currentBidAmount: Int? = inProgress.currentBid?.amount
+                val bidAmount: Int? = player.strategy.decideAuctionBid(
+                    property = property,
+                    currentBid = currentBidAmount,
+                    currentMoney = player.money,
+                )
+
+                auction = if (bidAmount != null) {
+                    // 入札
+                    gameState.events.add(
+                        GameEvent.PlayerBidInAuction(
+                            turnNumber = gameState.turnNumber,
+                            timestamp = System.currentTimeMillis(),
+                            playerName = player.name,
+                            propertyName = property.name,
+                            bidAmount = bidAmount,
+                        ),
+                    )
+                    auction.placeBid(player, bidAmount)
+                } else {
+                    // パス
+                    gameState.events.add(
+                        GameEvent.PlayerPassedInAuction(
+                            turnNumber = gameState.turnNumber,
+                            timestamp = System.currentTimeMillis(),
+                            playerName = player.name,
+                            propertyName = property.name,
+                        ),
+                    )
+                    auction.pass(player)
+                }
+
+                // オークションが完了したらループ終了
+                if (auction is com.monopoly.domain.model.game.Auction.Completed) {
+                    auctionContinues = false
+                    break
+                }
+            }
+
+            if (!auctionContinues) {
+                break
+            }
+        }
+
+        // オークション完了処理
+        if (auction is com.monopoly.domain.model.game.Auction.Completed) {
+            val completed: com.monopoly.domain.model.game.Auction.Completed = auction
+
+            gameState.events.add(
+                GameEvent.AuctionCompleted(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    propertyName = property.name,
+                    winnerName = completed.winner?.name,
+                    winningBid = completed.winningBid,
+                ),
+            )
+
+            // 落札者がいる場合、プロパティを譲渡
+            if (completed.winner != null) {
+                val winner: Player = completed.winner
+                winner.pay(Money(completed.winningBid))
+                val ownedProperty: Property = property.withOwner(winner)
+                winner.acquireProperty(ownedProperty)
+                gameState.updateProperty(ownedProperty)
+            }
         }
     }
 }
