@@ -1,7 +1,7 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.property.StreetProperty
 
 /**

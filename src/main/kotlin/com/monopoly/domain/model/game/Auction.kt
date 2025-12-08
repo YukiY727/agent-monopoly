@@ -42,7 +42,10 @@ sealed class Auction {
      * @param amount 入札額
      * @return 更新されたオークション状態
      */
-    abstract fun placeBid(player: Player, amount: Int): Auction
+    abstract fun placeBid(
+        player: Player,
+        amount: Int,
+    ): Auction
 
     /**
      * パス処理
@@ -51,6 +54,7 @@ sealed class Auction {
      * @return 更新されたオークション状態
      */
     abstract fun pass(player: Player): Auction
+
     /**
      * 進行中のオークション
      *
@@ -73,7 +77,10 @@ sealed class Auction {
          * @return 更新されたオークション状態
          * @throws IllegalArgumentException 無効な入札の場合
          */
-        override fun placeBid(player: Player, amount: Int): Auction {
+        override fun placeBid(
+            player: Player,
+            amount: Int,
+        ): Auction {
             // バリデーション
             require(player in eligiblePlayers) { "Player is not eligible for this auction" }
             require(player !in passedPlayers) { "Player has already passed" }
@@ -158,7 +165,10 @@ sealed class Auction {
         val winner: Player?,
         val winningBid: Int,
     ) : Auction() {
-        override fun placeBid(player: Player, amount: Int): Auction {
+        override fun placeBid(
+            player: Player,
+            amount: Int,
+        ): Auction {
             throw IllegalStateException("Auction has already completed")
         }
 
@@ -175,7 +185,10 @@ sealed class Auction {
      * @return 開始されたオークション
      */
     companion object {
-        fun start(property: Property, players: List<Player>): Auction {
+        fun start(
+            property: Property,
+            players: List<Player>,
+        ): Auction {
             require(players.isNotEmpty()) { "At least one player is required for auction" }
             return InProgress(property, players)
         }

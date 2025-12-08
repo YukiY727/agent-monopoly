@@ -3,7 +3,7 @@ package com.monopoly.domain.model.card
 import java.util.Collections
 
 class CardDeck(
-    initialCards: List<Card>
+    initialCards: List<Card>,
 ) {
     private val cards: ArrayDeque<Card> = ArrayDeque(initialCards)
 
@@ -28,7 +28,7 @@ class CardDeck(
     fun returnCard(card: Card) {
         cards.addLast(card)
     }
-    
+
     val size: Int
         get() = cards.size
 }

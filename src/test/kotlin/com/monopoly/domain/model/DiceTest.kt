@@ -82,8 +82,6 @@ class DiceTest : StringSpec({
         result.total shouldBe 12
     }
 
-
-
     // Phase 2: DiceRoll返却機能のテスト
 
     // TC-243: DiceRollのtotalが正しく計算される

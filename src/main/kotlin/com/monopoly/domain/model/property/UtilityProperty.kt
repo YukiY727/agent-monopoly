@@ -21,8 +21,7 @@ data class UtilityProperty(
     override val rentValue: Money
         get() = Money(calculateRent())
 
-    override fun withOwner(newOwner: Player): UtilityProperty =
-        copy(ownership = PropertyOwnership.OwnedByPlayer(newOwner))
+    override fun withOwner(newOwner: Player): UtilityProperty = copy(ownership = PropertyOwnership.OwnedByPlayer(newOwner))
 
     override fun withoutOwner(): UtilityProperty = copy(ownership = PropertyOwnership.Unowned)
 
@@ -44,8 +43,7 @@ data class UtilityProperty(
         return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = false))
     }
 
-    override fun isMortgaged(): Boolean =
-        ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
+    override fun isMortgaged(): Boolean = ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
 
     /**
      * 所有する公共施設の数とサイコロの目に基づいて家賃を計算
@@ -53,12 +51,16 @@ data class UtilityProperty(
      * @param diceRoll サイコロの合計値
      * @return 適用される家賃額
      */
-    fun calculateRentWithDice(utilityCount: Int, diceRoll: Int): Int {
-        val multiplier = when (utilityCount) {
-            1 -> 4
-            2 -> 10
-            else -> 0
-        }
+    fun calculateRentWithDice(
+        utilityCount: Int,
+        diceRoll: Int,
+    ): Int {
+        val multiplier =
+            when (utilityCount) {
+                1 -> 4
+                2 -> 10
+                else -> 0
+            }
         return diceRoll * multiplier
     }
 

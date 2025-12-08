@@ -48,8 +48,7 @@ data class StreetProperty(
         return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = false))
     }
 
-    override fun isMortgaged(): Boolean =
-        ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
+    override fun isMortgaged(): Boolean = ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
 
     /**
      * 現在の建物状態に基づいて家賃を計算

@@ -13,9 +13,9 @@ class JailSystemTest : StringSpec({
     // Then: jailStatusがJailedになる
     "should send player to jail" {
         val player = Player("Alice", AlwaysPlayerStrategy())
-        
+
         player.sendToJail()
-        
+
         player.state.jailStatus shouldBe JailStatus.Jailed
         player.state.turnsInJail shouldBe 0
     }
@@ -28,9 +28,9 @@ class JailSystemTest : StringSpec({
         val player = Player("Alice", AlwaysPlayerStrategy())
         player.sendToJail()
         val initialMoney = player.money
-        
+
         player.escapeJailByPayment()
-        
+
         player.state.jailStatus shouldBe JailStatus.Free
         player.state.turnsInJail shouldBe 0
         player.money shouldBe initialMoney - 50
@@ -43,12 +43,12 @@ class JailSystemTest : StringSpec({
     "should increment turns in jail" {
         val player = Player("Alice", AlwaysPlayerStrategy())
         player.sendToJail()
-        
+
         player.incrementJailTurn()
-        
+
         player.state.jailStatus shouldBe JailStatus.Jailed
         player.state.turnsInJail shouldBe 1
-        
+
         player.incrementJailTurn()
         player.state.turnsInJail shouldBe 2
     }
@@ -61,9 +61,9 @@ class JailSystemTest : StringSpec({
         val player = Player("Alice", AlwaysPlayerStrategy())
         player.sendToJail()
         val initialMoney = player.money
-        
+
         player.escapeJailByDoubles()
-        
+
         player.state.jailStatus shouldBe JailStatus.Free
         player.state.turnsInJail shouldBe 0
         player.money shouldBe initialMoney
@@ -77,9 +77,9 @@ class JailSystemTest : StringSpec({
         val player = Player("Alice", AlwaysPlayerStrategy())
         player.sendToJail()
         val initialMoney = player.money
-        
+
         player.forceEscapeJail()
-        
+
         player.state.jailStatus shouldBe JailStatus.Free
         player.state.turnsInJail shouldBe 0
         player.money shouldBe initialMoney - 50

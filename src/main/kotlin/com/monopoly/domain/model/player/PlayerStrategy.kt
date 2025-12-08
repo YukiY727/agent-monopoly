@@ -23,6 +23,7 @@ interface PlayerStrategy {
     fun shouldPayToEscapeJail(currentMoney: Int): Boolean
 
     // Phase 7: オークション関連
+
     /**
      * オークションでの入札を決定
      *

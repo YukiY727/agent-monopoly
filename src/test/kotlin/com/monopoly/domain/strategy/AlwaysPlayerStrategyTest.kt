@@ -1,8 +1,8 @@
 package com.monopoly.domain.strategy
 
+import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.property.Property
-import com.monopoly.domain.model.PropertyTestFixtures
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -95,11 +95,12 @@ class AlwaysPlayerStrategyTest : StringSpec({
 
     "should pass when initial bid would exceed 80% of money (default)" {
         val strategy = AlwaysPlayerStrategy()
+        // High price property
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
                 position = 1,
-                price = 500,  // High price property
+                price = 500,
                 baseRent = 2,
                 colorGroup = ColorGroup.BROWN,
             )
@@ -114,11 +115,12 @@ class AlwaysPlayerStrategyTest : StringSpec({
 
     // Auction bid tests with custom aggressive parameters
     "should bid 50% of property price with aggressive strategy" {
-        val aggressiveStrategy = AlwaysPlayerStrategy(
-            maxBidRatio = 0.9,
-            initialBidRatio = 0.5,
-            bidIncrement = 20
-        )
+        val aggressiveStrategy =
+            AlwaysPlayerStrategy(
+                maxBidRatio = 0.9,
+                initialBidRatio = 0.5,
+                bidIncrement = 20,
+            )
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -135,11 +137,12 @@ class AlwaysPlayerStrategyTest : StringSpec({
     }
 
     "should bid current bid + 20 with aggressive strategy" {
-        val aggressiveStrategy = AlwaysPlayerStrategy(
-            maxBidRatio = 0.9,
-            initialBidRatio = 0.5,
-            bidIncrement = 20
-        )
+        val aggressiveStrategy =
+            AlwaysPlayerStrategy(
+                maxBidRatio = 0.9,
+                initialBidRatio = 0.5,
+                bidIncrement = 20,
+            )
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -157,11 +160,12 @@ class AlwaysPlayerStrategyTest : StringSpec({
 
     // Auction bid tests with custom cautious parameters
     "should bid 20% of property price with cautious strategy" {
-        val cautiousStrategy = AlwaysPlayerStrategy(
-            maxBidRatio = 0.5,
-            initialBidRatio = 0.2,
-            bidIncrement = 5
-        )
+        val cautiousStrategy =
+            AlwaysPlayerStrategy(
+                maxBidRatio = 0.5,
+                initialBidRatio = 0.2,
+                bidIncrement = 5,
+            )
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -178,11 +182,12 @@ class AlwaysPlayerStrategyTest : StringSpec({
     }
 
     "should bid current bid + 5 with cautious strategy" {
-        val cautiousStrategy = AlwaysPlayerStrategy(
-            maxBidRatio = 0.5,
-            initialBidRatio = 0.2,
-            bidIncrement = 5
-        )
+        val cautiousStrategy =
+            AlwaysPlayerStrategy(
+                maxBidRatio = 0.5,
+                initialBidRatio = 0.2,
+                bidIncrement = 5,
+            )
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",
@@ -199,11 +204,12 @@ class AlwaysPlayerStrategyTest : StringSpec({
     }
 
     "should pass when bid would exceed max with cautious strategy" {
-        val cautiousStrategy = AlwaysPlayerStrategy(
-            maxBidRatio = 0.5,
-            initialBidRatio = 0.2,
-            bidIncrement = 5
-        )
+        val cautiousStrategy =
+            AlwaysPlayerStrategy(
+                maxBidRatio = 0.5,
+                initialBidRatio = 0.2,
+                bidIncrement = 5,
+            )
         val property: Property =
             PropertyTestFixtures.createTestProperty(
                 name = "Mediterranean Avenue",

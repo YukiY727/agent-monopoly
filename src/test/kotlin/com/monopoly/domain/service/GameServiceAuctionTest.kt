@@ -31,7 +31,10 @@ class GameServiceAuctionTest : StringSpec({
      * 常に購入を拒否し、オークションで入札する戦略
      */
     class AuctionBidderStrategy(private val bidAmount: Int?) : PlayerStrategy {
-        override fun shouldBuy(property: Property, currentMoney: Int): Boolean = false
+        override fun shouldBuy(
+            property: Property,
+            currentMoney: Int,
+        ): Boolean = false
 
         override fun shouldBuildHouse(
             property: com.monopoly.domain.model.property.StreetProperty,
@@ -56,7 +59,10 @@ class GameServiceAuctionTest : StringSpec({
      * 常に購入を拒否し、オークションでパスする戦略
      */
     class AuctionPassStrategy : PlayerStrategy {
-        override fun shouldBuy(property: Property, currentMoney: Int): Boolean = false
+        override fun shouldBuy(
+            property: Property,
+            currentMoney: Int,
+        ): Boolean = false
 
         override fun shouldBuildHouse(
             property: com.monopoly.domain.model.property.StreetProperty,
@@ -83,22 +89,24 @@ class GameServiceAuctionTest : StringSpec({
         val bob: Player = Player("Bob", AuctionPassStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val property: StreetProperty = StreetProperty(
-            name = "Mediterranean Avenue",
-            position = 3,
-            price = 60,
-            rent = PropertyRent(2, 10, 30, 90, 160, 250),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.BROWN,
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 3,
+                price = 60,
+                rent = PropertyRent(2, 10, 30, 90, 160, 250),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            )
 
-        val spaces: List<Space> = listOf(
-            Space.Go(0),
-            Space.Other(1, SpaceType.FREE_PARKING),
-            Space.Other(2, SpaceType.FREE_PARKING),
-            Space.PropertySpace(3, property),
-        ) + List(36) { Space.Other(it + 4, SpaceType.FREE_PARKING) }
+        val spaces: List<Space> =
+            listOf(
+                Space.Go(0),
+                Space.Other(1, SpaceType.FREE_PARKING),
+                Space.Other(2, SpaceType.FREE_PARKING),
+                Space.PropertySpace(3, property),
+            ) + List(36) { Space.Other(it + 4, SpaceType.FREE_PARKING) }
 
         val board: Board = Board(spaces)
         val gameState: GameState = GameState(players, board)
@@ -124,22 +132,24 @@ class GameServiceAuctionTest : StringSpec({
         val charlie: Player = Player("Charlie", AuctionPassStrategy())
         val players: List<Player> = listOf(alice, bob, charlie)
 
-        val property: StreetProperty = StreetProperty(
-            name = "Baltic Avenue",
-            position = 3,
-            price = 60,
-            rent = PropertyRent(4, 20, 60, 180, 320, 450),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.BROWN,
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Baltic Avenue",
+                position = 3,
+                price = 60,
+                rent = PropertyRent(4, 20, 60, 180, 320, 450),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            )
 
-        val spaces: List<Space> = listOf(
-            Space.Go(0),
-            Space.Other(1, SpaceType.FREE_PARKING),
-            Space.Other(2, SpaceType.FREE_PARKING),
-            Space.PropertySpace(3, property),
-        ) + List(36) { Space.Other(it + 4, SpaceType.FREE_PARKING) }
+        val spaces: List<Space> =
+            listOf(
+                Space.Go(0),
+                Space.Other(1, SpaceType.FREE_PARKING),
+                Space.Other(2, SpaceType.FREE_PARKING),
+                Space.PropertySpace(3, property),
+            ) + List(36) { Space.Other(it + 4, SpaceType.FREE_PARKING) }
 
         val board: Board = Board(spaces)
         val gameState: GameState = GameState(players, board)
@@ -174,21 +184,24 @@ class GameServiceAuctionTest : StringSpec({
         val bob: Player = Player("Bob", AuctionPassStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val property: StreetProperty = StreetProperty(
-            name = "Oriental Avenue",
-            position = 6,
-            price = 100,
-            rent = PropertyRent(6, 30, 90, 270, 400, 550),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.LIGHT_BLUE,
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Oriental Avenue",
+                position = 6,
+                price = 100,
+                rent = PropertyRent(6, 30, 90, 270, 400, 550),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
 
-        val spaces: List<Space> = listOf(
-            Space.Go(0),
-        ) + List(5) { Space.Other(it + 1, SpaceType.FREE_PARKING) } + listOf(
-            Space.PropertySpace(6, property),
-        ) + List(33) { Space.Other(it + 7, SpaceType.FREE_PARKING) }
+        val spaces: List<Space> =
+            listOf(
+                Space.Go(0),
+            ) + List(5) { Space.Other(it + 1, SpaceType.FREE_PARKING) } +
+                listOf(
+                    Space.PropertySpace(6, property),
+                ) + List(33) { Space.Other(it + 7, SpaceType.FREE_PARKING) }
 
         val board: Board = Board(spaces)
         val gameState: GameState = GameState(players, board)
@@ -224,7 +237,10 @@ class GameServiceAuctionTest : StringSpec({
         class MultiBidderStrategy(private val bids: List<Int?>) : PlayerStrategy {
             private var bidIndex = 0
 
-            override fun shouldBuy(property: Property, currentMoney: Int): Boolean = false
+            override fun shouldBuy(
+                property: Property,
+                currentMoney: Int,
+            ): Boolean = false
 
             override fun shouldBuildHouse(
                 property: com.monopoly.domain.model.property.StreetProperty,
@@ -253,21 +269,24 @@ class GameServiceAuctionTest : StringSpec({
         val charlie: Player = Player("Charlie", MultiBidderStrategy(listOf(70)))
         val players: List<Player> = listOf(alice, bob, charlie)
 
-        val property: StreetProperty = StreetProperty(
-            name = "Vermont Avenue",
-            position = 8,
-            price = 100,
-            rent = PropertyRent(6, 30, 90, 270, 400, 550),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.LIGHT_BLUE,
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Vermont Avenue",
+                position = 8,
+                price = 100,
+                rent = PropertyRent(6, 30, 90, 270, 400, 550),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
 
-        val spaces: List<Space> = listOf(
-            Space.Go(0),
-        ) + List(7) { Space.Other(it + 1, SpaceType.FREE_PARKING) } + listOf(
-            Space.PropertySpace(8, property),
-        ) + List(31) { Space.Other(it + 9, SpaceType.FREE_PARKING) }
+        val spaces: List<Space> =
+            listOf(
+                Space.Go(0),
+            ) + List(7) { Space.Other(it + 1, SpaceType.FREE_PARKING) } +
+                listOf(
+                    Space.PropertySpace(8, property),
+                ) + List(31) { Space.Other(it + 9, SpaceType.FREE_PARKING) }
 
         val board: Board = Board(spaces)
         val gameState: GameState = GameState(players, board)
@@ -304,21 +323,24 @@ class GameServiceAuctionTest : StringSpec({
         val bob: Player = Player("Bob", AuctionPassStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val property: StreetProperty = StreetProperty(
-            name = "Connecticut Avenue",
-            position = 9,
-            price = 120,
-            rent = PropertyRent(8, 40, 100, 300, 450, 600),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.LIGHT_BLUE,
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Connecticut Avenue",
+                position = 9,
+                price = 120,
+                rent = PropertyRent(8, 40, 100, 300, 450, 600),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
 
-        val spaces: List<Space> = listOf(
-            Space.Go(0),
-        ) + List(8) { Space.Other(it + 1, SpaceType.FREE_PARKING) } + listOf(
-            Space.PropertySpace(9, property),
-        ) + List(30) { Space.Other(it + 10, SpaceType.FREE_PARKING) }
+        val spaces: List<Space> =
+            listOf(
+                Space.Go(0),
+            ) + List(8) { Space.Other(it + 1, SpaceType.FREE_PARKING) } +
+                listOf(
+                    Space.PropertySpace(9, property),
+                ) + List(30) { Space.Other(it + 10, SpaceType.FREE_PARKING) }
 
         val board: Board = Board(spaces)
         val gameState: GameState = GameState(players, board)
@@ -329,12 +351,13 @@ class GameServiceAuctionTest : StringSpec({
         gameService.executeTurn(gameState, dice)
 
         // イベントの順序を確認
-        val auctionEvents: List<GameEvent> = gameState.events.filter {
-            it is GameEvent.AuctionStarted ||
-                it is GameEvent.PlayerBidInAuction ||
-                it is GameEvent.PlayerPassedInAuction ||
-                it is GameEvent.AuctionCompleted
-        }
+        val auctionEvents: List<GameEvent> =
+            gameState.events.filter {
+                it is GameEvent.AuctionStarted ||
+                    it is GameEvent.PlayerBidInAuction ||
+                    it is GameEvent.PlayerPassedInAuction ||
+                    it is GameEvent.AuctionCompleted
+            }
 
         auctionEvents.size shouldBe 4
 

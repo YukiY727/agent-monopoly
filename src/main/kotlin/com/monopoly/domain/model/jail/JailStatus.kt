@@ -8,12 +8,12 @@ sealed class JailStatus {
      * 自由（刑務所にいない）
      */
     object Free : JailStatus()
-    
+
     /**
      * 刑務所マスを訪問（収監されていない）
      */
     object Visiting : JailStatus()
-    
+
     /**
      * 収監中
      */

@@ -14,20 +14,22 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-001: Start a new auction
     "Start a new auction with property and players" {
-        val property: StreetProperty = StreetProperty(
-            name = "Mediterranean Avenue",
-            position = 1,
-            price = 60,
-            rent = PropertyRent(2, 10, 30, 90, 160, 250),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.BROWN
-        )
-        val players: List<Player> = listOf(
-            Player("Alice", AlwaysPlayerStrategy()),
-            Player("Bob", AlwaysPlayerStrategy()),
-            Player("Charlie", AlwaysPlayerStrategy())
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = PropertyRent(2, 10, 30, 90, 160, 250),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            )
+        val players: List<Player> =
+            listOf(
+                Player("Alice", AlwaysPlayerStrategy()),
+                Player("Bob", AlwaysPlayerStrategy()),
+                Player("Charlie", AlwaysPlayerStrategy()),
+            )
 
         val auction: Auction = Auction.start(property, players)
 
@@ -41,15 +43,16 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-002: Player makes a bid
     "Player can make a bid" {
-        val property: StreetProperty = StreetProperty(
-            name = "Baltic Avenue",
-            position = 3,
-            price = 60,
-            rent = PropertyRent(4, 20, 60, 180, 320, 450),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.BROWN
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Baltic Avenue",
+                position = 3,
+                price = 60,
+                rent = PropertyRent(4, 20, 60, 180, 320, 450),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
@@ -65,15 +68,16 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-003: Player passes
     "Player can pass" {
-        val property: StreetProperty = StreetProperty(
-            name = "Oriental Avenue",
-            position = 6,
-            price = 100,
-            rent = PropertyRent(6, 30, 90, 270, 400, 550),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.LIGHT_BLUE
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Oriental Avenue",
+                position = 6,
+                price = 100,
+                rent = PropertyRent(6, 30, 90, 270, 400, 550),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val charlie: Player = Player("Charlie", AlwaysPlayerStrategy())
@@ -90,24 +94,26 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-004: All players except one pass, that player wins
     "When all players except one pass, that player wins the auction" {
-        val property: StreetProperty = StreetProperty(
-            name = "Vermont Avenue",
-            position = 8,
-            price = 100,
-            rent = PropertyRent(6, 30, 90, 270, 400, 550),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.LIGHT_BLUE
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Vermont Avenue",
+                position = 8,
+                price = 100,
+                rent = PropertyRent(6, 30, 90, 270, 400, 550),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val charlie: Player = Player("Charlie", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob, charlie)
 
-        val auction: Auction = Auction.start(property, players)
-            .placeBid(alice, 20)
-            .pass(bob)
-            .pass(charlie)
+        val auction: Auction =
+            Auction.start(property, players)
+                .placeBid(alice, 20)
+                .pass(bob)
+                .pass(charlie)
 
         auction.shouldBeInstanceOf<Auction.Completed>()
         val completed: Auction.Completed = auction as Auction.Completed
@@ -117,15 +123,16 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-005: Minimum bid is $1
     "Minimum bid must be at least $1" {
-        val property: StreetProperty = StreetProperty(
-            name = "Connecticut Avenue",
-            position = 9,
-            price = 120,
-            rent = PropertyRent(8, 40, 100, 300, 450, 600),
-            houseCost = 50,
-            hotelCost = 50,
-            colorGroup = ColorGroup.LIGHT_BLUE
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Connecticut Avenue",
+                position = 9,
+                price = 120,
+                rent = PropertyRent(8, 40, 100, 300, 450, 600),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
@@ -139,21 +146,23 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-006: Bid must be higher than current bid
     "Bid must be higher than current bid" {
-        val property: StreetProperty = StreetProperty(
-            name = "St. Charles Place",
-            position = 11,
-            price = 140,
-            rent = PropertyRent(10, 50, 150, 450, 625, 750),
-            houseCost = 100,
-            hotelCost = 100,
-            colorGroup = ColorGroup.PINK
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "St. Charles Place",
+                position = 11,
+                price = 140,
+                rent = PropertyRent(10, 50, 150, 450, 625, 750),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.PINK,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val auction: Auction = Auction.start(property, players)
-            .placeBid(alice, 20)
+        val auction: Auction =
+            Auction.start(property, players)
+                .placeBid(alice, 20)
 
         shouldThrow<IllegalArgumentException> {
             auction.placeBid(bob, 20)
@@ -166,15 +175,16 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-007: Cannot bid more than player's money
     "Cannot bid more than player's money" {
-        val property: StreetProperty = StreetProperty(
-            name = "States Avenue",
-            position = 13,
-            price = 140,
-            rent = PropertyRent(10, 50, 150, 450, 625, 750),
-            houseCost = 100,
-            hotelCost = 100,
-            colorGroup = ColorGroup.PINK
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "States Avenue",
+                position = 13,
+                price = 140,
+                rent = PropertyRent(10, 50, 150, 450, 625, 750),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.PINK,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
@@ -188,21 +198,23 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-008: Player who passed cannot bid
     "Player who passed cannot bid again" {
-        val property: StreetProperty = StreetProperty(
-            name = "Virginia Avenue",
-            position = 14,
-            price = 160,
-            rent = PropertyRent(12, 60, 180, 500, 700, 900),
-            houseCost = 100,
-            hotelCost = 100,
-            colorGroup = ColorGroup.PINK
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Virginia Avenue",
+                position = 14,
+                price = 160,
+                rent = PropertyRent(12, 60, 180, 500, 700, 900),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.PINK,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val auction: Auction = Auction.start(property, players)
-            .pass(alice)
+        val auction: Auction =
+            Auction.start(property, players)
+                .pass(alice)
 
         shouldThrow<IllegalArgumentException> {
             auction.placeBid(alice, 10)
@@ -211,22 +223,24 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-009: No bids means auction fails
     "When all players pass without bidding, auction fails" {
-        val property: StreetProperty = StreetProperty(
-            name = "St. James Place",
-            position = 16,
-            price = 180,
-            rent = PropertyRent(14, 70, 200, 550, 750, 950),
-            houseCost = 100,
-            hotelCost = 100,
-            colorGroup = ColorGroup.ORANGE
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "St. James Place",
+                position = 16,
+                price = 180,
+                rent = PropertyRent(14, 70, 200, 550, 750, 950),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.ORANGE,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val auction: Auction = Auction.start(property, players)
-            .pass(alice)
-            .pass(bob)
+        val auction: Auction =
+            Auction.start(property, players)
+                .pass(alice)
+                .pass(bob)
 
         auction.shouldBeInstanceOf<Auction.Completed>()
         val completed: Auction.Completed = auction as Auction.Completed
@@ -236,22 +250,24 @@ class AuctionTest : StringSpec({
 
     // TC-AUCTION-010: Cannot operate on completed auction
     "Cannot place bid or pass on completed auction" {
-        val property: StreetProperty = StreetProperty(
-            name = "Tennessee Avenue",
-            position = 18,
-            price = 180,
-            rent = PropertyRent(14, 70, 200, 550, 750, 950),
-            houseCost = 100,
-            hotelCost = 100,
-            colorGroup = ColorGroup.ORANGE
-        )
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Tennessee Avenue",
+                position = 18,
+                price = 180,
+                rent = PropertyRent(14, 70, 200, 550, 750, 950),
+                houseCost = 100,
+                hotelCost = 100,
+                colorGroup = ColorGroup.ORANGE,
+            )
         val alice: Player = Player("Alice", AlwaysPlayerStrategy())
         val bob: Player = Player("Bob", AlwaysPlayerStrategy())
         val players: List<Player> = listOf(alice, bob)
 
-        val auction: Auction = Auction.start(property, players)
-            .placeBid(alice, 50)
-            .pass(bob)
+        val auction: Auction =
+            Auction.start(property, players)
+                .placeBid(alice, 50)
+                .pass(bob)
 
         auction.shouldBeInstanceOf<Auction.Completed>()
 

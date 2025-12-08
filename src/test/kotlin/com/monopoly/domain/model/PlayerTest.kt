@@ -429,4 +429,20 @@ class PlayerTest : StringSpec({
         player.ownedProperties.size shouldBe 0
         player.isBankrupt shouldBe true
     }
+
+    // TC-025: hasGetOutOfJailFreeCard when player doesn't have card
+    "should return false when player has no Get Out of Jail Free card" {
+        val player = Player(name = "Alice", strategy = AlwaysPlayerStrategy())
+
+        player.hasGetOutOfJailFreeCard() shouldBe false
+    }
+
+    // TC-026: useGetOutOfJailFreeCard when player doesn't have card
+    "should return null when using Get Out of Jail Free card without having one" {
+        val player = Player(name = "Bob", strategy = AlwaysPlayerStrategy())
+
+        val card = player.useGetOutOfJailFreeCard()
+
+        card shouldBe null
+    }
 })
