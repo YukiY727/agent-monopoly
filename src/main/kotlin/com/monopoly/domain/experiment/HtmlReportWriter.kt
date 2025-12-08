@@ -139,6 +139,46 @@ class HtmlReportWriter(
                     font-size: 12px;
                     font-weight: bold;
                 }
+                .bar-fill-green {
+                    background: linear-gradient(90deg, #27ae60, #229954);
+                }
+                .bar-value {
+                    color: white;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                .histogram {
+                    display: flex;
+                    align-items: flex-end;
+                    gap: 5px;
+                    margin-top: 15px;
+                    height: 150px;
+                }
+                .histogram-bar {
+                    flex: 1;
+                    background: linear-gradient(180deg, #3498db, #2980b9);
+                    border-radius: 3px 3px 0 0;
+                    position: relative;
+                    min-height: 10px;
+                }
+                .histogram-label {
+                    position: absolute;
+                    bottom: -25px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 11px;
+                    color: #7f8c8d;
+                    white-space: nowrap;
+                }
+                .histogram-value {
+                    position: absolute;
+                    top: -20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 11px;
+                    color: #34495e;
+                    font-weight: bold;
+                }
                 table {
                     width: 100%;
                     border-collapse: collapse;
@@ -181,6 +221,8 @@ class HtmlReportWriter(
 
             ${generateSummarySection(aggregated)}
             ${generateWinRatesSection(aggregated)}
+            ${generateAverageFinalAssetsSection(aggregated)}
+            ${generateTurnCountDistributionSection(statistics)}
             ${generateGameDetailsSection(statistics)}
         </body>
         </html>
@@ -231,6 +273,86 @@ class HtmlReportWriter(
                 <h2>Win Rates</h2>
                 <div class="bar-chart">
                     $winRatesHtml
+                </div>
+            </div>
+        """.trimIndent()
+    }
+
+    private fun generateAverageFinalAssetsSection(aggregated: AggregatedStatistics): String {
+        // 最大値を取得してスケーリング
+        val maxAssets: Double = aggregated.averageFinalAssets.values.maxOrNull() ?: 1.0
+
+        val assetsHtml: String =
+            aggregated.averageFinalAssets
+                .toList()
+                .sortedByDescending { it.second }
+                .joinToString("\n") { (player, assets) ->
+                    val percentage: Int = ((assets / maxAssets) * 100).toInt()
+                    val formattedAssets: String = "%.0f".format(assets)
+                    """
+                    <div class="bar-item">
+                        <div class="bar-label">$player</div>
+                        <div class="bar-container">
+                            <div class="bar-fill bar-fill-green" style="width: $percentage%">
+                                <span class="bar-value">$$formattedAssets</span>
+                            </div>
+                        </div>
+                    </div>
+                    """.trimIndent()
+                }
+
+        return """
+            <div class="win-rates">
+                <h2>Average Final Assets</h2>
+                <div class="bar-chart">
+                    $assetsHtml
+                </div>
+            </div>
+        """.trimIndent()
+    }
+
+    private fun generateTurnCountDistributionSection(statistics: List<GameStatistics>): String {
+        if (statistics.isEmpty()) {
+            return ""
+        }
+
+        // ターン数を10の倍数でグループ化
+        val minTurn: Int = statistics.minOf { it.turnCount }
+        val maxTurn: Int = statistics.maxOf { it.turnCount }
+
+        // ビンの範囲を計算（10ターン刻み）
+        val binSize = 10
+        val bins: MutableMap<Int, Int> = mutableMapOf()
+
+        statistics.forEach { stat ->
+            val bin: Int = (stat.turnCount / binSize) * binSize
+            bins[bin] = bins.getOrDefault(bin, 0) + 1
+        }
+
+        // 最大カウントを取得（高さのスケーリング用）
+        val maxCount: Int = bins.values.maxOrNull() ?: 1
+
+        // ヒストグラムのHTMLを生成
+        val histogramHtml: String =
+            bins
+                .toList()
+                .sortedBy { it.first }
+                .joinToString("\n") { (bin, count) ->
+                    val height: Double = (count.toDouble() / maxCount) * 100
+                    val label: String = "$bin-${bin + binSize - 1}"
+                    """
+                    <div class="histogram-bar" style="height: $height%">
+                        <div class="histogram-value">$count</div>
+                        <div class="histogram-label">$label</div>
+                    </div>
+                    """.trimIndent()
+                }
+
+        return """
+            <div class="win-rates">
+                <h2>Turn Count Distribution</h2>
+                <div class="histogram">
+                    $histogramHtml
                 </div>
             </div>
         """.trimIndent()
