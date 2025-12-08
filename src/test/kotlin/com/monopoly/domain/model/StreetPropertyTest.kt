@@ -277,4 +277,180 @@ class StreetPropertyTest : StringSpec({
 
         property.rentValue shouldBe Money(250)
     }
+
+    // TC-023: Mortgage street property (Phase 6)
+    "Street property can be mortgaged" {
+        val player = Player("Alice", AlwaysPlayerStrategy())
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            ).withOwner(player)
+
+        property.isMortgaged() shouldBe false
+
+        val mortgagedProperty: StreetProperty = property.mortgage()
+
+        mortgagedProperty.isMortgaged() shouldBe true
+        mortgagedProperty.mortgageValue shouldBe Money(30) // 60 / 2
+    }
+
+    // TC-024: Cannot mortgage unowned street property
+    "Cannot mortgage unowned street property" {
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            )
+
+        val exception =
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                property.mortgage()
+            }
+
+        exception.message shouldBe "Cannot mortgage unowned property"
+    }
+
+    // TC-025: Cannot mortgage already mortgaged street property
+    "Cannot mortgage already mortgaged street property" {
+        val player = Player("Bob", AlwaysPlayerStrategy())
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Park Place",
+                position = 37,
+                price = 350,
+                rent = createTestRent(base = 35),
+                houseCost = 200,
+                hotelCost = 200,
+                colorGroup = ColorGroup.DARK_BLUE,
+            ).withOwner(player).mortgage()
+
+        val exception =
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                property.mortgage()
+            }
+
+        exception.message shouldBe "Property is already mortgaged"
+    }
+
+    // TC-026: Cannot mortgage property with houses
+    "Cannot mortgage property with houses" {
+        val player = Player("Alice", AlwaysPlayerStrategy())
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 2),
+            ).withOwner(player)
+
+        val exception =
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                property.mortgage()
+            }
+
+        exception.message shouldBe "Cannot mortgage property with buildings"
+    }
+
+    // TC-027: Cannot mortgage property with hotel
+    "Cannot mortgage property with hotel" {
+        val player = Player("Bob", AlwaysPlayerStrategy())
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Boardwalk",
+                position = 39,
+                price = 400,
+                rent = createTestRent(base = 50),
+                houseCost = 200,
+                hotelCost = 200,
+                colorGroup = ColorGroup.DARK_BLUE,
+                buildings = PropertyBuildings(houseCount = 0, hasHotel = true),
+            ).withOwner(player)
+
+        val exception =
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                property.mortgage()
+            }
+
+        exception.message shouldBe "Cannot mortgage property with buildings"
+    }
+
+    // TC-028: Unmortgage street property
+    "Street property can be unmortgaged" {
+        val player = Player("Alice", AlwaysPlayerStrategy())
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = createTestRent(),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            ).withOwner(player).mortgage()
+
+        property.isMortgaged() shouldBe true
+
+        val unmortgagedProperty: StreetProperty = property.unmortgage()
+
+        unmortgagedProperty.isMortgaged() shouldBe false
+        unmortgagedProperty.unmortgageValue shouldBe Money(33) // (60 / 2) * 1.1 = 33
+    }
+
+    // TC-029: Cannot unmortgage unowned street property
+    "Cannot unmortgage unowned street property" {
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Park Place",
+                position = 37,
+                price = 350,
+                rent = createTestRent(base = 35),
+                houseCost = 200,
+                hotelCost = 200,
+                colorGroup = ColorGroup.DARK_BLUE,
+            )
+
+        val exception =
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                property.unmortgage()
+            }
+
+        exception.message shouldBe "Cannot unmortgage unowned property"
+    }
+
+    // TC-030: Cannot unmortgage non-mortgaged street property
+    "Cannot unmortgage non-mortgaged street property" {
+        val player = Player("Bob", AlwaysPlayerStrategy())
+        val property: StreetProperty =
+            StreetProperty(
+                name = "Boardwalk",
+                position = 39,
+                price = 400,
+                rent = createTestRent(base = 50),
+                houseCost = 200,
+                hotelCost = 200,
+                colorGroup = ColorGroup.DARK_BLUE,
+            ).withOwner(player)
+
+        val exception =
+            io.kotest.assertions.throwables.shouldThrow<IllegalArgumentException> {
+                property.unmortgage()
+            }
+
+        exception.message shouldBe "Property is not mortgaged"
+    }
 })

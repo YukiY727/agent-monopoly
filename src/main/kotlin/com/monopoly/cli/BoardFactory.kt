@@ -1,12 +1,11 @@
 package com.monopoly.cli
 
 import com.monopoly.domain.model.game.Board
-import com.monopoly.domain.model.property.ColorGroup
-import com.monopoly.domain.model.property.Property
-import com.monopoly.domain.model.property.StreetProperty
-import com.monopoly.domain.model.property.PropertyRent
 import com.monopoly.domain.model.game.Space
 import com.monopoly.domain.model.game.SpaceType
+import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.property.StreetProperty
 
 @Suppress("MagicNumber")
 private fun createPropertyRent(base: Int): PropertyRent =

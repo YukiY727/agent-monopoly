@@ -96,7 +96,7 @@ class ArchitectureTest : StringSpec({
             .resideInAPackage("..domain.model..")
             .should()
             .onlyBeAccessed()
-            .byAnyPackage("..domain..", "..cli..")
+            .byAnyPackage("..domain..", "..cli..", "..server..")
             .check(classes)
     }
 
@@ -153,7 +153,7 @@ class ArchitectureTest : StringSpec({
             .and()
             .areNotInterfaces()
             .and()
-            .areNotMemberClasses()  // Exclude companion objects and inner classes
+            .areNotMemberClasses() // Exclude companion objects and inner classes
             .and()
             .haveSimpleNameNotEndingWith("Test")
             .should()

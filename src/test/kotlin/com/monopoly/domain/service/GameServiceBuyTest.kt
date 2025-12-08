@@ -2,12 +2,12 @@ package com.monopoly.domain.service
 
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.BoardFixtures
-import com.monopoly.domain.model.property.ColorGroup
+import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.model.game.GameState
 import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.PropertyOwnership
-import com.monopoly.domain.model.PropertyTestFixtures
 import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

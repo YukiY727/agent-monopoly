@@ -1,8 +1,5 @@
 package com.monopoly.domain.service
 
-import com.monopoly.domain.event.GameEvent
-import com.monopoly.domain.model.core.BoardPosition
-import com.monopoly.domain.model.core.Money
 import com.monopoly.domain.model.game.Board
 import com.monopoly.domain.model.game.Dice
 import com.monopoly.domain.model.game.DiceRoll
@@ -22,24 +19,29 @@ class SpecialPropertyRentTest : StringSpec({
 
     class MockDice(private val rolls: List<DiceRoll>) : Dice {
         private var index = 0
+
         override fun roll(): DiceRoll {
             return rolls[index++ % rolls.size]
         }
     }
 
-    fun createBoardWithProperties(railroads: List<RailroadProperty>, utilities: List<UtilityProperty>): Board {
+    fun createBoardWithProperties(
+        railroads: List<RailroadProperty>,
+        utilities: List<UtilityProperty>,
+    ): Board {
         // Create a map of position to property
         val propertyMap = mutableMapOf<Int, Property>()
         railroads.forEach { propertyMap[it.position] = it }
         utilities.forEach { propertyMap[it.position] = it }
 
-        val spaces = List(40) { index ->
-            when {
-                propertyMap.containsKey(index) -> Space.PropertySpace(index, propertyMap[index]!!)
-                index == 0 -> Space.Go(0)
-                else -> Space.Other(index, SpaceType.FREE_PARKING)
+        val spaces =
+            List(40) { index ->
+                when {
+                    propertyMap.containsKey(index) -> Space.PropertySpace(index, propertyMap[index]!!)
+                    index == 0 -> Space.Go(0)
+                    else -> Space.Other(index, SpaceType.FREE_PARKING)
+                }
             }
-        }
         return Board(spaces)
     }
 
@@ -48,12 +50,13 @@ class SpecialPropertyRentTest : StringSpec({
         val player1 = Player("Alice", AlwaysPlayerStrategy())
         val player2 = Player("Bob", AlwaysPlayerStrategy())
 
-        val railroad = RailroadProperty(
-            name = "Reading Railroad",
-            position = 5,
-            price = 200,
-            ownership = PropertyOwnership.OwnedByPlayer(player1)
-        )
+        val railroad =
+            RailroadProperty(
+                name = "Reading Railroad",
+                position = 5,
+                price = 200,
+                ownership = PropertyOwnership.OwnedByPlayer(player1),
+            )
 
         // Add property to player's owned properties
         player1.acquireProperty(railroad)
@@ -79,19 +82,21 @@ class SpecialPropertyRentTest : StringSpec({
         val player1 = Player("Alice", AlwaysPlayerStrategy())
         val player2 = Player("Bob", AlwaysPlayerStrategy())
 
-        val railroad1 = RailroadProperty(
-            name = "Reading Railroad",
-            position = 5,
-            price = 200,
-            ownership = PropertyOwnership.OwnedByPlayer(player1)
-        )
+        val railroad1 =
+            RailroadProperty(
+                name = "Reading Railroad",
+                position = 5,
+                price = 200,
+                ownership = PropertyOwnership.OwnedByPlayer(player1),
+            )
 
-        val railroad2 = RailroadProperty(
-            name = "Pennsylvania Railroad",
-            position = 15,
-            price = 200,
-            ownership = PropertyOwnership.OwnedByPlayer(player1)
-        )
+        val railroad2 =
+            RailroadProperty(
+                name = "Pennsylvania Railroad",
+                position = 15,
+                price = 200,
+                ownership = PropertyOwnership.OwnedByPlayer(player1),
+            )
 
         // Add properties to player's owned properties
         player1.acquireProperty(railroad1)
@@ -118,12 +123,13 @@ class SpecialPropertyRentTest : StringSpec({
         val player1 = Player("Alice", AlwaysPlayerStrategy())
         val player2 = Player("Bob", AlwaysPlayerStrategy())
 
-        val railroads = listOf(
-            RailroadProperty("Reading Railroad", 5, 200, PropertyOwnership.OwnedByPlayer(player1)),
-            RailroadProperty("Pennsylvania Railroad", 15, 200, PropertyOwnership.OwnedByPlayer(player1)),
-            RailroadProperty("B&O Railroad", 25, 200, PropertyOwnership.OwnedByPlayer(player1)),
-            RailroadProperty("Short Line", 35, 200, PropertyOwnership.OwnedByPlayer(player1))
-        )
+        val railroads =
+            listOf(
+                RailroadProperty("Reading Railroad", 5, 200, PropertyOwnership.OwnedByPlayer(player1)),
+                RailroadProperty("Pennsylvania Railroad", 15, 200, PropertyOwnership.OwnedByPlayer(player1)),
+                RailroadProperty("B&O Railroad", 25, 200, PropertyOwnership.OwnedByPlayer(player1)),
+                RailroadProperty("Short Line", 35, 200, PropertyOwnership.OwnedByPlayer(player1)),
+            )
 
         // Add all properties to player's owned properties
         railroads.forEach { player1.acquireProperty(it) }
@@ -149,12 +155,13 @@ class SpecialPropertyRentTest : StringSpec({
         val player1 = Player("Alice", AlwaysPlayerStrategy())
         val player2 = Player("Bob", AlwaysPlayerStrategy())
 
-        val utility = UtilityProperty(
-            name = "Electric Company",
-            position = 12,
-            price = 150,
-            ownership = PropertyOwnership.OwnedByPlayer(player1)
-        )
+        val utility =
+            UtilityProperty(
+                name = "Electric Company",
+                position = 12,
+                price = 150,
+                ownership = PropertyOwnership.OwnedByPlayer(player1),
+            )
 
         // Add property to player's owned properties
         player1.acquireProperty(utility)
@@ -182,10 +189,11 @@ class SpecialPropertyRentTest : StringSpec({
         val player1 = Player("Alice", AlwaysPlayerStrategy())
         val player2 = Player("Bob", AlwaysPlayerStrategy())
 
-        val utilities = listOf(
-            UtilityProperty("Electric Company", 12, 150, PropertyOwnership.OwnedByPlayer(player1)),
-            UtilityProperty("Water Works", 28, 150, PropertyOwnership.OwnedByPlayer(player1))
-        )
+        val utilities =
+            listOf(
+                UtilityProperty("Electric Company", 12, 150, PropertyOwnership.OwnedByPlayer(player1)),
+                UtilityProperty("Water Works", 28, 150, PropertyOwnership.OwnedByPlayer(player1)),
+            )
 
         // Add all properties to player's owned properties
         utilities.forEach { player1.acquireProperty(it) }
@@ -211,12 +219,13 @@ class SpecialPropertyRentTest : StringSpec({
     "Player landing on own railroad should not pay rent" {
         val player1 = Player("Alice", AlwaysPlayerStrategy())
 
-        val railroad = RailroadProperty(
-            name = "Reading Railroad",
-            position = 5,
-            price = 200,
-            ownership = PropertyOwnership.OwnedByPlayer(player1)
-        )
+        val railroad =
+            RailroadProperty(
+                name = "Reading Railroad",
+                position = 5,
+                price = 200,
+                ownership = PropertyOwnership.OwnedByPlayer(player1),
+            )
 
         val board = createBoardWithProperties(listOf(railroad), emptyList())
         val gameState = GameState(listOf(player1), board)
@@ -238,12 +247,13 @@ class SpecialPropertyRentTest : StringSpec({
     "Player landing on own utility should not pay rent" {
         val player1 = Player("Alice", AlwaysPlayerStrategy())
 
-        val utility = UtilityProperty(
-            name = "Electric Company",
-            position = 12,
-            price = 150,
-            ownership = PropertyOwnership.OwnedByPlayer(player1)
-        )
+        val utility =
+            UtilityProperty(
+                name = "Electric Company",
+                position = 12,
+                price = 150,
+                ownership = PropertyOwnership.OwnedByPlayer(player1),
+            )
 
         val board = createBoardWithProperties(emptyList(), listOf(utility))
         val gameState = GameState(listOf(player1), board)

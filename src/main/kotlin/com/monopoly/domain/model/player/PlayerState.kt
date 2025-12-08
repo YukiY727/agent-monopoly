@@ -28,7 +28,6 @@ data class PlayerState(
             consecutiveDoubles = 0,
         )
 
-
     fun withProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.add(property))
 
     fun withoutProperty(property: Property): PlayerState = copy(ownedProperties = ownedProperties.remove(property))

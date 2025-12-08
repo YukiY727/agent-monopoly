@@ -1,8 +1,8 @@
 package com.monopoly.domain.event
 
+import com.monopoly.domain.model.card.CardType
 import com.monopoly.domain.model.jail.JailEscapeMethod
 import com.monopoly.domain.model.jail.JailReason
-import com.monopoly.domain.model.card.CardType
 
 /**
  * ゲーム内で発生するすべてのイベントを表すsealed class

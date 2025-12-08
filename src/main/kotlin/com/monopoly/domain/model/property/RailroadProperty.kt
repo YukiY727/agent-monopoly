@@ -23,8 +23,7 @@ data class RailroadProperty(
     override val rentValue: Money
         get() = Money(calculateRent())
 
-    override fun withOwner(newOwner: Player): RailroadProperty =
-        copy(ownership = PropertyOwnership.OwnedByPlayer(newOwner))
+    override fun withOwner(newOwner: Player): RailroadProperty = copy(ownership = PropertyOwnership.OwnedByPlayer(newOwner))
 
     override fun withoutOwner(): RailroadProperty = copy(ownership = PropertyOwnership.Unowned)
 
@@ -46,8 +45,7 @@ data class RailroadProperty(
         return copy(ownership = PropertyOwnership.OwnedByPlayer(ownerPlayer.player, isMortgaged = false))
     }
 
-    override fun isMortgaged(): Boolean =
-        ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
+    override fun isMortgaged(): Boolean = ownership is PropertyOwnership.OwnedByPlayer && ownership.isMortgaged
 
     /**
      * 所有する鉄道の数に基づいて家賃を計算
