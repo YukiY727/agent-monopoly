@@ -74,6 +74,14 @@ tasks.register<JavaExec>("runGame") {
     mainClass.set("com.monopoly.cli.MainKt")
 }
 
+// 戦略比較実験用タスク
+tasks.register<JavaExec>("runComparison") {
+    group = "application"
+    description = "Run strategy comparison experiment"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.monopoly.cli.ComparisonMainKt")
+}
+
 tasks.test {
     useJUnitPlatform()
 }
@@ -143,6 +151,7 @@ tasks.jacocoTestReport {
                         // Exclude CLI entry point (not testable in unit tests)
                         "**/cli/MainKt.*",
                         "**/cli/ExperimentMainKt.*",
+                        "**/cli/ComparisonMainKt.*",
                         // Exclude server layer (web UI for manual testing)
                         "**/server/**",
                         // Exclude trivial event data classes (no business logic)
@@ -166,6 +175,7 @@ tasks.jacocoTestCoverageVerification {
                         // Exclude CLI entry point (not testable in unit tests)
                         "**/cli/MainKt.*",
                         "**/cli/ExperimentMainKt.*",
+                        "**/cli/ComparisonMainKt.*",
                         // Exclude server layer (web UI for manual testing)
                         "**/server/**",
                         // Exclude trivial event data classes (no business logic)
