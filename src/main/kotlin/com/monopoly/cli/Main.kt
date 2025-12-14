@@ -2,12 +2,13 @@ package com.monopoly.cli
 
 import com.monopoly.domain.model.game.Board
 import com.monopoly.domain.model.game.GameState
+import com.monopoly.domain.model.game.createStandardBoard
 import com.monopoly.domain.model.game.impl.StandardDice
 import com.monopoly.domain.model.player.Player
+import com.monopoly.domain.model.player.PlayerStrategy
 import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
 import com.monopoly.domain.service.MonopolyCheckerService
-import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 
 @Suppress("MagicNumber")
 fun main() {
@@ -16,12 +17,13 @@ fun main() {
     println("=".repeat(60))
     println()
 
-    // プレイヤーの作成
-    val player1: Player = Player("Alice", AlwaysPlayerStrategy())
-    val player2: Player = Player("Bob", AlwaysPlayerStrategy())
+    // プレイヤーの作成（StrategyFactory経由で戦略を取得）
+    val alwaysStrategy: PlayerStrategy = StrategyFactory.create("always")
+    val player1: Player = Player("Alice", alwaysStrategy)
+    val player2: Player = Player("Bob", StrategyFactory.create("always"))
     println("Players:")
-    println("  - ${player1.name} (AlwaysPlayerStrategy)")
-    println("  - ${player2.name} (AlwaysPlayerStrategy)")
+    println("  - ${player1.name} (always)")
+    println("  - ${player2.name} (always)")
     println()
 
     // ゲームの初期化

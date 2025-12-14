@@ -223,6 +223,7 @@ class HtmlReportWriter(
             ${generateWinRatesSection(aggregated)}
             ${generateAverageFinalAssetsSection(aggregated)}
             ${generateTurnCountDistributionSection(statistics)}
+            ${generatePlayerStatisticsSection(statistics)}
             ${generateGameDetailsSection(statistics)}
         </body>
         </html>
@@ -356,6 +357,11 @@ class HtmlReportWriter(
                 </div>
             </div>
         """.trimIndent()
+    }
+
+    private fun generatePlayerStatisticsSection(statistics: List<GameStatistics>): String {
+        // TODO: プレイヤー統計の詳細表示は次のコミットで実装
+        return ""
     }
 
     private fun generateGameDetailsSection(statistics: List<GameStatistics>): String {

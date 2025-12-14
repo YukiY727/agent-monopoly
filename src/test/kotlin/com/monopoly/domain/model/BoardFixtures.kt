@@ -8,7 +8,7 @@ import com.monopoly.domain.model.property.StreetProperty
 
 @Suppress("MagicNumber")
 object BoardFixtures {
-    fun createStandardBoard(): Board = com.monopoly.cli.createStandardBoard()
+    fun createStandardBoard(): Board = com.monopoly.domain.model.game.createStandardBoard()
 
     fun createBoardWithProperties(properties: List<Property>): Board {
         val spaceList = mutableListOf<Space>()

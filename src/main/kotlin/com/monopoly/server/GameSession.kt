@@ -1,12 +1,12 @@
 package com.monopoly.server
 
+import com.monopoly.cli.StrategyFactory
 import com.monopoly.domain.model.game.GameState
 import com.monopoly.domain.model.game.impl.StandardDice
 import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.service.BuildingService
 import com.monopoly.domain.service.GameService
 import com.monopoly.domain.service.MonopolyCheckerService
-import com.monopoly.domain.strategy.AlwaysPlayerStrategy
 
 /**
  * ゲームセッションを管理するシングルトン
@@ -18,15 +18,15 @@ object GameSession {
     private val dice = StandardDice()
 
     fun startNewGame(): GameState {
-        // プレイヤーを作成
+        // プレイヤーを作成（StrategyFactory経由で戦略を取得）
         val players: List<Player> =
             listOf(
-                Player("Alice", AlwaysPlayerStrategy()),
-                Player("Bob", AlwaysPlayerStrategy()),
+                Player("Alice", StrategyFactory.create("always")),
+                Player("Bob", StrategyFactory.create("always")),
             )
 
         // ボードを作成
-        val board = com.monopoly.cli.createStandardBoard()
+        val board = com.monopoly.domain.model.game.createStandardBoard()
 
         // ゲーム状態を初期化
         val gameState = GameState(players, board)

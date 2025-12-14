@@ -4,6 +4,7 @@ import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.PropertyBuildings
 import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.property.RailroadProperty
 import com.monopoly.domain.model.property.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -34,6 +35,14 @@ class BalancedStrategyTest : StringSpec({
             buildings = PropertyBuildings(houseCount = houseCount),
         )
 
+    // Helper function to create railroad property
+    fun createRailroadProperty(price: Int = 200): RailroadProperty =
+        RailroadProperty(
+            name = "Reading Railroad",
+            position = 5,
+            price = price,
+        )
+
     // TC-STR-032: BalancedStrategyがバランスよくプロパティを購入
     "should buy properties with balanced approach" {
         // Given
@@ -56,6 +65,17 @@ class BalancedStrategyTest : StringSpec({
 
         // 所持金が不足していたら購入しない
         strategy.shouldBuy(createTestProperty(price = 100, baseRent = 4), 50) shouldBe false
+    }
+
+    // TC-STR-032b: BalancedStrategyがStreetProperty以外を購入しない
+    "should not buy non-street properties" {
+        // Given
+        val strategy = BalancedStrategy()
+        val railroadProperty: Property = createRailroadProperty(price = 200)
+
+        // When & Then
+        // StreetProperty以外は購入しない
+        strategy.shouldBuy(railroadProperty, 500) shouldBe false
     }
 
     // TC-STR-033: BalancedStrategyがバランスよく家を建設
@@ -88,6 +108,26 @@ class BalancedStrategyTest : StringSpec({
 
         // 所持金が不足していたら建設しない
         strategy.shouldBuildHouse(property1, 40) shouldBe false
+    }
+
+    // TC-STR-033b: BalancedStrategyが異なる家数での建設を判断
+    "should build house with different house counts" {
+        // Given
+        val strategy = BalancedStrategy()
+
+        // When & Then
+        // 1家 → 2家: レント増加 = 150 - 50 = 100, ROI = 100 / 50 = 2.0 >= 0.15
+        // Cost = 50 <= 200 * 0.5 = 100 ✓
+        val property1House: StreetProperty = createTestProperty(price = 200, baseRent = 10, houseCount = 1)
+        strategy.shouldBuildHouse(property1House, 200) shouldBe true
+
+        // 2家 → 3家: レント増加 = 450 - 150 = 300, ROI = 300 / 50 = 6.0 >= 0.15
+        val property2Houses: StreetProperty = createTestProperty(price = 200, baseRent = 10, houseCount = 2)
+        strategy.shouldBuildHouse(property2Houses, 200) shouldBe true
+
+        // 3家 → 4家: レント増加 = 800 - 450 = 350, ROI = 350 / 50 = 7.0 >= 0.15
+        val property3Houses: StreetProperty = createTestProperty(price = 200, baseRent = 10, houseCount = 3)
+        strategy.shouldBuildHouse(property3Houses, 200) shouldBe true
     }
 
     // TC-STR-034: BalancedStrategyがバランスよくホテルを建設

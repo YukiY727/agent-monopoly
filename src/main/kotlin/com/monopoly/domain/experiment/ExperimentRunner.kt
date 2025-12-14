@@ -1,6 +1,6 @@
 package com.monopoly.domain.experiment
 
-import com.monopoly.cli.createStandardBoard
+import com.monopoly.domain.model.game.createStandardBoard
 import com.monopoly.domain.event.GameEvent
 import com.monopoly.domain.model.game.Board
 import com.monopoly.domain.model.game.GameState
@@ -63,6 +63,9 @@ class ExperimentRunner(
                 player.name to player.money
             }
 
+        // プレイヤーごとの行動統計を収集
+        val playerStatistics: List<PlayerStatistics> = collectPlayerStatistics(players, gameState.events)
+
         return GameStatistics(
             gameId = gameId,
             timestamp = startTimestamp,
@@ -70,6 +73,7 @@ class ExperimentRunner(
             winner = winner.name,
             finalAssets = finalAssets,
             bankruptcyOrder = bankruptcyOrder,
+            playerStatistics = playerStatistics,
         )
     }
 
@@ -99,6 +103,66 @@ class ExperimentRunner(
 
         return results
     }
+
+    /**
+     * イベントログからプレイヤーごとの行動統計を収集
+     */
+    private fun collectPlayerStatistics(
+        players: List<Player>,
+        events: List<GameEvent>,
+    ): List<PlayerStatistics> =
+        players.map { player ->
+            val name: String = player.name
+
+            // プロパティ購入数
+            val propertiesPurchased: Int =
+                events
+                    .filterIsInstance<GameEvent.PropertyPurchased>()
+                    .count { it.playerName == name }
+
+            // 家建設数
+            val housesBuild: Int =
+                events
+                    .filterIsInstance<GameEvent.HouseBuilt>()
+                    .count { it.playerName == name }
+
+            // ホテル建設数
+            val hotelsBuilt: Int =
+                events
+                    .filterIsInstance<GameEvent.HotelBuilt>()
+                    .count { it.playerName == name }
+
+            // 支払った家賃総額
+            val rentPaid: Int =
+                events
+                    .filterIsInstance<GameEvent.RentPaid>()
+                    .filter { it.payerName == name }
+                    .sumOf { it.amount }
+
+            // 受け取った家賃総額
+            val rentReceived: Int =
+                events
+                    .filterIsInstance<GameEvent.RentPaid>()
+                    .filter { it.receiverName == name }
+                    .sumOf { it.amount }
+
+            // 刑務所に入った回数
+            val timesInJail: Int =
+                events
+                    .filterIsInstance<GameEvent.PlayerSentToJail>()
+                    .count { it.playerName == name }
+
+            PlayerStatistics(
+                name = name,
+                propertiesPurchased = propertiesPurchased,
+                housesBuild = housesBuild,
+                hotelsBuilt = hotelsBuilt,
+                rentPaid = rentPaid,
+                rentReceived = rentReceived,
+                timesInJail = timesInJail,
+                finalMoney = player.money,
+            )
+        }
 
     companion object {
         /** 進捗表示の間隔（ゲーム数） */

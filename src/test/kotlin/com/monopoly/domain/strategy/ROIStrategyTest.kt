@@ -4,6 +4,7 @@ import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.PropertyBuildings
 import com.monopoly.domain.model.property.PropertyRent
+import com.monopoly.domain.model.property.RailroadProperty
 import com.monopoly.domain.model.property.StreetProperty
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -34,6 +35,14 @@ class ROIStrategyTest : StringSpec({
             buildings = PropertyBuildings(houseCount = houseCount),
         )
 
+    // Helper function to create railroad property
+    fun createRailroadProperty(price: Int = 200): RailroadProperty =
+        RailroadProperty(
+            name = "Reading Railroad",
+            position = 5,
+            price = price,
+        )
+
     // TC-STR-027: ROIStrategyが投資効率の良いプロパティを購入
     "should buy properties with good ROI" {
         // Given
@@ -50,6 +59,17 @@ class ROIStrategyTest : StringSpec({
 
         // ROIが良くても所持金が不足していたら購入しない
         strategy.shouldBuy(createTestProperty(price = 100, baseRent = 5), 50) shouldBe false
+    }
+
+    // TC-STR-027b: ROIStrategyがStreetProperty以外を購入しない
+    "should not buy non-street properties" {
+        // Given
+        val strategy = ROIStrategy()
+        val railroadProperty: Property = createRailroadProperty(price = 200)
+
+        // When & Then
+        // StreetProperty以外は購入しない
+        strategy.shouldBuy(railroadProperty, 500) shouldBe false
     }
 
     // TC-STR-028: ROIStrategyが投資効率の良い家建設を判断
@@ -72,6 +92,25 @@ class ROIStrategyTest : StringSpec({
 
         // 所持金が不足していたら建設しない
         strategy.shouldBuildHouse(property2, 30) shouldBe false
+    }
+
+    // TC-STR-028b: ROIStrategyが異なる家数での建設を判断
+    "should build house with different house counts" {
+        // Given
+        val strategy = ROIStrategy()
+
+        // When & Then
+        // 1家 → 2家: レント増加 = 150 - 50 = 100, ROI = 100 / 50 = 2.0 >= 0.2
+        val property1House: StreetProperty = createTestProperty(price = 200, baseRent = 10, houseCount = 1)
+        strategy.shouldBuildHouse(property1House, 100) shouldBe true
+
+        // 2家 → 3家: レント増加 = 450 - 150 = 300, ROI = 300 / 50 = 6.0 >= 0.2
+        val property2Houses: StreetProperty = createTestProperty(price = 200, baseRent = 10, houseCount = 2)
+        strategy.shouldBuildHouse(property2Houses, 100) shouldBe true
+
+        // 3家 → 4家: レント増加 = 800 - 450 = 350, ROI = 350 / 50 = 7.0 >= 0.2
+        val property3Houses: StreetProperty = createTestProperty(price = 200, baseRent = 10, houseCount = 3)
+        strategy.shouldBuildHouse(property3Houses, 100) shouldBe true
     }
 
     // TC-STR-029: ROIStrategyが投資効率の良いホテル建設を判断
@@ -130,5 +169,17 @@ class ROIStrategyTest : StringSpec({
         // 資金不足の場合はパス
         val bid5: Int? = strategy.decideAuctionBid(highROIProperty, null, 60)
         bid5 shouldBe null
+    }
+
+    // TC-STR-031b: ROIStrategyがStreetProperty以外でオークション入札
+    "should bid conservatively for non-street properties in auction" {
+        // Given
+        val strategy = ROIStrategy()
+        val railroadProperty: Property = createRailroadProperty(price = 200)
+
+        // When & Then
+        // StreetProperty以外は低ROI扱い（価格の40%）
+        val bid: Int? = strategy.decideAuctionBid(railroadProperty, null, 500)
+        bid shouldBe 80 // 200 * 0.4 = 80
     }
 })

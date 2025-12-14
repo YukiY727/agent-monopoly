@@ -6,30 +6,41 @@ import com.monopoly.domain.experiment.GameStatistics
 import com.monopoly.domain.experiment.HtmlReportWriter
 import com.monopoly.domain.experiment.StatisticsDisplay
 import com.monopoly.domain.experiment.StatisticsWriter
-import com.monopoly.domain.model.player.PlayerStrategy
-import com.monopoly.domain.strategy.AlwaysPlayerStrategy
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
  * 実験管理のメインエントリーポイント
  */
-fun main() {
+fun main(args: Array<String>) {
     println("=" * 60)
-    println("Monopoly Experiment Runner - Phase 8")
+    println("Monopoly Experiment Runner - Phase 9")
     println("=" * 60)
     println()
 
-    // 実験設定
-    val gameCount = 10 // 実行するゲーム数
-    val strategies: List<PlayerStrategy> =
-        listOf(
-            AlwaysPlayerStrategy(),
-            AlwaysPlayerStrategy(),
-        )
+    // CLI引数をパース
+    val parser = ArgumentParser()
+    val config: ExperimentConfig =
+        try {
+            parser.parse(args) ?: return // ヘルプ表示時は終了
+        } catch (e: IllegalArgumentException) {
+            System.err.println("Error: ${e.message}")
+            System.err.println("Use --help for usage information")
+            return
+        }
 
+    // 実験IDを生成（タイムスタンプベース）
+    val formatter = SimpleDateFormat("yyyyMMdd-HHmmss")
+    val experimentId: String = "exp-${formatter.format(Date())}"
+
+    println("Experiment ID: $experimentId")
     println("Configuration:")
-    println("  - Games to run: $gameCount")
-    println("  - Players: ${strategies.size}")
-    println("  - Strategy: AlwaysPlayerStrategy (all players)")
+    println("  - Games to run: ${config.gameCount}")
+    println("  - Players: ${config.playerCount}")
+    println("  - Strategies:")
+    config.strategies.forEachIndexed { index, strategy ->
+        println("    ${index + 1}. ${strategy::class.simpleName}")
+    }
     println()
 
     // 進捗コールバック
@@ -43,7 +54,7 @@ fun main() {
 
     val runner = ExperimentRunner(progressCallback)
     val startTime: Long = System.currentTimeMillis()
-    val results: List<GameStatistics> = runner.runExperiment(gameCount, strategies)
+    val results: List<GameStatistics> = runner.runExperiment(config.gameCount, config.strategies)
     val endTime: Long = System.currentTimeMillis()
 
     println()
@@ -58,15 +69,18 @@ fun main() {
     val output: String = display.format(aggregated)
     println(output)
 
+    // 実験ごとのディレクトリを作成
+    val experimentDir = "experiment-results/$experimentId"
+
     // ファイル保存
-    val writer = StatisticsWriter()
+    val writer = StatisticsWriter(outputDir = experimentDir)
     val files = writer.write(results, aggregated)
 
     // HTML レポート生成
-    val htmlWriter = HtmlReportWriter()
+    val htmlWriter = HtmlReportWriter(outputDir = experimentDir)
     val htmlPath: String = htmlWriter.write(results, aggregated)
 
-    println("Results saved:")
+    println("Results saved to: $experimentDir/")
     println("  - JSON: ${files.jsonPath}")
     println("  - CSV:  ${files.csvPath}")
     println("  - HTML: $htmlPath")
