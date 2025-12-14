@@ -2,9 +2,12 @@ package com.monopoly.cli
 
 import com.monopoly.domain.experiment.ComparisonMatrix
 import com.monopoly.domain.experiment.DominanceAnalysis
+import com.monopoly.domain.experiment.ExperimentRunner
+import com.monopoly.domain.experiment.GameStatistics
 import com.monopoly.domain.experiment.StatisticalAnalysis
 import com.monopoly.domain.experiment.StrategyComparisonExperiment
 import com.monopoly.domain.experiment.StrategyInfo
+import com.monopoly.domain.model.player.PlayerStrategy
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -36,7 +39,8 @@ fun main(args: Array<String>) {
 
     println("=== Strategy Comparison Experiment ===")
     println("Experiment ID: $experimentId")
-    println("Games per matchup: ${config.gamesPerMatchup}")
+    println("Games: ${config.gamesPerMatchup}")
+    println("Players per game: ${config.playerCount}")
     println("Strategies: ${config.strategyNames.joinToString(", ")}")
     println()
 
@@ -46,14 +50,29 @@ fun main(args: Array<String>) {
             StrategyInfo(name, StrategyFactory.create(name))
         }
 
-    // 対戦数を計算
+    if (config.playerCount > 2) {
+        // マルチプレイヤーモード
+        runMultiPlayerExperiment(strategies, config, experimentId)
+    } else {
+        // 2人対戦モード（従来の比較実験）
+        runPairwiseExperiment(strategies, config, experimentId)
+    }
+}
+
+/**
+ * 2人対戦モード（従来の比較実験）
+ */
+private fun runPairwiseExperiment(
+    strategies: List<StrategyInfo>,
+    config: ComparisonConfig,
+    experimentId: String,
+) {
     val totalMatchups: Int = strategies.size * (strategies.size - 1) / 2
     val totalGames: Int = totalMatchups * config.gamesPerMatchup
     println("Total matchups: $totalMatchups")
     println("Total games: $totalGames")
     println()
 
-    // 実験を実行
     val experiment =
         StrategyComparisonExperiment(
             gamesPerMatchup = config.gamesPerMatchup,
@@ -66,7 +85,6 @@ fun main(args: Array<String>) {
     val result: ComparisonMatrix = experiment.run(strategies)
     val elapsedTime: Long = System.currentTimeMillis() - startTime
 
-    // 結果を表示
     println()
     println("=== Results ===")
     println()
@@ -74,9 +92,128 @@ fun main(args: Array<String>) {
     println()
     println("Elapsed time: ${elapsedTime / 1000.0} seconds")
 
-    // 結果を保存
     val outputDir = "experiment-results/$experimentId"
     saveResults(result, outputDir, config.gamesPerMatchup)
+
+    println()
+    println("Results saved to: $outputDir/")
+}
+
+/**
+ * マルチプレイヤーモード（全戦略が同時に競争）
+ */
+private fun runMultiPlayerExperiment(
+    strategies: List<StrategyInfo>,
+    config: ComparisonConfig,
+    experimentId: String,
+) {
+    println("Mode: Multi-player (${config.playerCount} players per game)")
+    println("Total games: ${config.gamesPerMatchup}")
+    println()
+
+    val experimentRunner = ExperimentRunner()
+    val winCounts: MutableMap<String, Int> = mutableMapOf()
+    val bankruptcyCounts: MutableMap<String, Int> = mutableMapOf()
+    var totalBankruptcyGames = 0
+    var totalTurns = 0
+
+    // 戦略を指定人数分繰り返して選択
+    val playerStrategies: List<PlayerStrategy> =
+        (0 until config.playerCount).map { index ->
+            strategies[index % strategies.size].strategy
+        }
+    val playerNames: List<String> =
+        (0 until config.playerCount).map { index ->
+            strategies[index % strategies.size].name
+        }
+
+    println("Players: ${playerNames.joinToString(", ")}")
+    println()
+
+    val startTime: Long = System.currentTimeMillis()
+
+    repeat(config.gamesPerMatchup) { gameIndex ->
+        val gameId: String = "multiplayer_game_%03d".format(gameIndex + 1)
+        val result: GameStatistics =
+            experimentRunner.runSingleGame(
+                gameId = gameId,
+                strategies = playerStrategies,
+            )
+
+        // 勝者を特定（Player1, Player2... -> 戦略名にマッピング）
+        val winnerIndex: Int = result.winner.removePrefix("Player").toIntOrNull()?.minus(1) ?: 0
+        val winnerStrategy: String = playerNames[winnerIndex]
+        winCounts[winnerStrategy] = winCounts.getOrDefault(winnerStrategy, 0) + 1
+
+        // 破産者をカウント
+        if (result.bankruptcyOrder.isNotEmpty()) {
+            totalBankruptcyGames++
+            result.bankruptcyOrder.forEach { bankruptPlayer ->
+                val bankruptIndex: Int = bankruptPlayer.removePrefix("Player").toIntOrNull()?.minus(1) ?: 0
+                val bankruptStrategy: String = playerNames[bankruptIndex]
+                bankruptcyCounts[bankruptStrategy] = bankruptcyCounts.getOrDefault(bankruptStrategy, 0) + 1
+            }
+        }
+
+        totalTurns += result.turnCount
+
+        if ((gameIndex + 1) % 10 == 0 || gameIndex + 1 == config.gamesPerMatchup) {
+            println("Progress: ${gameIndex + 1} / ${config.gamesPerMatchup} games completed")
+        }
+    }
+
+    val elapsedTime: Long = System.currentTimeMillis() - startTime
+    val avgTurns: Double = totalTurns.toDouble() / config.gamesPerMatchup
+    val bankruptcyRate: Double = totalBankruptcyGames.toDouble() / config.gamesPerMatchup * 100
+
+    println()
+    println("=== Results ===")
+    println()
+    println("Bankruptcy Rate: %.1f%% (%d/%d games)".format(bankruptcyRate, totalBankruptcyGames, config.gamesPerMatchup))
+    println("Average Turns: %.1f".format(avgTurns))
+    println()
+    println("Win Counts:")
+    strategies.forEach { strategy ->
+        val wins: Int = winCounts.getOrDefault(strategy.name, 0)
+        val winRate: Double = wins.toDouble() / config.gamesPerMatchup * 100
+        println("  ${strategy.name}: $wins wins (%.1f%%)".format(winRate))
+    }
+    println()
+    println("Bankruptcy Counts:")
+    strategies.forEach { strategy ->
+        val bankruptcies: Int = bankruptcyCounts.getOrDefault(strategy.name, 0)
+        println("  ${strategy.name}: $bankruptcies bankruptcies")
+    }
+    println()
+    println("Elapsed time: ${elapsedTime / 1000.0} seconds")
+
+    // 簡易レポート保存
+    val outputDir = "experiment-results/$experimentId"
+    File(outputDir).mkdirs()
+    val reportPath = "$outputDir/multiplayer-report.txt"
+    val report = buildString {
+        appendLine("=== Multi-Player Experiment Report ===")
+        appendLine("Players per game: ${config.playerCount}")
+        appendLine("Total games: ${config.gamesPerMatchup}")
+        appendLine("Player strategies: ${playerNames.joinToString(", ")}")
+        appendLine()
+        appendLine("Bankruptcy Rate: %.1f%% (%d/%d games)".format(bankruptcyRate, totalBankruptcyGames, config.gamesPerMatchup))
+        appendLine("Average Turns: %.1f".format(avgTurns))
+        appendLine()
+        appendLine("Win Counts:")
+        strategies.forEach { strategy ->
+            val wins: Int = winCounts.getOrDefault(strategy.name, 0)
+            val winRate: Double = wins.toDouble() / config.gamesPerMatchup * 100
+            appendLine("  ${strategy.name}: $wins wins (%.1f%%)".format(winRate))
+        }
+        appendLine()
+        appendLine("Bankruptcy Counts:")
+        strategies.forEach { strategy ->
+            val bankruptcies: Int = bankruptcyCounts.getOrDefault(strategy.name, 0)
+            appendLine("  ${strategy.name}: $bankruptcies bankruptcies")
+        }
+    }
+    File(reportPath).writeText(report)
 
     println()
     println("Results saved to: $outputDir/")
@@ -89,6 +226,7 @@ data class ComparisonConfig(
     val gamesPerMatchup: Int,
     val strategyNames: List<String>,
     val showHelp: Boolean,
+    val playerCount: Int = 2,
 )
 
 /**
@@ -98,6 +236,7 @@ fun parseComparisonArgs(args: Array<String>): ComparisonConfig {
     var gamesPerMatchup = DEFAULT_GAMES_PER_MATCHUP
     var strategyNames: List<String> = StrategyFactory.availableStrategies
     var showHelp = false
+    var playerCount = 2
 
     var i = 0
     while (i < args.size) {
@@ -122,6 +261,14 @@ fun parseComparisonArgs(args: Array<String>): ComparisonConfig {
                     i++
                 }
             }
+            "-p", "--players" -> {
+                if (i + 1 < args.size) {
+                    playerCount = args[i + 1].toIntOrNull()?.coerceIn(2, 6) ?: 2
+                    i += 2
+                } else {
+                    i++
+                }
+            }
             else -> i++
         }
     }
@@ -130,6 +277,7 @@ fun parseComparisonArgs(args: Array<String>): ComparisonConfig {
         gamesPerMatchup = gamesPerMatchup,
         strategyNames = strategyNames,
         showHelp = showHelp,
+        playerCount = playerCount,
     )
 }
 
@@ -269,6 +417,16 @@ private fun saveHtml(
                     ${generateDominanceHtml(dominance)}
                 </div>
 
+                <h2>Game Termination Statistics</h2>
+                <div class="info-box">
+                    ${generateTerminationStatsHtml(matrix)}
+                </div>
+
+                <h2>Building Statistics</h2>
+                <div class="info-box">
+                    ${generateBuildingStatsHtml(matrix)}
+                </div>
+
                 <h2>Win Rate Matrix</h2>
                 <table>
                     <tr>
@@ -328,6 +486,129 @@ private fun saveHtml(
         """.trimIndent()
 
     File(path).writeText(html)
+}
+
+/**
+ * 建築統計のHTML生成
+ */
+private fun generateBuildingStatsHtml(matrix: ComparisonMatrix): String {
+    val sb = StringBuilder()
+
+    sb.append("<p>Average values per game for each matchup:</p>")
+    sb.append("<table>")
+    sb.append("<tr>")
+    sb.append("<th>Matchup</th>")
+    sb.append("<th>Strategy</th>")
+    sb.append("<th>Properties</th>")
+    sb.append("<th>Houses</th>")
+    sb.append("<th>Hotels</th>")
+    sb.append("<th>Rent Paid</th>")
+    sb.append("<th>Rent Received</th>")
+    sb.append("</tr>")
+
+    matrix.matchups.forEach { matchup ->
+        // Strategy 1
+        sb.append(
+            """
+            <tr>
+                <td rowspan="2">${matchup.strategy1} vs ${matchup.strategy2}</td>
+                <td><strong>${matchup.strategy1}</strong></td>
+                <td>%.1f</td>
+                <td>%.1f</td>
+                <td>%.1f</td>
+                <td>$%.0f</td>
+                <td>$%.0f</td>
+            </tr>
+            """.format(
+                matchup.strategy1BuildingStats.avgProperties,
+                matchup.strategy1BuildingStats.avgHouses,
+                matchup.strategy1BuildingStats.avgHotels,
+                matchup.strategy1BuildingStats.avgRentPaid,
+                matchup.strategy1BuildingStats.avgRentReceived,
+            ),
+        )
+        // Strategy 2
+        sb.append(
+            """
+            <tr>
+                <td><strong>${matchup.strategy2}</strong></td>
+                <td>%.1f</td>
+                <td>%.1f</td>
+                <td>%.1f</td>
+                <td>$%.0f</td>
+                <td>$%.0f</td>
+            </tr>
+            """.format(
+                matchup.strategy2BuildingStats.avgProperties,
+                matchup.strategy2BuildingStats.avgHouses,
+                matchup.strategy2BuildingStats.avgHotels,
+                matchup.strategy2BuildingStats.avgRentPaid,
+                matchup.strategy2BuildingStats.avgRentReceived,
+            ),
+        )
+    }
+
+    sb.append("</table>")
+
+    // 全体の平均を計算
+    val allStats = matrix.matchups.flatMap { listOf(it.strategy1BuildingStats, it.strategy2BuildingStats) }
+    val avgHouses: Double = allStats.map { it.avgHouses }.average()
+    val avgHotels: Double = allStats.map { it.avgHotels }.average()
+
+    if (avgHouses < 1.0 && avgHotels < 0.1) {
+        sb.append("<p style=\"color: #d32f2f;\">⚠️ Very few buildings constructed! ")
+        sb.append("This likely explains the 0% bankruptcy rate.</p>")
+    }
+
+    return sb.toString()
+}
+
+/**
+ * ゲーム終了統計のHTML生成
+ */
+private fun generateTerminationStatsHtml(matrix: ComparisonMatrix): String {
+    val totalGames: Int = matrix.matchups.sumOf { it.gamesPlayed }
+    val totalBankruptcyGames: Int = matrix.matchups.sumOf { it.bankruptcyEndedGames }
+    val overallBankruptcyRate: Double =
+        if (totalGames > 0) totalBankruptcyGames.toDouble() / totalGames * 100 else 0.0
+    val averageTurns: Double =
+        if (matrix.matchups.isNotEmpty()) matrix.matchups.map { it.averageTurns }.average() else 0.0
+
+    val sb = StringBuilder()
+    sb.append("<p><strong>Overall Bankruptcy Rate:</strong> %.1f%% (%d/%d games)</p>".format(
+        overallBankruptcyRate,
+        totalBankruptcyGames,
+        totalGames,
+    ))
+    sb.append("<p><strong>Average Turns per Game:</strong> %.1f</p>".format(averageTurns))
+
+    if (overallBankruptcyRate < 50.0) {
+        sb.append("<p style=\"color: #f57c00;\">⚠️ Low bankruptcy rate suggests many games hit the 1000-turn limit.</p>")
+    }
+
+    sb.append("<h4>Per Matchup Details:</h4>")
+    sb.append("<table>")
+    sb.append("<tr><th>Matchup</th><th>Bankruptcy Rate</th><th>Avg Turns</th></tr>")
+
+    matrix.matchups.forEach { matchup ->
+        sb.append(
+            """
+            <tr>
+                <td>${matchup.strategy1} vs ${matchup.strategy2}</td>
+                <td>%.1f%% (%d/%d)</td>
+                <td>%.1f</td>
+            </tr>
+            """.format(
+                matchup.bankruptcyRate * 100,
+                matchup.bankruptcyEndedGames,
+                matchup.gamesPlayed,
+                matchup.averageTurns,
+            ),
+        )
+    }
+
+    sb.append("</table>")
+    return sb.toString()
 }
 
 /**

@@ -13,6 +13,24 @@ data class StrategyInfo(
 )
 
 /**
+ * 建築統計
+ *
+ * プレイヤーの建築行動の平均値を保持
+ */
+data class BuildingStats(
+    /** 平均家建設数 */
+    val avgHouses: Double = 0.0,
+    /** 平均ホテル建設数 */
+    val avgHotels: Double = 0.0,
+    /** 平均物件購入数 */
+    val avgProperties: Double = 0.0,
+    /** 平均支払い家賃 */
+    val avgRentPaid: Double = 0.0,
+    /** 平均受取り家賃 */
+    val avgRentReceived: Double = 0.0,
+)
+
+/**
  * 戦略対戦結果
  *
  * 2つの戦略の対戦結果を保持
@@ -23,6 +41,14 @@ data class StrategyMatchup(
     val strategy1Wins: Int,
     val strategy2Wins: Int,
     val gamesPlayed: Int,
+    /** 破産で終了したゲーム数 */
+    val bankruptcyEndedGames: Int = 0,
+    /** 平均ターン数 */
+    val averageTurns: Double = 0.0,
+    /** 戦略1の建築統計（家, ホテル, 物件購入数の平均） */
+    val strategy1BuildingStats: BuildingStats = BuildingStats(),
+    /** 戦略2の建築統計 */
+    val strategy2BuildingStats: BuildingStats = BuildingStats(),
 ) {
     /** 戦略1の勝率 */
     val strategy1WinRate: Double
@@ -31,6 +57,10 @@ data class StrategyMatchup(
     /** 戦略2の勝率 */
     val strategy2WinRate: Double
         get() = if (gamesPlayed > 0) strategy2Wins.toDouble() / gamesPlayed else 0.0
+
+    /** 破産終了率 */
+    val bankruptcyRate: Double
+        get() = if (gamesPlayed > 0) bankruptcyEndedGames.toDouble() / gamesPlayed else 0.0
 }
 
 /**
@@ -172,6 +202,20 @@ class StrategyComparisonExperiment(
     ): StrategyMatchup {
         var strategy1Wins = 0
         var strategy2Wins = 0
+        var bankruptcyEndedGames = 0
+        var totalTurns = 0
+
+        // 建築統計の累積
+        var s1Houses = 0
+        var s1Hotels = 0
+        var s1Properties = 0
+        var s1RentPaid = 0
+        var s1RentReceived = 0
+        var s2Houses = 0
+        var s2Hotels = 0
+        var s2Properties = 0
+        var s2RentPaid = 0
+        var s2RentReceived = 0
 
         repeat(gamesPerMatchup) { gameIndex ->
             val gameId: String = "matchup_${strategy1.name}_vs_${strategy2.name}_game_%03d".format(gameIndex + 1)
@@ -186,7 +230,36 @@ class StrategyComparisonExperiment(
                 "Player1" -> strategy1Wins++
                 "Player2" -> strategy2Wins++
             }
+
+            // 破産で終了したかどうか（bankruptcyOrderが非空なら破産で終了）
+            if (result.bankruptcyOrder.isNotEmpty()) {
+                bankruptcyEndedGames++
+            }
+
+            totalTurns += result.turnCount
+
+            // プレイヤー統計を集計
+            result.playerStatistics.forEach { stats ->
+                when (stats.name) {
+                    "Player1" -> {
+                        s1Houses += stats.housesBuild
+                        s1Hotels += stats.hotelsBuilt
+                        s1Properties += stats.propertiesPurchased
+                        s1RentPaid += stats.rentPaid
+                        s1RentReceived += stats.rentReceived
+                    }
+                    "Player2" -> {
+                        s2Houses += stats.housesBuild
+                        s2Hotels += stats.hotelsBuilt
+                        s2Properties += stats.propertiesPurchased
+                        s2RentPaid += stats.rentPaid
+                        s2RentReceived += stats.rentReceived
+                    }
+                }
+            }
         }
+
+        val games: Double = gamesPerMatchup.toDouble()
 
         return StrategyMatchup(
             strategy1 = strategy1.name,
@@ -194,6 +267,22 @@ class StrategyComparisonExperiment(
             strategy1Wins = strategy1Wins,
             strategy2Wins = strategy2Wins,
             gamesPlayed = gamesPerMatchup,
+            bankruptcyEndedGames = bankruptcyEndedGames,
+            averageTurns = totalTurns / games,
+            strategy1BuildingStats = BuildingStats(
+                avgHouses = s1Houses / games,
+                avgHotels = s1Hotels / games,
+                avgProperties = s1Properties / games,
+                avgRentPaid = s1RentPaid / games,
+                avgRentReceived = s1RentReceived / games,
+            ),
+            strategy2BuildingStats = BuildingStats(
+                avgHouses = s2Houses / games,
+                avgHotels = s2Hotels / games,
+                avgProperties = s2Properties / games,
+                avgRentPaid = s2RentPaid / games,
+                avgRentReceived = s2RentReceived / games,
+            ),
         )
     }
 
