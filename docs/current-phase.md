@@ -1,8 +1,9 @@
-# 現在のフェーズ: Phase 8（実験管理フェーズ）
+# 現在のフェーズ: Phase 9（複数戦略と支配関係分析）
 
 ## 目標
 
-複数ゲームのシミュレーション実行と統計収集を可能にし、戦略の分析基盤を構築する
+複数の基本戦略を実装し、戦略間の支配関係を分析する。
+HTMLレポートとグラフ可視化により、実験結果を分かりやすく表示する。
 
 ---
 
@@ -15,698 +16,174 @@
 - Gradle（Kotlin DSL）
 - kotlinx-serialization（JSON保存用）
 - Ktor（Web UI Server）
+- Chart.js（グラフ可視化）
 
-### 実装範囲
+### 実行コマンド
 
-Phase 8の目標：
+```bash
+# 単一実験（2プレイヤー）
+./gradlew runExperiment -PgameCount=100 -Pstrategies=aggressive,balanced
 
-1. **複数ゲーム実行機能** - N回のゲームを自動実行
-2. **基本統計収集** - 勝率、平均ターン数、資産推移の記録
-3. **結果の永続化** - JSON/CSV形式での統計データ保存
-4. **CLI統計表示** - 実験結果のサマリー表示
+# 戦略比較マトリックス（全戦略ペア対戦）
+./gradlew runComparison
 
-詳細: [`phases/phase8/design.md`](phases/phase8/design.md)（作成予定）
-
----
-
-## 実装済み機能
-
-### Phase 1: 最小限のゲーム実行（完了 ✅）
-
-- [x] 基本ゲームループ
-- [x] サイコロ振り、移動、家賃支払い
-- [x] プロパティ購入判定
-- [x] 破産処理とゲーム終了
-
-### Phase 2: イベント記録システム（完了 ✅）
-
-- [x] GameEvent sealed class
-- [x] イベントログ記録
-- [x] JSON保存機能
-
-### Phase 3: Doubles、Jail、Cards（完了 ✅）
-
-- [x] ダブル（ゾロ目）判定と追加ターン
-- [x] 3回連続ゾロ目で刑務所送り
-- [x] 刑務所システム（収監、脱出方法）
-- [x] カードシステム（Chance、Community Chest）
-- [x] カードデッキ管理
-
-### Phase 4: 建物システム（完了 ✅）
-
-- [x] 家（最大4件）とホテル（1件）の建設
-- [x] 同色プロパティ全所有（モノポリー）の判定
-- [x] 建物の均等建設ルール
-- [x] 家賃計算の拡張（建物数に応じた変動）
-- [x] BuildingService（建設ロジック）
-- [x] MonopolyCheckerService（モノポリー判定）
-- [x] GameServiceへの統合（ターン終了時の自動建設）
-
-### Phase 5: 税金と特殊プロパティ（完了 ✅）
-
-- [x] 税金マス処理（Income Tax, Luxury Tax）
-- [x] 鉄道の家賃計算（所有数に応じた家賃）
-- [x] 公共施設の家賃計算（サイコロの目 × 倍率）
-
-### Phase 6: 抵当システム（完了 ✅）
-
-- [x] 抵当設定・解除
-- [x] 抵当価値計算（価格の50%）
-- [x] 抵当解除コスト（110%）
-- [x] 抵当中の家賃無効化
-
-### Phase 7: オークションシステム（完了 ✅）
-
-- [x] オークション機構
-- [x] 入札管理
-- [x] 落札判定
-- [x] 購入拒否時のオークション開催
-
-### Web UI Server（完了 ✅）
-
-- [x] Ktorサーバー（ポート8080）
-- [x] REST API（ゲーム開始、ターン実行、状態取得）
-- [x] CORS設定
-- [x] JSON serialization
-- [x] 静的HTMLファイル提供
-
----
-
-## 未実装機能
-
-### 複数戦略（Phase 8以降で実装予定）
-
-- [ ] ランダム戦略
-- [ ] 保守的戦略（一定額以上の現金を保持）
-- [ ] セット重視戦略（同色セット完成を優先）
-- [ ] ROI戦略（投資効率を計算）
-
-**注**: 現在は`AlwaysPlayerStrategy`のみ実装。複数戦略は実験管理システム完成後に実装
-
----
-
-## 次のフェーズ: Phase 8（実験管理）
-
-### 実装の目標
-
-複数ゲームのシミュレーション実行と基本統計の収集により、戦略研究の基盤を構築する
-
-### 実装内容
-
-#### 1. 複数ゲーム実行エンジン
-
-```kotlin
-class ExperimentRunner(
-    val gameCount: Int,
-    val playerStrategies: List<PlayerStrategy>,
-    val outputDir: String
-)
+# HTMLレポート確認
+open experiment-results/*/comparison-report.html
 ```
 
-- N回のゲームを自動実行
-- 各ゲームの独立性を保証
-- 進捗表示（CLI）
+---
 
-#### 2. 基本統計収集
+## Phase 9 実装状況
 
-```kotlin
-data class GameStatistics(
-    val gameId: String,
-    val turnCount: Int,
-    val winner: String,
-    val finalAssets: Map<String, Int>,
-    val bankruptcyOrder: List<String>
-)
-```
+### 完了 ✅
 
-収集する統計：
+#### 1. 複数戦略の実装
 
-- ゲームごとの勝者
-- ターン数
-- 各プレイヤーの最終資産
-- 破産順序
+- [x] AlwaysPlayerStrategy（既存）
+- [x] RandomStrategy
+- [x] ConservativeStrategy
+- [x] AggressiveStrategy
+- [x] SetFocusedStrategy
+- [x] ROIStrategy
+- [x] BalancedStrategy
 
-#### 3. 統計の集約と分析
+#### 2. 戦略比較実験システム
 
-```kotlin
-data class AggregatedStatistics(
-    val totalGames: Int,
-    val winRateByPlayer: Map<String, Double>,
-    val averageTurnCount: Double,
-    val averageFinalAssets: Map<String, Double>
-)
-```
+- [x] StrategyComparisonExperiment
+- [x] 対戦マトリックス生成
+- [x] ComparisonMain CLI
 
-- 勝率計算（プレイヤー別）
-- 平均ターン数
-- 平均最終資産
+#### 3. HTMLレポート生成
 
-#### 4. 結果の永続化
+- [x] 勝率グラフ（Chart.js）
+- [x] 対戦マトリックス表示
+- [x] プレイヤー別統計
 
-- JSON形式での統計データ保存
-- CSV形式でのエクスポート（Excel等での分析用）
-- ファイル命名規則: `experiment_YYYYMMDD_HHMMSS.json`
+#### 4. トレード機能（前倒し実装）
 
-#### 5. CLI統計表示
+- [x] TradeOffer, Trade ドメインモデル
+- [x] TradeService（検証・実行）
+- [x] TradeHelperService（戦略支援）
+- [x] GameServiceへの統合
+- [x] トレードイベント（Proposed/Accepted/Rejected/Completed）
+- [x] AggressiveStrategy, BalancedStrategyへのトレードロジック追加
 
-```text
-=== Experiment Results ===
-Total Games: 100
-Average Turns: 45.3
+#### 5. 統計収集の拡張
 
-Win Rate:
-  Alice (AlwaysPlayerStrategy): 52%
-  Bob (AlwaysPlayerStrategy): 48%
+- [x] トレード統計（tradesProposed, tradesAccepted, tradesCompleted）
+- [x] PlayerStatisticsへの追加
 
-Average Final Assets:
-  Alice: $1,234
-  Bob: $987
-```
+### 未完了 ⏳
 
-### 期待される効果
+#### 統計的検定
 
-1. **戦略の定量的評価**: 勝率や資産推移で戦略の優劣を判定可能
-2. **再現可能な実験**: 統計データを保存することで、後から分析可能
-3. **研究基盤の確立**: Phase 9以降の詳細分析（HTMLレポート、グラフ可視化）の基盤
+- [ ] t検定（戦略間の有意差）
+- [ ] 95%信頼区間計算
+- [ ] Cohen's d（効果量）
+- [ ] Bonferroni補正（多重比較）
 
-### 実装スコープ（Phase 8）
+#### Nash均衡探索
 
-**実装する**:
-
-- ✅ 複数ゲーム実行エンジン
-- ✅ 基本統計収集（勝率、平均ターン数、資産）
-- ✅ JSON/CSV保存
-- ✅ CLI統計表示
-
-**実装しない（Phase 9以降）**:
-
-- ❌ HTMLレポート生成
-- ❌ グラフ可視化（折れ線、棒グラフ等）
-- ❌ 詳細統計（プロパティ別収益性、資産推移など）
-- ❌ 並列実行
+- [ ] 最適反応戦略の特定
+- [ ] 支配戦略の検出
+- [ ] 混合戦略Nash均衡の計算
 
 ---
 
-## Phase 8完了条件
+## 実装済み機能（Phase 1-8）
 
-- [ ] 指定回数（N回）のゲームを実行できる
-- [ ] 各ゲームの統計データが収集される
-- [ ] 統計データがJSON/CSV形式で保存される
-- [ ] CLIで統計サマリーが表示される
-- [ ] テストカバレッジが90%以上を維持
+### Phase 1: 最小限のゲーム実行 ✅
 
----
+- 基本ゲームループ、サイコロ、移動、家賃支払い、破産処理
 
-## Phase 9以降の計画
+### Phase 2: イベント記録システム ✅
 
-各フェーズは**システム機能**（可視化、パフォーマンス）と**研究テーマ**（ゲーム理論、行動経済学）を組み合わせた構成になっています。
+- GameEvent sealed class、イベントログ記録、JSON保存
 
----
+### Phase 3: Doubles、Jail、Cards ✅
 
-### Phase 9: 複数戦略の実装と支配関係分析
+- ダブル判定、刑務所システム、カードシステム
 
-**システム機能**: 複数戦略の実装、HTMLレポート生成、基本的なグラフ可視化
+### Phase 4: 建物システム ✅
 
-**研究テーマ**: 戦略の支配関係とNash均衡の探索（ゲーム理論）
+- 家・ホテル建設、モノポリー判定、均等建設ルール
 
-**実装内容**:
+### Phase 5: 税金と特殊プロパティ ✅
 
-1. **複数の基本戦略を実装**
+- 税金マス、鉄道・公共施設の家賃計算
 
-   ```kotlin
-   - AlwaysPlayerStrategy (既存): 常に購入・建設
-   - RandomStrategy: ランダムに判断
-   - ConservativeStrategy: 保守的（一定額以上の現金を保持、リスク回避）
-   - AggressiveStrategy: 積極的（早期投資、高リスク）
-   - SetFocusedStrategy: セット重視（同色セット完成を優先）
-   - ROIStrategy: 投資効率を計算して判断
-   - BalancedStrategy: バランス型（状況判断）
-   ```
+### Phase 6: 抵当システム ✅
 
-2. **戦略対戦マトリックス生成**
+- 抵当設定・解除、抵当中の家賃無効化
 
-   全戦略の組み合わせで対戦し、勝率マトリックスを生成:
+### Phase 7: オークションシステム ✅
 
-   ```kotlin
-   StrategyComparisonExperiment(
-       strategies = listOf(Always, Random, Conservative, Aggressive, SetFocused, ROI, Balanced),
-       gamesPerPair = 100  // 各組み合わせ100回対戦
-   )
-   // 出力: 7x7対戦成績マトリックス
-   ```
+- オークション機構、入札管理、落札判定
 
-3. **HTMLレポート生成**
+### Phase 8: 実験管理 ✅
 
-   kotlinx-htmlを使用してHTMLレポートを生成:
+- 複数ゲーム実行、統計収集、JSON/CSV保存、CLI統計表示
 
-   ```kotlin
-   class HTMLReportGenerator {
-       fun generate(statistics: AggregatedStatistics): String
-   }
-   ```
+### Web UI Server ✅
 
-   **レポート内容**:
-   - 実験サマリー（総ゲーム数、実行時間）
-   - 勝率テーブル（プレイヤー別、戦略別）
-   - 平均ターン数、平均最終資産
-   - 棒グラフ（勝率比較）
-
-4. **基本的なグラフ可視化**
-
-   Chart.js等のライブラリを使用:
-   - 棒グラフ: 戦略別勝率
-   - 円グラフ: 勝利分布
-   - ヒストグラム: ターン数分布
-
-5. **統計的検定**
-
-   戦略間の有意差を検定:
-   - t検定: 戦略間の勝率差の有意性
-   - 信頼区間計算: 95%信頼区間
-   - 効果量: Cohen's d（差の大きさ）
-   - p値調整: Bonferroni補正（多重比較）
-
-6. **Nash均衡の探索**
-
-   ゲーム理論的な分析:
-   - 最適反応戦略の特定
-   - 支配戦略の検出
-   - 混合戦略Nash均衡の計算
-
-7. **研究レポートのセクション追加**
-
-   ```markdown
-   # 戦略支配関係分析レポート
-
-   ## 仮説
-   H0: 全ての戦略の勝率は等しい
-   H1: 有意差が存在する
-
-   ## 対戦マトリックス
-   |          | Always | Random | Conservative | Aggressive | SetFocused | ROI | Balanced |
-   |----------|--------|--------|--------------|------------|------------|-----|----------|
-   | Always   | 50.0%  | 78.2%  | 62.3% **     | 45.1%      | 53.2%      |...  |...       |
-   ...
-   ** p < 0.01
-
-   ## Nash均衡
-   - 純粋戦略均衡: ROI
-   - 支配戦略: なし
-   - 弱支配戦略: Random（他の全戦略に劣る）
-
-   ## 統計的有意性
-   - ROI vs Random: p < 0.001, Cohen's d = 1.2（大きな効果）
-   - ROI vs Always: p = 0.034, Cohen's d = 0.3（小さな効果）
-   ```
-
-**期待される成果**:
-
-- **システム面**: HTMLレポートで実験結果を分かりやすく可視化
-- **研究面**: どの戦略が最も強いかの科学的根拠、戦略の相性関係の理解、ゲーム理論的な最適戦略の発見
+- Ktorサーバー、REST API、静的HTMLファイル提供
 
 ---
 
-### Phase 10: 詳細統計とリスク選好の測定
+## 実験結果サマリー（Phase 9）
 
-**システム機能**: 詳細統計の収集と高度な可視化
+### トレード機能の効果
 
-**研究テーマ**: リスク選好度の定量化とリスク-リターン分析（行動経済学）
+| 指標 | 導入前 | 導入後 |
+|------|--------|--------|
+| 平均ターン数 | 1000 | 411 |
+| 成立トレード数/ゲーム | 0 | ~293 |
+| 建設された家/ゲーム | 0 | ~23 |
+| 破産発生率 | 0% | 65% |
 
-**実装内容**:
+### 戦略勝率（vs Random）
 
-1. **詳細統計の収集**
-
-   ゲーム内の様々なイベントを記録:
-
-   ```kotlin
-   data class DetailedStatistics(
-       // プロパティ別収益性
-       val propertyProfitability: Map<String, PropertyStats>,
-       // 資産推移（ターン毎）
-       val assetProgression: List<AssetSnapshot>,
-       // カラーグループ別ROI
-       val colorGroupROI: Map<ColorGroup, Double>,
-       // レント収入・支出の内訳
-       val rentIncomeBreakdown: Map<String, Int>,
-       val rentExpenseBreakdown: Map<String, Int>
-   )
-
-   data class PropertyStats(
-       val totalRentIncome: Int,
-       val investmentCost: Int,
-       val roi: Double,
-       val landingCount: Int
-   )
-   ```
-
-2. **詳細な意思決定ログ**
-
-   各意思決定のコンテキストと結果を記録:
-
-   ```kotlin
-   data class DecisionLog(
-       val turnNumber: Int,
-       val decision: Decision,
-       val context: DecisionContext,
-       val outcome: Outcome
-   )
-
-   sealed class Decision {
-       data class PropertyPurchase(val property: Property, val accepted: Boolean)
-       data class BuildingInvestment(val property: Property, val type: BuildingType)
-       data class JailEscape(val paidFine: Boolean)
-       data class AuctionBid(val amount: Int?)
-   }
-   ```
-
-3. **リスクパラメータの測定**
-
-   戦略のリスク特性を定量化:
-   - 期待効用理論に基づくリスク回避係数の推定
-   - プロパティ購入率（手持ち資金比）
-   - 建物投資タイミング（資金余裕度）
-   - 監獄脱出判断（機会費用 vs 確実なコスト）
-
-4. **リスク-リターン分析**
-
-   ```kotlin
-   data class RiskReturnProfile(
-       val expectedReturn: Double,      // 平均最終資産
-       val volatility: Double,           // 標準偏差
-       val sharpeRatio: Double,          // (期待収益 - 無リスク収益) / 標準偏差
-       val maxDrawdown: Double,          // 最大資産減少幅
-       val bankruptcyRate: Double        // 破産率
-   )
-   ```
-
-5. **高度な可視化**
-
-   より詳細なグラフを追加:
-   - 折れ線グラフ: 資産推移（ターン毎、複数プレイヤー）
-   - ヒートマップ: プロパティ別収益性
-   - 散布図: リスク-リターン散布図
-   - 効率的フロンティア: 最適なリスク-リターン組み合わせ
-   - 意思決定ツリー: 戦略の分岐構造
-
-6. **回帰分析**
-
-   統計的な因果関係を探索:
-   - 独立変数: リスクパラメータ（投資積極性、資金温存率）
-   - 従属変数: 勝率、平均最終資産
-   - モデル: 線形回帰、ロジスティック回帰
-
-**期待される成果**:
-
-- **システム面**: プロパティ別収益性、資産推移など詳細な統計で戦略の内部構造を理解
-- **研究面**: 最適なリスク選好度の発見、リスクとリターンのトレードオフの定量化、行動経済学的な洞察（損失回避、確実性効果など）
+| 戦略 | 勝率 |
+|------|------|
+| Conservative | 96% |
+| Balanced | 94% |
+| Aggressive | 87% |
+| SetFocused | 71% |
+| ROI | 71% |
+| Always | 67% |
 
 ---
 
-### Phase 11: 並列実行とサンクコスト効果の検証
+## 次のステップ
 
-**システム機能**: 並列実行によるパフォーマンス最適化
+### Phase 9 残りタスク
 
-**研究テーマ**: サンクコスト効果の検証（認知バイアス）
+1. **統計的検定の実装**
+   - StatisticalAnalysisクラスの拡張
+   - HTMLレポートへの有意性表示追加
 
-**実装内容**:
+2. **Nash均衡探索**
+   - 対戦マトリックスからの支配戦略検出
+   - 最適混合戦略の計算
 
-1. **並列実行の実装**
+### Phase 10 以降
 
-   Kotlin Coroutinesを使用した並列実行:
-
-   ```kotlin
-   class ParallelExperimentRunner(
-       val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-   ) {
-       suspend fun runExperimentParallel(
-           gameCount: Int,
-           strategies: List<PlayerStrategy>,
-           parallelism: Int = Runtime.getRuntime().availableProcessors()
-       ): List<GameStatistics> {
-           return coroutineScope {
-               (1..gameCount).chunked(parallelism).flatMap { chunk ->
-                   chunk.map { gameId ->
-                       async { runSingleGame(gameId, strategies) }
-                   }.awaitAll()
-               }
-           }
-       }
-   }
-   ```
-
-   **パフォーマンス目標**:
-   - 10,000ゲーム/分以上（Phase 8比で10倍以上の高速化）
-   - CPUコア数に応じたスケーラビリティ
-
-2. **大規模実験の実行**
-
-   並列実行を活用した大規模実験:
-   - サンプルサイズ: 1,000〜10,000ゲーム
-   - より信頼性の高い統計的検定
-   - より小さな効果量の検出
-
-3. **サンクコストを考慮する戦略**
-
-   認知バイアスをモデル化:
-
-   ```kotlin
-   class SunkCostStrategy(
-       val sunkCostWeight: Double = 0.5  // 過去投資の重み
-   ) : PlayerStrategy {
-       override fun shouldBuildHouse(...): Boolean {
-           val rationalDecision = expectedROI > threshold
-           val sunkCostBias = pastInvestment * sunkCostWeight
-           return rationalDecision || sunkCostBias > threshold
-       }
-   }
-   ```
-
-4. **測定指標**
-
-   サンクコスト効果の影響を測定:
-   - 損失プロパティへの追加投資率
-   - モノポリー完成までの粘り強さ
-   - 破産寸前での行動変化
-   - 合理的戦略からの乖離度
-
-5. **実験デザイン**
-
-   大規模な対照実験:
-
-   ```kotlin
-   ExperimentDesign(
-       control = RationalStrategy(),
-       treatment = SunkCostStrategy(sunkCostWeight = 0.3),
-       matchedPairs = true,  // 同じランダムシードで対戦
-       sampleSize = 10000    // 並列実行により実現可能
-   )
-   ```
-
-6. **統計分析**
-
-   並列実行で大規模データ分析:
-   - 対応のあるt検定（マッチドペア）
-   - 差分の差分法（DID: Difference-in-Differences）
-   - 傾向スコアマッチング
-   - ベイズ推定（事前分布から事後分布へ）
-
-7. **認知バイアスの影響測定**
-
-   - サンクコスト効果の強度
-   - パフォーマンスへの影響（正負）
-   - バイアスが有利に働くケース
-   - sunkCostWeightパラメータの最適値探索
-
-**期待される成果**:
-
-- **システム面**: 10,000ゲーム/分以上の実行速度、大規模実験による統計的信頼性の向上
-- **研究面**: サンクコスト効果がモノポリーで有害か有益かの判定、バイアスの最適な強度の発見、人間的な意思決定の再現と理解
-
----
-
-### Phase 12: 協調ゲーム理論の応用
-
-**システム機能**: 多人数ゲーム対応（3〜4人プレイヤー）
-
-**研究テーマ**: 暗黙的協調と裏切りのパターン分析（協調ゲーム理論）
-
-**実装内容**:
-
-1. **多人数ゲーム対応（3〜4人）**
-
-   これまでの2人ゲームから拡張:
-
-   ```kotlin
-   class MultiPlayerExperiment(
-       val playerCount: Int = 4,  // 3〜4人対応
-       val strategies: List<PlayerStrategy>
-   ) {
-       init {
-           require(playerCount in 3..4) { "Player count must be 3 or 4" }
-       }
-   }
-   ```
-
-   **実装変更点**:
-   - GameStateの拡張（3〜4人対応）
-   - オークションシステムの拡張（入札者増加）
-   - 統計収集の拡張（3〜4人分のデータ）
-
-2. **協調検出アルゴリズム**
-
-   暗黙的な協調行動を検出:
-
-   ```kotlin
-   data class Coalition(
-       val members: Set<String>,
-       val duration: Int,  // 協調が続いたターン数
-       val benefit: Map<String, Int>  // 各メンバーの利益
-   )
-
-   class CoalitionDetector {
-       fun detectImplicitCoalitions(gameLog: List<GameEvent>): List<Coalition>
-   }
-   ```
-
-   **検出パターン**:
-   - 同じプレイヤーへの連続攻撃回避
-   - オークション入札の自粛パターン
-   - 有利な取引の提供（Phase 13以降で実装予定）
-
-3. **ゲーム理論的分析**
-
-   協調ゲーム理論の適用:
-   - **Shapley値**: 連合への各プレイヤーの貢献度
-   - **コア**: 安定的な配分の集合
-   - **裏切りの誘因分析**: どの時点で裏切りが有利になるか
-
-4. **3人ゲームの特殊性分析**
-
-   2人ゲームとの違いを分析:
-   - 2対1の構図の発生頻度
-   - 弱者への集中攻撃パターン
-   - 「kingmaker問題」（3位が勝者を決める状況）
-
-5. **シミュレーション実験**
-
-   繰り返しゲームによる戦略進化:
-   - 繰り返しゲーム（同じプレイヤーで複数回）
-   - 評判システムの影響
-   - しっぺ返し戦略の効果
-   - 協調の持続性
-
-6. **取引・交渉戦略（Phase 13以降で実装予定）**
-
-   将来拡張のための設計:
-
-   ```kotlin
-   interface NegotiationStrategy {
-       fun proposeTradeOffer(...): TradeOffer?
-       fun evaluateTradeOffer(...): Boolean
-       fun formAlliance(...): Coalition?
-   }
-   ```
-
-   **取引システム**:
-   - プロパティ交換
-   - 金銭取引
-   - 免除契約（レント免除など）
-
-**期待される成果**:
-
-- **システム面**: 3〜4人プレイヤー対応により、より現実的なモノポリー環境を実現
-- **研究面**: 3人以上のゲームでの最適戦略、協調が生まれる条件の理解、裏切りの最適タイミング、取引・交渉システムの設計指針
-
----
-
-## フェーズ間の依存関係
-
-```text
-Phase 8 (実験管理)
-    ↓ 基盤システム
-Phase 9 (複数戦略 + 支配関係分析)
-    ├─ システム: 複数戦略実装、HTMLレポート、基本グラフ
-    └─ 研究: Nash均衡、支配戦略の探索
-    ↓ 「なぜ強いか？」の深掘り
-Phase 10 (詳細統計 + リスク選好)
-    ├─ システム: 詳細統計、高度な可視化
-    └─ 研究: リスク-リターン分析、行動経済学的洞察
-    ↓ 大規模実験 + 認知バイアス
-Phase 11 (並列実行 + サンクコスト効果)
-    ├─ システム: 並列実行（10,000ゲーム/分）
-    └─ 研究: サンクコスト効果の検証
-    ↓ 複雑な相互作用へ
-Phase 12 (多人数対応 + 協調ゲーム理論)
-    ├─ システム: 3〜4人プレイヤー対応
-    └─ 研究: 暗黙的協調と裏切りの分析
-```
-
-**段階的な機能拡張**:
-
-1. **Phase 9**: 複数戦略 + 可視化 + 2人ゲームの基本分析
-2. **Phase 10**: 詳細統計 + 高度な可視化 + 意思決定の深掘り
-3. **Phase 11**: 並列実行 + パフォーマンス向上 + 認知バイアスの追加
-4. **Phase 12**: 多人数対応 + 複雑な相互作用の分析
-
-各フェーズで**システム機能**と**研究テーマ**の両方が進化し、得られた知見が次のフェーズに活きる設計になっています。
-
----
-
-## 方針変更の記録
-
-### 2025-12-08: Phase 9-12計画の統合
-
-- **変更前**: Phase 9-12は2つの異なる計画が存在
-  - **システム計画**: HTMLレポート、可視化、詳細統計、並列実行、複数戦略
-  - **研究計画**: ゲーム理論、行動経済学、認知バイアス、協調ゲーム理論
-- **変更後**: 両方を統合し、各フェーズで**システム機能**と**研究テーマ**を同時に実装
-- **理由**:
-  - システム機能（可視化、並列実行など）は研究を支える基盤として必要
-  - 研究テーマ（ゲーム理論など）はプロジェクトの本質的な目標
-  - 両方を組み合わせることで、実用性と学術性を両立
-  - Phase 9で複数戦略を実装し、それを使って研究を進める自然な流れ
-
-**新しいフェーズ構成**:
-
-- Phase 9: 複数戦略 + HTMLレポート + 支配関係分析
-- Phase 10: 詳細統計 + 高度な可視化 + リスク選好測定
-- Phase 11: 並列実行 + サンクコスト効果検証
-- Phase 12: 多人数対応 + 協調ゲーム理論
-
-### 2025-12-08: Phase 4建物システムの完了確認
-
-- **状況**: Phase 4建物システムは既に実装済みであることが判明
-- **実装内容**:
-  - BuildingService、MonopolyCheckerService実装済み
-  - GameServiceへの統合完了（ターン終了時に自動建設）
-  - 27テストケース（BuildingService: 10, MonopolyChecker: 6, PropertyBuildings: 11）
-- **理由**: ドキュメントの更新漏れ。実装は完了していた
-
-### 2025-12-08: Phase 8の定義変更
-
-- **変更前**: Phase 8 = 複数戦略とゲーム可視化
-- **変更後**: Phase 8 = 実験管理（複数ゲーム実行と基本統計）
-- **理由**:
-  - Phase 3-7でゲームの主要ルールが実装完了
-  - 戦略研究のための実験基盤が必要
-  - 複数戦略の実装は実験管理システム完成後の方が効率的
-  - YAGNI原則に従い、必要な機能から実装
-
-### 優先順位の考え方
-
-1. **実験管理（Phase 8）**: 研究基盤として最優先
-2. **可視化・分析（Phase 9-10）**: 実験結果の理解を深める
-3. **パフォーマンス（Phase 11）**: 大規模実験のために必要
-4. **複数戦略（Phase 12）**: 実験基盤完成後に実装
+| Phase | システム機能 | 研究テーマ |
+|-------|--------------|------------|
+| 10 | 詳細統計、高度な可視化 | リスク選好度の測定 |
+| 11 | 並列実行（Coroutines） | サンクコスト効果の検証 |
+| 12 | 多人数対応（3-4人） | 協調ゲーム理論 |
+| 13 | - | 取引・交渉戦略 |
 
 ---
 
 ## 参考ドキュメント
 
+- Phase 9詳細: [`phases/phase9/summary.md`](phases/phase9/summary.md)
+- トレード実装計画: [`phases/phase9/trade-implementation-plan.md`](phases/phase9/trade-implementation-plan.md)
 - ゲームルール: [`specifications/02-game-rules.md`](specifications/02-game-rules.md)
 - 開発計画: [`planning/development-plan.md`](planning/development-plan.md)
-- 未実装機能: [`planning/unimplemented-features.md`](planning/unimplemented-features.md)
 
 ---
 
-**更新**: 2025-12-08
+**更新**: 2025-12-14
