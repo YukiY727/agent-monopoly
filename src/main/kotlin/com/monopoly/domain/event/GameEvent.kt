@@ -356,4 +356,66 @@ sealed class GameEvent {
         val winnerName: String?,
         val winningBid: Int,
     ) : GameEvent()
+
+    // Phase 9: トレード関連イベント
+
+    /**
+     * トレード提案イベント
+     * @property proposerName 提案者名
+     * @property targetName 提案を受ける相手の名前
+     * @property offeredPropertyNames 提供する物件名リスト
+     * @property offeredMoney 提供する金額
+     * @property requestedPropertyNames 要求する物件名リスト
+     * @property requestedMoney 要求する金額
+     */
+    data class TradeProposed(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val proposerName: String,
+        val targetName: String,
+        val offeredPropertyNames: List<String>,
+        val offeredMoney: Int,
+        val requestedPropertyNames: List<String>,
+        val requestedMoney: Int,
+    ) : GameEvent()
+
+    /**
+     * トレード受け入れイベント
+     * @property proposerName 提案者名
+     * @property targetName 提案を受け入れた相手の名前
+     */
+    data class TradeAccepted(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val proposerName: String,
+        val targetName: String,
+    ) : GameEvent()
+
+    /**
+     * トレード拒否イベント
+     * @property proposerName 提案者名
+     * @property targetName 提案を拒否した相手の名前
+     */
+    data class TradeRejected(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val proposerName: String,
+        val targetName: String,
+    ) : GameEvent()
+
+    /**
+     * トレード完了イベント
+     * @property proposerName 提案者名
+     * @property targetName 取引相手の名前
+     * @property propertiesExchanged 交換された物件数
+     * @property moneyExchanged 交換された金額の合計
+     */
+    data class TradeCompleted(
+        override val turnNumber: Int,
+        override val timestamp: Long,
+        val proposerName: String,
+        val targetName: String,
+        val propertiesExchanged: Int,
+        val moneyExchanged: Int,
+    ) : GameEvent()
 }

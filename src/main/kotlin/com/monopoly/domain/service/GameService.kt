@@ -18,10 +18,13 @@ import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.PropertyOwnership
 import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.model.trade.Trade
+import com.monopoly.domain.model.trade.TradeOffer
 
 @Suppress("TooManyFunctions") // Phase 1の範囲内では許容
 class GameService(
     private val buildingService: BuildingService,
+    private val tradeService: TradeService = TradeService(),
 ) {
     fun checkGameEnd(gameState: GameState): Boolean {
         val activePlayerCount: Int = gameState.getActivePlayerCount()
@@ -149,6 +152,9 @@ class GameService(
 
         // 建物建設フェーズ（Phase 2）
         tryBuildBuildings(player, gameState)
+
+        // トレードフェーズ（Phase 9）
+        tryTradeWithOtherPlayers(player, gameState)
 
         // TurnEndedイベントを記録
         gameState.events.add(
@@ -643,6 +649,106 @@ class GameService(
                     }
                 }
             }
+    }
+
+    /**
+     * 他のプレイヤーとのトレードを試みる（Phase 9）
+     *
+     * 1. 現在のプレイヤーの戦略にトレード提案を依頼
+     * 2. 提案があればバリデーション
+     * 3. ターゲットの戦略に評価を依頼
+     * 4. 受け入れられれば実行
+     */
+    private fun tryTradeWithOtherPlayers(
+        player: Player,
+        gameState: GameState,
+    ) {
+        // 他のアクティブプレイヤーを取得
+        val otherPlayers: List<Player> = gameState.players.filter { it != player && !it.isBankrupt }
+        if (otherPlayers.isEmpty()) {
+            return
+        }
+
+        // 戦略にトレード提案を依頼
+        val offer: TradeOffer = player.strategy.proposeTradeOffer(player, otherPlayers) ?: return
+
+        // TradeProposedイベントを記録
+        gameState.events.add(
+            GameEvent.TradeProposed(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                proposerName = offer.proposer.name,
+                targetName = offer.target.name,
+                offeredPropertyNames = offer.offeredProperties.map { it.name },
+                offeredMoney = offer.offeredMoney,
+                requestedPropertyNames = offer.requestedProperties.map { it.name },
+                requestedMoney = offer.requestedMoney,
+            ),
+        )
+
+        // 提案のバリデーション
+        if (!tradeService.validateOffer(offer)) {
+            gameState.events.add(
+                GameEvent.TradeRejected(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    proposerName = offer.proposer.name,
+                    targetName = offer.target.name,
+                ),
+            )
+            return
+        }
+
+        // ターゲットの戦略に評価を依頼
+        val target: Player = offer.target
+        val accepted: Boolean = target.strategy.evaluateTradeOffer(offer, target)
+
+        if (!accepted) {
+            gameState.events.add(
+                GameEvent.TradeRejected(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    proposerName = offer.proposer.name,
+                    targetName = offer.target.name,
+                ),
+            )
+            return
+        }
+
+        // トレード受け入れイベント
+        gameState.events.add(
+            GameEvent.TradeAccepted(
+                turnNumber = gameState.turnNumber,
+                timestamp = System.currentTimeMillis(),
+                proposerName = offer.proposer.name,
+                targetName = offer.target.name,
+            ),
+        )
+
+        // トレード実行
+        val success: Boolean = tradeService.executeTrade(offer)
+        if (success) {
+            // ボード上のプロパティ情報も更新
+            for (property in offer.offeredProperties) {
+                val newProperty = property.withOwner(offer.target)
+                gameState.board.updateProperty(newProperty)
+            }
+            for (property in offer.requestedProperties) {
+                val newProperty = property.withOwner(offer.proposer)
+                gameState.board.updateProperty(newProperty)
+            }
+
+            gameState.events.add(
+                GameEvent.TradeCompleted(
+                    turnNumber = gameState.turnNumber,
+                    timestamp = System.currentTimeMillis(),
+                    proposerName = offer.proposer.name,
+                    targetName = offer.target.name,
+                    propertiesExchanged = offer.offeredProperties.size + offer.requestedProperties.size,
+                    moneyExchanged = offer.offeredMoney + offer.requestedMoney,
+                ),
+            )
+        }
     }
 
     /**

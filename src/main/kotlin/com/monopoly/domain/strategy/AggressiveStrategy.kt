@@ -1,8 +1,11 @@
 package com.monopoly.domain.strategy
 
+import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.model.player.PlayerStrategy
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.model.trade.TradeOffer
+import com.monopoly.domain.service.TradeHelperService
 
 /**
  * 積極的な戦略
@@ -12,6 +15,7 @@ import com.monopoly.domain.model.property.StreetProperty
  * - 建設判断: コストが所持金の70%以下なら建設
  * - 監獄脱出: 所持金が最低額以上あれば積極的に支払う
  * - オークション: プロパティ価格の80%まで積極的に入札
+ * - トレード: モノポリー完成を目指して積極的にトレード
  */
 class AggressiveStrategy : PlayerStrategy {
     /**
@@ -97,6 +101,31 @@ class AggressiveStrategy : PlayerStrategy {
         return myBid
     }
 
+    /**
+     * トレード提案を作成
+     *
+     * 積極的にトレードを提案し、モノポリー完成を目指す
+     */
+    override fun proposeTradeOffer(
+        currentPlayer: Player,
+        otherPlayers: List<Player>,
+    ): TradeOffer? {
+        val maxMoneyOffer: Int = (currentPlayer.money * TRADE_MONEY_RATIO).toInt()
+        return TradeHelperService.createTradeOffer(currentPlayer, otherPlayers, maxMoneyOffer)
+    }
+
+    /**
+     * トレード提案を評価
+     *
+     * TradeHelperのロジックを使用して評価
+     */
+    override fun evaluateTradeOffer(
+        offer: TradeOffer,
+        currentPlayer: Player,
+    ): Boolean {
+        return TradeHelperService.evaluateTradeOffer(offer, currentPlayer)
+    }
+
     companion object {
         /** 購入判断の比率（所持金の80%まで） */
         private const val PURCHASE_RATIO = 0.8
@@ -109,5 +138,8 @@ class AggressiveStrategy : PlayerStrategy {
 
         /** オークション入札比率（プロパティ価格の80%） */
         private const val BID_RATIO = 0.8
+
+        /** トレードで提供する金額の比率（所持金の50%まで） */
+        private const val TRADE_MONEY_RATIO = 0.5
     }
 }

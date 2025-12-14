@@ -360,5 +360,63 @@ fun GameEvent.toDto(): GameEventDto {
                         "winningBid" to winningBid.toString(),
                     ),
             )
+
+        is GameEvent.TradeProposed ->
+            GameEventDto(
+                turnNumber = turnNumber,
+                timestamp = timestamp,
+                type = "TradeProposed",
+                description = "$proposerName proposed a trade to $targetName",
+                data =
+                    mapOf(
+                        "proposerName" to proposerName,
+                        "targetName" to targetName,
+                        "offeredProperties" to offeredPropertyNames.joinToString(", "),
+                        "offeredMoney" to offeredMoney.toString(),
+                        "requestedProperties" to requestedPropertyNames.joinToString(", "),
+                        "requestedMoney" to requestedMoney.toString(),
+                    ),
+            )
+
+        is GameEvent.TradeAccepted ->
+            GameEventDto(
+                turnNumber = turnNumber,
+                timestamp = timestamp,
+                type = "TradeAccepted",
+                description = "$targetName accepted trade from $proposerName",
+                data =
+                    mapOf(
+                        "proposerName" to proposerName,
+                        "targetName" to targetName,
+                    ),
+            )
+
+        is GameEvent.TradeRejected ->
+            GameEventDto(
+                turnNumber = turnNumber,
+                timestamp = timestamp,
+                type = "TradeRejected",
+                description = "$targetName rejected trade from $proposerName",
+                data =
+                    mapOf(
+                        "proposerName" to proposerName,
+                        "targetName" to targetName,
+                    ),
+            )
+
+        is GameEvent.TradeCompleted ->
+            GameEventDto(
+                turnNumber = turnNumber,
+                timestamp = timestamp,
+                type = "TradeCompleted",
+                description = "Trade completed between $proposerName and $targetName: $propertiesExchanged properties, $$$moneyExchanged",
+                data =
+                    mapOf(
+                        "proposerName" to proposerName,
+                        "targetName" to targetName,
+                        "propertiesExchanged" to propertiesExchanged.toString(),
+                        "moneyExchanged" to moneyExchanged.toString(),
+                    ),
+            )
     }
 }

@@ -64,6 +64,10 @@ tasks.register<JavaExec>("runExperiment") {
     description = "Run monopoly experiments"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("com.monopoly.cli.ExperimentMainKt")
+    // Pass project properties as command line arguments
+    val gameCount = project.findProperty("gameCount") as String? ?: "10"
+    val strategies = project.findProperty("strategies") as String? ?: "aggressive,conservative,roi,balanced"
+    args = listOf("-g", gameCount, "-s", strategies)
 }
 
 // 単一ゲーム実行用タスク（既存のMainをラップ）

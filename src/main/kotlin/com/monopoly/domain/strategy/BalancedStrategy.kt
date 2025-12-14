@@ -1,8 +1,11 @@
 package com.monopoly.domain.strategy
 
+import com.monopoly.domain.model.player.Player
 import com.monopoly.domain.model.player.PlayerStrategy
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.StreetProperty
+import com.monopoly.domain.model.trade.TradeOffer
+import com.monopoly.domain.service.TradeHelperService
 
 /**
  * バランス型の戦略
@@ -14,6 +17,7 @@ import com.monopoly.domain.model.property.StreetProperty
  * - 建設判断: ROI >= 0.15 かつ コストが所持金の50%以下
  * - 監獄脱出: 所持金が一定額以上あれば支払う
  * - オークション: プロパティ価格の50%で入札
+ * - トレード: バランスの取れたトレード提案・評価
  */
 class BalancedStrategy : PlayerStrategy {
     /**
@@ -181,6 +185,31 @@ class BalancedStrategy : PlayerStrategy {
             else -> property.rent.base
         }
 
+    /**
+     * トレード提案を作成
+     *
+     * バランスの取れたトレードを提案します。
+     */
+    override fun proposeTradeOffer(
+        currentPlayer: Player,
+        otherPlayers: List<Player>,
+    ): TradeOffer? {
+        val maxMoneyOffer: Int = (currentPlayer.money * TRADE_MONEY_RATIO).toInt()
+        return TradeHelperService.createTradeOffer(currentPlayer, otherPlayers, maxMoneyOffer)
+    }
+
+    /**
+     * トレード提案を評価
+     *
+     * TradeHelperのロジックを使用して評価します。
+     */
+    override fun evaluateTradeOffer(
+        offer: TradeOffer,
+        currentPlayer: Player,
+    ): Boolean {
+        return TradeHelperService.evaluateTradeOffer(offer, currentPlayer)
+    }
+
     companion object {
         /** プロパティ購入の最低ROI */
         private const val MIN_PROPERTY_ROI = 0.02
@@ -199,5 +228,8 @@ class BalancedStrategy : PlayerStrategy {
 
         /** 監獄脱出の最低所持金 */
         private const val MIN_MONEY_FOR_JAIL_PAYMENT = 300
+
+        /** トレードで提供する金額の比率（所持金の30%まで） */
+        private const val TRADE_MONEY_RATIO = 0.3
     }
 }

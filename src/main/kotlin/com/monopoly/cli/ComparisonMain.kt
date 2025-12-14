@@ -1,6 +1,8 @@
 package com.monopoly.cli
 
 import com.monopoly.domain.experiment.ComparisonMatrix
+import com.monopoly.domain.experiment.DominanceAnalysis
+import com.monopoly.domain.experiment.StatisticalAnalysis
 import com.monopoly.domain.experiment.StrategyComparisonExperiment
 import com.monopoly.domain.experiment.StrategyInfo
 import java.io.File
@@ -221,6 +223,9 @@ private fun saveHtml(
     path: String,
     gamesPerMatchup: Int,
 ) {
+    // 統計分析を実行
+    val dominance: DominanceAnalysis = StatisticalAnalysis.analyzeDominance(matrix)
+
     val html =
         """
         <!DOCTYPE html>
@@ -234,13 +239,22 @@ private fun saveHtml(
                 body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
                 .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
                 h1 { color: #333; }
+                h2 { color: #555; border-bottom: 2px solid #4CAF50; padding-bottom: 5px; }
                 table { border-collapse: collapse; width: 100%; margin: 20px 0; }
                 th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
                 th { background-color: #4CAF50; color: white; }
                 tr:nth-child(even) { background-color: #f2f2f2; }
                 .high-win { background-color: #c8e6c9; }
                 .low-win { background-color: #ffcdd2; }
+                .significant { font-weight: bold; }
                 .chart-container { width: 100%; max-width: 800px; margin: 20px auto; }
+                .analysis-box { background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                .warning-box { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                .info-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                ul { margin: 10px 0; padding-left: 20px; }
+                .effect-small { color: #888; }
+                .effect-medium { color: #f57c00; }
+                .effect-large { color: #d32f2f; font-weight: bold; }
             </style>
         </head>
         <body>
@@ -248,6 +262,12 @@ private fun saveHtml(
                 <h1>Strategy Comparison Report</h1>
                 <p>Games per matchup: $gamesPerMatchup</p>
                 <p>Total matchups: ${matrix.matchups.size}</p>
+                <p>Total games: ${matrix.matchups.size * gamesPerMatchup}</p>
+
+                <h2>Dominance Analysis</h2>
+                <div class="analysis-box">
+                    ${generateDominanceHtml(dominance)}
+                </div>
 
                 <h2>Win Rate Matrix</h2>
                 <table>
@@ -255,30 +275,20 @@ private fun saveHtml(
                         <th></th>
                         ${matrix.strategies.joinToString("") { "<th>$it</th>" }}
                     </tr>
-                    ${
-            matrix.strategies.joinToString("") { row ->
-                "<tr><th>$row</th>" +
-                    matrix.strategies.joinToString("") { col ->
-                        val winRate: Double? = matrix.getWinRate(row, col)
-                        val cell: String =
-                            when {
-                                row == col -> "-"
-                                winRate != null -> "%.1f%%".format(winRate * 100)
-                                else -> "?"
-                            }
-                        val cssClass: String =
-                            when {
-                                winRate == null -> ""
-                                winRate >= 0.6 -> "high-win"
-                                winRate <= 0.4 -> "low-win"
-                                else -> ""
-                            }
-                        "<td class=\"$cssClass\">$cell</td>"
-                    } +
-                    "</tr>"
-            }
-        }
+                    ${generateMatrixRowsHtml(matrix, gamesPerMatchup)}
                 </table>
+
+                <h2>Statistical Significance</h2>
+                <div class="info-box">
+                    <p><strong>Legend:</strong></p>
+                    <ul>
+                        <li><span class="significant">Bold</span> = Statistically significant (p &lt; 0.05)</li>
+                        <li><span class="effect-small">Gray</span> = Small effect (Cohen's d &lt; 0.5)</li>
+                        <li><span class="effect-medium">Orange</span> = Medium effect (0.5 ≤ d &lt; 0.8)</li>
+                        <li><span class="effect-large">Red Bold</span> = Large effect (d ≥ 0.8)</li>
+                    </ul>
+                </div>
+                ${generateSignificanceTableHtml(matrix, gamesPerMatchup)}
 
                 <h2>Overall Win Rates</h2>
                 <div class="chart-container">
@@ -318,6 +328,144 @@ private fun saveHtml(
         """.trimIndent()
 
     File(path).writeText(html)
+}
+
+/**
+ * 支配関係のHTML生成
+ */
+private fun generateDominanceHtml(dominance: DominanceAnalysis): String {
+    val sb = StringBuilder()
+
+    if (dominance.strictlyDominant != null) {
+        sb.append("<p><strong>Strictly Dominant Strategy:</strong> ${dominance.strictlyDominant}</p>")
+        sb.append("<p>This strategy beats all other strategies (win rate > 50%)</p>")
+    } else if (dominance.weaklyDominant.isNotEmpty()) {
+        sb.append("<p><strong>Weakly Dominant Strategies:</strong> ${dominance.weaklyDominant.joinToString(", ")}</p>")
+        sb.append("<p>These strategies never lose to any other strategy (win rate ≥ 50%)</p>")
+    } else {
+        sb.append("<p>No dominant strategy found. This suggests a rock-paper-scissors dynamic.</p>")
+    }
+
+    if (dominance.strictlyDominated.isNotEmpty()) {
+        sb.append("<p><strong>Strictly Dominated Strategies:</strong> ${dominance.strictlyDominated.joinToString(", ")}</p>")
+        sb.append("<p>These strategies lose to all other strategies (win rate < 50%)</p>")
+    }
+
+    return sb.toString()
+}
+
+/**
+ * マトリックス行のHTML生成
+ */
+private fun generateMatrixRowsHtml(
+    matrix: ComparisonMatrix,
+    gamesPerMatchup: Int,
+): String =
+    matrix.strategies.joinToString("") { row ->
+        "<tr><th>$row</th>" +
+            matrix.strategies.joinToString("") { col ->
+                val winRate: Double? = matrix.getWinRate(row, col)
+                val matchup = matrix.matchups.find {
+                    (it.strategy1 == row && it.strategy2 == col) ||
+                        (it.strategy1 == col && it.strategy2 == row)
+                }
+
+                val cell: String
+                val cssClass: String
+
+                when {
+                    row == col -> {
+                        cell = "-"
+                        cssClass = ""
+                    }
+                    winRate != null && matchup != null -> {
+                        val wins: Int = if (matchup.strategy1 == row) matchup.strategy1Wins else matchup.strategy2Wins
+                        val ci = StatisticalAnalysis.confidenceInterval(wins, gamesPerMatchup)
+                        cell = "%.1f%%<br><small>[%.0f-%.0f]</small>".format(
+                            winRate * 100,
+                            ci.lower * 100,
+                            ci.upper * 100,
+                        )
+                        cssClass =
+                            when {
+                                winRate >= 0.6 -> "high-win"
+                                winRate <= 0.4 -> "low-win"
+                                else -> ""
+                            }
+                    }
+                    else -> {
+                        cell = "?"
+                        cssClass = ""
+                    }
+                }
+                "<td class=\"$cssClass\">$cell</td>"
+            } +
+            "</tr>"
+    }
+
+/**
+ * 統計的有意性テーブルのHTML生成
+ */
+private fun generateSignificanceTableHtml(
+    matrix: ComparisonMatrix,
+    gamesPerMatchup: Int,
+): String {
+    val sb = StringBuilder()
+    sb.append("<table>")
+    sb.append("<tr><th>Matchup</th><th>Win Rate</th><th>p-value</th><th>Cohen's d</th><th>Significance</th></tr>")
+
+    matrix.matchups.forEach { matchup ->
+        val testResult = StatisticalAnalysis.twoProportionZTest(
+            matchup.strategy1Wins,
+            gamesPerMatchup,
+            matchup.strategy2Wins,
+            gamesPerMatchup,
+        )
+        val effectSize = StatisticalAnalysis.cohensD(
+            matchup.strategy1WinRate,
+            matchup.strategy2WinRate,
+            gamesPerMatchup,
+        )
+
+        val effectClass: String =
+            when {
+                effectSize >= 0.8 -> "effect-large"
+                effectSize >= 0.5 -> "effect-medium"
+                else -> "effect-small"
+            }
+
+        val significanceText: String =
+            when {
+                testResult.pValue < 0.001 -> "***"
+                testResult.pValue < 0.01 -> "**"
+                testResult.pValue < 0.05 -> "*"
+                else -> "ns"
+            }
+
+        val rowClass: String = if (testResult.significant) "significant" else ""
+
+        sb.append(
+            """
+            <tr class="$rowClass">
+                <td>${matchup.strategy1} vs ${matchup.strategy2}</td>
+                <td>%.1f%% vs %.1f%%</td>
+                <td>%.4f</td>
+                <td class="$effectClass">%.2f</td>
+                <td>$significanceText</td>
+            </tr>
+            """.format(
+                matchup.strategy1WinRate * 100,
+                matchup.strategy2WinRate * 100,
+                testResult.pValue,
+                effectSize,
+            ),
+        )
+    }
+
+    sb.append("</table>")
+    sb.append("<p><small>*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05, ns = not significant</small></p>")
+
+    return sb.toString()
 }
 
 /**

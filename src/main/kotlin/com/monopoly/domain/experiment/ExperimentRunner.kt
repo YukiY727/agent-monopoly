@@ -152,6 +152,24 @@ class ExperimentRunner(
                     .filterIsInstance<GameEvent.PlayerSentToJail>()
                     .count { it.playerName == name }
 
+            // トレード提案数
+            val tradesProposed: Int =
+                events
+                    .filterIsInstance<GameEvent.TradeProposed>()
+                    .count { it.proposerName == name }
+
+            // トレード受け入れ数（相手からの提案を受け入れた回数）
+            val tradesAccepted: Int =
+                events
+                    .filterIsInstance<GameEvent.TradeAccepted>()
+                    .count { it.targetName == name }
+
+            // 成立したトレード数（提案者として）
+            val tradesCompleted: Int =
+                events
+                    .filterIsInstance<GameEvent.TradeCompleted>()
+                    .count { it.proposerName == name }
+
             PlayerStatistics(
                 name = name,
                 propertiesPurchased = propertiesPurchased,
@@ -161,6 +179,9 @@ class ExperimentRunner(
                 rentReceived = rentReceived,
                 timesInJail = timesInJail,
                 finalMoney = player.money,
+                tradesProposed = tradesProposed,
+                tradesAccepted = tradesAccepted,
+                tradesCompleted = tradesCompleted,
             )
         }
 

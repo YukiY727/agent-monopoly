@@ -341,4 +341,129 @@ class MortgageTest : StringSpec({
         // Mortgaged utility has no rent
         player.calculateRentFor(mortgaged, diceRoll = 6) shouldBe 0
     }
+
+    // TC-RENT-001: Monopoly bonus doubles base rent
+    "Monopoly bonus should double base rent when player owns all properties in color group" {
+        val player = Player("MonopolyOwner", AlwaysPlayerStrategy())
+
+        // Brown color group has 2 properties
+        val mediterranean =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = PropertyRent(2, 10, 30, 90, 160, 250),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            ).withOwner(player)
+        val baltic =
+            StreetProperty(
+                name = "Baltic Avenue",
+                position = 3,
+                price = 60,
+                rent = PropertyRent(4, 20, 60, 180, 320, 450),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            ).withOwner(player)
+
+        // First, player owns only one property - no monopoly bonus
+        player.acquireProperty(mediterranean)
+        player.calculateRentFor(mediterranean) shouldBe 2 // Base rent without monopoly
+
+        // Now player owns both properties - monopoly bonus applies (2x)
+        player.acquireProperty(baltic)
+        player.calculateRentFor(mediterranean) shouldBe 4 // Base rent × 2 = 2 × 2 = 4
+        player.calculateRentFor(baltic) shouldBe 8 // Base rent × 2 = 4 × 2 = 8
+    }
+
+    // TC-RENT-002: Monopoly bonus does not apply when buildings exist
+    "Monopoly bonus should NOT apply when buildings are built" {
+        val player = Player("Builder", AlwaysPlayerStrategy())
+
+        val mediterranean =
+            StreetProperty(
+                name = "Mediterranean Avenue",
+                position = 1,
+                price = 60,
+                rent = PropertyRent(2, 10, 30, 90, 160, 250),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+            ).withOwner(player)
+        val baltic =
+            StreetProperty(
+                name = "Baltic Avenue",
+                position = 3,
+                price = 60,
+                rent = PropertyRent(4, 20, 60, 180, 320, 450),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.BROWN,
+                buildings = PropertyBuildings(houseCount = 1), // Has 1 house
+            ).withOwner(player)
+
+        player.acquireProperty(mediterranean)
+        player.acquireProperty(baltic)
+
+        // Mediterranean has no buildings - monopoly bonus applies
+        player.calculateRentFor(mediterranean) shouldBe 4 // Base rent × 2
+
+        // Baltic has 1 house - building rent applies (no monopoly multiplier)
+        player.calculateRentFor(baltic) shouldBe 20 // withHouse1 rent
+    }
+
+    // TC-RENT-003: Three-property color group monopoly
+    "Monopoly bonus should require all properties in color group" {
+        val player = Player("PartialOwner", AlwaysPlayerStrategy())
+
+        // Light blue has 3 properties
+        val oriental =
+            StreetProperty(
+                name = "Oriental Avenue",
+                position = 6,
+                price = 100,
+                rent = PropertyRent(6, 30, 90, 270, 400, 550),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            ).withOwner(player)
+        val vermont =
+            StreetProperty(
+                name = "Vermont Avenue",
+                position = 8,
+                price = 100,
+                rent = PropertyRent(6, 30, 90, 270, 400, 550),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            ).withOwner(player)
+
+        // Player owns 2 of 3 - no monopoly
+        player.acquireProperty(oriental)
+        player.acquireProperty(vermont)
+
+        // No monopoly bonus (need 3 properties for light blue)
+        player.calculateRentFor(oriental) shouldBe 6
+        player.calculateRentFor(vermont) shouldBe 6
+
+        // Now add the third property
+        val connecticut =
+            StreetProperty(
+                name = "Connecticut Avenue",
+                position = 9,
+                price = 120,
+                rent = PropertyRent(8, 40, 100, 300, 450, 600),
+                houseCost = 50,
+                hotelCost = 50,
+                colorGroup = ColorGroup.LIGHT_BLUE,
+            ).withOwner(player)
+        player.acquireProperty(connecticut)
+
+        // Now monopoly bonus applies (2x)
+        player.calculateRentFor(oriental) shouldBe 12 // 6 × 2
+        player.calculateRentFor(vermont) shouldBe 12 // 6 × 2
+        player.calculateRentFor(connecticut) shouldBe 16 // 8 × 2
+    }
 })

@@ -13,6 +13,9 @@ import kotlinx.serialization.Serializable
  * @property rentReceived 受け取った家賃総額
  * @property timesInJail 刑務所に入った回数
  * @property finalMoney 最終所持金
+ * @property tradesProposed トレード提案数
+ * @property tradesAccepted トレード受け入れ数（相手からの提案を受け入れた回数）
+ * @property tradesCompleted 成立したトレード数（提案者として）
  */
 @Serializable
 data class PlayerStatistics(
@@ -24,4 +27,7 @@ data class PlayerStatistics(
     val rentReceived: Int,
     val timesInJail: Int,
     val finalMoney: Int,
+    val tradesProposed: Int = 0,
+    val tradesAccepted: Int = 0,
+    val tradesCompleted: Int = 0,
 )

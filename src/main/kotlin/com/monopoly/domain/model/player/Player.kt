@@ -4,8 +4,10 @@ import com.monopoly.domain.model.card.Card
 import com.monopoly.domain.model.core.BoardPosition
 import com.monopoly.domain.model.core.Money
 import com.monopoly.domain.model.jail.JailStatus
+import com.monopoly.domain.model.property.ColorGroup
 import com.monopoly.domain.model.property.Property
 import com.monopoly.domain.model.property.RailroadProperty
+import com.monopoly.domain.model.property.StreetProperty
 import com.monopoly.domain.model.property.UtilityProperty
 
 @Suppress("TooManyFunctions") // Compatibility methods for existing tests will be removed
@@ -106,8 +108,51 @@ class Player(
                 val utilityCount: Int = ownedProperties.filterIsInstance<UtilityProperty>().count()
                 property.calculateRentWithDice(utilityCount, diceRoll)
             }
+            is StreetProperty -> {
+                val baseRent: Int = property.rentValue.amount
+                // Monopoly bonus: 2x base rent when owning all properties in color group
+                // and no buildings have been built yet
+                if (property.buildings.houseCount == 0 && !property.buildings.hasHotel) {
+                    if (hasMonopolyFor(property.colorGroup)) {
+                        baseRent * MONOPOLY_RENT_MULTIPLIER
+                    } else {
+                        baseRent
+                    }
+                } else {
+                    baseRent
+                }
+            }
             else -> property.rentValue.amount
         }
+    }
+
+    /**
+     * Check if this player owns all properties in the given color group (monopoly)
+     */
+    private fun hasMonopolyFor(colorGroup: ColorGroup): Boolean {
+        val requiredCount: Int = COLOR_GROUP_SIZES[colorGroup] ?: return false
+        val ownedCount: Int =
+            ownedProperties
+                .filterIsInstance<StreetProperty>()
+                .count { it.colorGroup == colorGroup }
+        return ownedCount == requiredCount
+    }
+
+    companion object {
+        private const val MONOPOLY_RENT_MULTIPLIER = 2
+
+        // 各色グループに含まれるプロパティ数
+        private val COLOR_GROUP_SIZES: Map<ColorGroup, Int> =
+            mapOf(
+                ColorGroup.BROWN to 2,
+                ColorGroup.LIGHT_BLUE to 3,
+                ColorGroup.PINK to 3,
+                ColorGroup.ORANGE to 3,
+                ColorGroup.RED to 3,
+                ColorGroup.YELLOW to 3,
+                ColorGroup.GREEN to 3,
+                ColorGroup.DARK_BLUE to 2,
+            )
     }
 
     // Compatibility methods for existing tests
